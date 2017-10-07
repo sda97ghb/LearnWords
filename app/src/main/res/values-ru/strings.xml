@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Learn Words</string>
+    <string name="settings">Настройки</string>
+    <string name="navigation_drawer_close">Закрыть панель навигации</string>
+    <string name="navigation_drawer_open">Открыть панель навигации</string>
+    <string name="decks">Колоды</string>
+    <string name="action_settings">Настройки</string>
+    <string name="search">Поиск</string>
+</resources>
