@@ -6,8 +6,8 @@
     <!--android:layout_width="match_parent"-->
     <!--android:layout_height="match_parent"-->
     <!--app:layout_behavior="@string/appbar_scrolling_view_behavior"-->
-    <!--tools:context="com.divanoapps.learnwords.MainActivity"-->
-    <!--tools:showIn="@layout/app_bar_main">-->
+    <!--tools:context="com.divanoapps.learnwords.DeckListActivityvity"-->
+    <!--tools:showIn="@layout/app_bar_deck_list">-->
 
     <!--<TextView-->
         <!--android:layout_width="wrap_content"-->
@@ -25,8 +25,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.divanoapps.learnwords.MainActivity"
-    tools:showIn="@layout/app_bar_main"
+    tools:context="com.divanoapps.learnwords.DeckListActivity"
+    tools:showIn="@layout/app_bar_deck_list"
     android:paddingBottom="48dp"
     android:clipToPadding="false">
 

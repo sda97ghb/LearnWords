@@ -38,7 +38,7 @@
             android:layout_height="48dp"
             app:layout_constraintLeft_toLeftOf="@+id/lower_30_button"
             app:layout_constraintTop_toBottomOf="@+id/lower_30_button"
-            app:srcCompat="@drawable/ic_add" />
+            app:srcCompat="@drawable/ic_fab_add" />
 
         <ImageButton
             android:id="@+id/file_order_button"
@@ -47,7 +47,7 @@
             android:layout_height="48dp"
             app:layout_constraintRight_toLeftOf="@+id/alphabet_order_button"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_add" />
+            app:srcCompat="@drawable/ic_fab_add" />
 
         <ImageButton
             android:id="@+id/alphabet_order_button"
@@ -58,7 +58,7 @@
             android:layout_marginTop="0dp"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_add" />
+            app:srcCompat="@drawable/ic_fab_add" />
 
         <ImageButton
             android:id="@+id/lower_30_button"
@@ -67,7 +67,7 @@
             android:layout_height="48dp"
             app:layout_constraintRight_toLeftOf="@+id/higher_30_button"
             app:layout_constraintTop_toBottomOf="@+id/file_order_button"
-            app:srcCompat="@drawable/ic_add" />
+            app:srcCompat="@drawable/ic_fab_add" />
 
         <ImageButton
             android:id="@+id/higher_30_button"
@@ -78,7 +78,7 @@
             android:layout_marginTop="0dp"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/alphabet_order_button"
-            app:srcCompat="@drawable/ic_add" />
+            app:srcCompat="@drawable/ic_fab_add" />
 
         <TextView
             android:id="@+id/card_count_view"
