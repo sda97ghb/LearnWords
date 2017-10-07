@@ -8,8 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This class represents single card with original word, translation of this word,
- * picture existence flag, visibility flag and difficulty.
+ * This class represents single card.
  */
 public class Card {
     private String mDeckName;
@@ -32,6 +31,18 @@ public class Card {
         mIsHidden = false;
         mPictureUrl = "";
         mCropPicture = false;
+    }
+
+    public Card(Card other) {
+        setDeckName(          other.getDeckName());
+        setWord(              other.getWord());
+        setWordComment(       other.getWordComment());
+        setTranslation(       other.getTranslation());
+        setTranslationComment(other.getTranslationComment());
+        setDifficulty(        other.getDifficulty());
+        setIsHidden(          other.isHidden());
+        setPictureUrl(        other.getPictureUrl());
+        setCropPicture(       other.cropPicture());
     }
 
     static Card fromJson(@NonNull String deckName, @NonNull String json) throws JSONException {
