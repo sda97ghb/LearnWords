@@ -18,6 +18,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
+import com.divanoapps.learnwords.Data.DB;
+
 public class DeckListActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -54,13 +56,9 @@ public class DeckListActivity extends AppCompatActivity
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         // Setup deck list
-        DataProvider deckListProvider = DataProvider.getInstance();
-
         final RecyclerView deckListView = (RecyclerView) findViewById(R.id.DeckListView);
         deckListView.setLayoutManager(new LinearLayoutManager(this));
-
-        DeckListAdapter adapter = new DeckListAdapter(this, deckListProvider);
-        deckListView.setAdapter(adapter);
+        deckListView.setAdapter(new DeckListAdapter(this));
 
         deckListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
