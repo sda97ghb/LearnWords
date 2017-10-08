@@ -1,5 +1,6 @@
 package com.divanoapps.learnwords.Data;
 
+import android.os.AsyncTask;
 import android.os.Environment;
 
 import com.divanoapps.learnwords.Entities.Deck;
@@ -14,6 +15,7 @@ import java.io.InputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -21,6 +23,9 @@ import java.util.List;
  */
 
 public class DB {
+    //////////////////////
+    // Singleton interface
+
     private static volatile DB instance;
 
     public static DB getInstance() {
@@ -36,17 +41,58 @@ public class DB {
         return localInstance;
     }
 
-    List<Deck> mDecks;
+    ///////////////////////////////
+    // Changes and change listeners
 
-    DB() {
+    public interface AllDecksLoadedListener {
+        void onAllDecksLoaded();
+    }
+
+    public interface DeckChangedListener {
+        void onDeckChanged(String deckName);
+    }
+
+    private List<AllDecksLoadedListener> mAllDecksLoadedListeners;
+    private List<DeckChangedListener> mDeckChangedListeners;
+
+    public static void addListener(AllDecksLoadedListener listener) {
+        getInstance().mAllDecksLoadedListeners.add(listener);
+    }
+
+    public static void addListener(DeckChangedListener listener) {
+        getInstance().mDeckChangedListeners.add(listener);
+    }
+
+    private void notifyAllDecksLoaded() {
+        for (AllDecksLoadedListener listener : mAllDecksLoadedListeners)
+            listener.onAllDecksLoaded();
+    }
+
+    private void notifyDeckChanged(String deckName) {
+        for (DeckChangedListener listener : mDeckChangedListeners)
+            listener.onDeckChanged(deckName);
+    }
+
+    private void initializeListeners() {
+        mAllDecksLoadedListeners = new LinkedList<>();
+        mDeckChangedListeners = new LinkedList<>();
+    }
+
+    //////////////////////
+    // DB primary business
+
+    private List<Deck> mDecks;
+
+    private DB() {
+        initializeListeners();
         mDecks = new ArrayList<>();
     }
 
-    static File getDeckStorageDirectory() {
+    private static File getDeckStorageDirectory() {
         return new File(Environment.getExternalStorageDirectory(), "Learn words");
     }
 
-    List<String> getListOfNamesOfExistingDecks() {
+    private List<String> getListOfNamesOfExistingDecks() {
         File[] deckFiles = getDeckStorageDirectory().listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -101,6 +147,16 @@ public class DB {
                 e.printStackTrace();
             }
             mDecks.add(deck);
+        }
+
+        notifyAllDecksLoaded();
+    }
+
+    private class DownloadFilesTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            DB.getInstance().loadAll();
+            return null;
         }
     }
 

@@ -70,6 +70,9 @@ public class DeckListActivity extends AppCompatActivity
                     fab.show();
             }
         });
+
+        // Load all decks
+        DB.getInstance().loadAll();
     }
 
     @Override
