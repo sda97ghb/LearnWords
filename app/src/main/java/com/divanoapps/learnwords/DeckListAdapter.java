@@ -32,13 +32,13 @@ class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        DeckInfo deckInfo = DB.getInstance().getListOfDeckInfos().get(position);
+        DeckInfo deckInfo = DB.getListOfDeckInfos().get(position);
         holder.setContent(deckInfo.getName(), deckInfo.getNumberOfCards(), position);
     }
 
     @Override
     public int getItemCount() {
-        return DB.getInstance().getListOfDeckInfos().size();
+        return DB.getListOfDeckInfos().size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

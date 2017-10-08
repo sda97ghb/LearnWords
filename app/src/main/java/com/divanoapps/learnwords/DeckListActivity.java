@@ -72,7 +72,7 @@ public class DeckListActivity extends AppCompatActivity
         });
 
         // Load all decks
-        DB.getInstance().loadAll();
+        DB.loadAll();
     }
 
     @Override

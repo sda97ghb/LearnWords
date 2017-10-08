@@ -6,7 +6,6 @@ import android.os.Environment;
 import com.divanoapps.learnwords.Entities.Deck;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -81,6 +80,16 @@ public class DB {
     //////////////////////
     // DB primary business
 
+    // Exceptions
+
+    public static class DeckNotFoundException extends Exception {
+        DeckNotFoundException(String deckName) {
+            super("Deck with name " + deckName + " not found");
+        }
+    }
+
+    // Private
+
     private List<Deck> mDecks;
 
     private DB() {
@@ -116,7 +125,7 @@ public class DB {
         }
     }
 
-    private Deck loadDeck(String name) throws UnableToLoadDeckException {
+    private static Deck loadDeck(String name) throws UnableToLoadDeckException {
         File deckFile = new File(getDeckStorageDirectory(), name + ".json");
         String jsonString = null;
         try {
@@ -136,47 +145,55 @@ public class DB {
         }
     }
 
-    public void loadAll() {
-        mDecks = new ArrayList<>();
+    private void private_loadAll() {
+        getInstance().mDecks = new ArrayList<>();
 
-        for (String deckName : getListOfNamesOfExistingDecks()) {
+        for (String deckName : getInstance().getListOfNamesOfExistingDecks()) {
             Deck deck = null;
             try {
                 deck = loadDeck(deckName);
             } catch (UnableToLoadDeckException e) {
                 e.printStackTrace();
             }
-            mDecks.add(deck);
+            getInstance().mDecks.add(deck);
         }
 
-        notifyAllDecksLoaded();
+        getInstance().notifyAllDecksLoaded();
     }
 
-    private class DownloadFilesTask extends AsyncTask<Void, Void, Void> {
+    private static class LoadAllDecksTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... params) {
-            DB.getInstance().loadAll();
+            DB.getInstance().private_loadAll();
             return null;
         }
     }
 
-    public List<DeckInfo> getListOfDeckInfos() {
+    private List<DeckInfo> private_getListOfDeckInfos() {
         List<DeckInfo> infos = new ArrayList<>();
         for (Deck deck : mDecks)
             infos.add(new DeckInfo(deck.getName(), deck.getCards().size()));
         return infos;
     }
 
-    public static class DeckNotFoundException extends Exception {
-        DeckNotFoundException(String deckName) {
-            super("Deck with name " + deckName + " not found");
-        }
-    }
-
-    public Deck getDeck(String name) throws DeckNotFoundException {
+    private Deck private_getDeck(String name) throws DeckNotFoundException {
         for (Deck deck : mDecks)
             if (deck.getName().equals(name))
                 return new Deck(deck);
         throw new DeckNotFoundException(name);
+    }
+
+    // Public
+
+    public static void loadAll() {
+        new LoadAllDecksTask().execute();
+    }
+
+    public static List<DeckInfo> getListOfDeckInfos() {
+        return getInstance().private_getListOfDeckInfos();
+    }
+
+    public static Deck getDeck(String name) throws DeckNotFoundException {
+        return getInstance().private_getDeck(name);
     }
 }
