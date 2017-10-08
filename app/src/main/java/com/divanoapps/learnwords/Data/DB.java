@@ -72,7 +72,7 @@ public class DB {
             listener.onDeckChanged(deckName);
     }
 
-    private void initializeListeners() {
+    private void initializeListenerLists() {
         mAllDecksLoadedListeners = new LinkedList<>();
         mDeckChangedListeners = new LinkedList<>();
     }
@@ -93,7 +93,7 @@ public class DB {
     private List<Deck> mDecks;
 
     private DB() {
-        initializeListeners();
+        initializeListenerLists();
         mDecks = new ArrayList<>();
     }
 

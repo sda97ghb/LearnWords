@@ -1,5 +1,6 @@
 package com.divanoapps.learnwords;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -37,8 +38,7 @@ public class DeckListActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Snackbar.make(view, "FAB", Snackbar.LENGTH_LONG).setAction("Action", null).show();
             }
         });
 
@@ -58,7 +58,22 @@ public class DeckListActivity extends AppCompatActivity
         // Setup deck list
         final RecyclerView deckListView = (RecyclerView) findViewById(R.id.DeckListView);
         deckListView.setLayoutManager(new LinearLayoutManager(this));
-        deckListView.setAdapter(new DeckListAdapter(this));
+        DeckListAdapter deckListAdapter = new DeckListAdapter(this);
+        deckListAdapter.addEditDeckClickedListener(new DeckListAdapter.EditDeckClickedListener() {
+            @Override
+            public void onEditDeckClicked(String deckName) {
+                Intent intent = new Intent(DeckListActivity.this, DeckEditActivity.class);
+                intent.putExtra(DeckEditActivity.getDeckNameExtraName(), deckName);
+                startActivity(intent);
+            }
+        });
+        deckListAdapter.addStartExerciseClickedListener(new DeckListAdapter.StartExerciseClickedListener() {
+            @Override
+            public void onStartExerciseClickedListener(String deckName, CardRetriever.Order order) {
+                ;
+            }
+        });
+        deckListView.setAdapter(deckListAdapter);
 
         deckListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
