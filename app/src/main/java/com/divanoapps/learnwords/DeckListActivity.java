@@ -70,7 +70,16 @@ public class DeckListActivity extends AppCompatActivity
         deckListAdapter.addStartExerciseClickedListener(new DeckListAdapter.StartExerciseClickedListener() {
             @Override
             public void onStartExerciseClickedListener(String deckName, CardRetriever.Order order) {
-                ;
+                String orderString = "";
+                switch (order) {
+                    case alphabetical: orderString = "alphabetical"; break;
+                    case file: orderString = "file"; break;
+                    case random: orderString = "random"; break;
+                    case higher30: orderString = "higher 30"; break;
+                    case lower30: orderString = "lower 30"; break;
+                }
+                Snackbar.make(fab, "Start exercise " + deckName + " in " + orderString + " order.", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
             }
         });
         deckListView.setAdapter(deckListAdapter);
@@ -103,8 +112,8 @@ public class DeckListActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar.
-        getMenuInflater().inflate(R.menu.main, menu);
-        MenuItem settingsMenuItem = (MenuItem) menu.findItem(R.id.action_settings);
+        getMenuInflater().inflate(R.menu.menu_deck_list_activity_toolbar, menu);
+        MenuItem settingsMenuItem = (MenuItem) menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(settingsMenuItem);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -129,7 +138,7 @@ public class DeckListActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_search) {
             return true;
         }
 

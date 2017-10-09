@@ -7,4 +7,6 @@
     <string name="decks">Колоды</string>
     <string name="action_settings">Настройки</string>
     <string name="search">Поиск</string>
+    <string name="decorator_difficulty_is">Сложность</string>
+    <string name="decorator_out_of">из</string>
 </resources>

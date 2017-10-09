@@ -4,4 +4,5 @@
     <color name="colorPrimaryDark">#2a3644</color>
     <color name="colorAccent">#a6797a</color>
     <color name="transparent">#00ffffff</color>
+    <color name="cardActionIcon">#ff606060</color>
 </resources>
