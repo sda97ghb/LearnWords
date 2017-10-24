@@ -104,4 +104,7 @@
     <string name="max_difficulty" translatable="false">30</string>
     <string name="rename">Rename</string>
     <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="rename_deck">Rename deck</string>
+    <string name="new_name">New name</string>
 </resources>

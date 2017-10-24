@@ -3,6 +3,8 @@ package com.divanoapps.learnwords;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.NavUtils;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,7 +19,7 @@ import com.divanoapps.learnwords.Data.DB;
 import com.divanoapps.learnwords.Entities.Card;
 import com.divanoapps.learnwords.Entities.Deck;
 
-public class DeckEditActivity extends AppCompatActivity {
+public class DeckEditActivity extends AppCompatActivity implements RenameDeckDialogFragment.RenameDeckDialogListener {
 
     public static String getDeckNameExtraName() {
         return "DECK_NAME";
@@ -112,6 +114,7 @@ public class DeckEditActivity extends AppCompatActivity {
             case R.id.action_rename: renameCurrentDeck(); return true;
             case R.id.action_search: /* Nothing to do */ return true;
             case R.id.action_delete: deleteCurrentDeck(); return true;
+            case android.R.id.home: NavUtils.navigateUpFromSameTask(this); return true;
 
             default: return super.onOptionsItemSelected(item);
         }
@@ -119,9 +122,20 @@ public class DeckEditActivity extends AppCompatActivity {
 
     private void renameCurrentDeck() {
         Snackbar.make(findViewById(R.id.coordinator_layout), "Rename deck " + mDeck.getName(), Snackbar.LENGTH_LONG).show();
+        String uniqueDialogTag = "com.divanoapps.learnwords.RenameDeckDialogFragment." + mDeck.getName();
+        RenameDeckDialogFragment.newInstance(mDeck.getName()).show(getSupportFragmentManager(), uniqueDialogTag);
     }
 
     private void deleteCurrentDeck() {
         Snackbar.make(findViewById(R.id.coordinator_layout), "Delete deck " + mDeck.getName(), Snackbar.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        if (dialog instanceof RenameDeckDialogFragment) {
+            RenameDeckDialogFragment renameDeckDialog = (RenameDeckDialogFragment) dialog;
+            Snackbar.make(findViewById(R.id.coordinator_layout), "Rename deck " + mDeck.getName() +
+                    " to " + renameDeckDialog.getNewDeckName(), Snackbar.LENGTH_LONG).show();
+        }
     }
 }
