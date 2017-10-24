@@ -1,6 +1,7 @@
 package com.divanoapps.learnwords.Entities;
 
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 
 import com.divanoapps.learnwords.Auxiliary.SafeJSONObject;
 
@@ -8,41 +9,41 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This class represents single card.
+ * This class represents single card that is immutable.
  */
 public class Card {
-    private String mDeckName;
-    private String mWord;
-    private String mWordComment;
-    private String mTranslation;
-    private String mTranslationComment;
-    private int mDifficulty;
+    private String  mDeckName;
+    private String  mWord;
+    private String  mWordComment;
+    private String  mTranslation;
+    private String  mTranslationComment;
+    private int     mDifficulty;
     private boolean mIsHidden;
-    private String mPictureUrl;
+    private String  mPictureUrl;
     private boolean mCropPicture;
 
     public Card() {
-        mDeckName = "";
-        mWord = "";
-        mWordComment = "";
-        mTranslation = "";
+        mDeckName           = "";
+        mWord               = "";
+        mWordComment        = "";
+        mTranslation        = "";
         mTranslationComment = "";
-        mDifficulty = getDefaultDifficulty();
-        mIsHidden = false;
-        mPictureUrl = "";
-        mCropPicture = false;
+        mDifficulty         = getDefaultDifficulty();
+        mIsHidden           = false;
+        mPictureUrl         = "";
+        mCropPicture        = false;
     }
 
     public Card(Card other) {
-        setDeckName(          other.getDeckName());
-        setWord(              other.getWord());
-        setWordComment(       other.getWordComment());
-        setTranslation(       other.getTranslation());
-        setTranslationComment(other.getTranslationComment());
-        setDifficulty(        other.getDifficulty());
-        setIsHidden(          other.isHidden());
-        setPictureUrl(        other.getPictureUrl());
-        setCropPicture(       other.cropPicture());
+        mDeckName           = other.getDeckName();
+        mWord               = other.getWord();
+        mWordComment        = other.getWordComment();
+        mTranslation        = other.getTranslation();
+        mTranslationComment = other.getTranslationComment();
+        mDifficulty         = other.getDifficulty();
+        mIsHidden           = other.isHidden();
+        mPictureUrl         = other.getPictureUrl();
+        mCropPicture        = other.cropPicture();
     }
 
     static Card fromJson(@NonNull String deckName, @NonNull String json) throws JSONException {
@@ -51,32 +52,35 @@ public class Card {
 
     static Card fromJson(@NonNull String deckName, @NonNull JSONObject jsonObject) {
         SafeJSONObject safeJSONObject = new SafeJSONObject(jsonObject);
-        Card card = new Card();
-        card.setDeckName(deckName);
-        card.setWord(              safeJSONObject.getString ("word"));
-        card.setWordComment(       safeJSONObject.getString ("wordComment"));
-        card.setTranslation(       safeJSONObject.getString ("translation"));
-        card.setTranslationComment(safeJSONObject.getString ("translationComment"));
-        card.setDifficulty(        safeJSONObject.getInt    ("difficulty", Card.getDefaultDifficulty()));
-        if (card.getDifficulty() > Card.getMaxDifficulty())
-            card.setDifficulty(Card.getMaxDifficulty());
-        if (card.getDifficulty() < Card.getMinDifficulty())
-            card.setDifficulty(Card.getMinDifficulty());
-        card.setIsHidden(          safeJSONObject.getBoolean("isHidden"));
-        card.setPictureUrl("");
-        card.setCropPicture(       safeJSONObject.getBoolean("cropPicture"));
-        return card;
+
+        int difficulty = safeJSONObject.getInt("difficulty", Card.getDefaultDifficulty());
+        if (difficulty > Card.getMaxDifficulty())
+            difficulty = Card.getMaxDifficulty();
+        if (difficulty < Card.getMinDifficulty())
+            difficulty = Card.getMinDifficulty();
+
+        return new Card.Builder()
+                .setDeckName(          deckName)
+                .setWord(              safeJSONObject.getString ("word"))
+                .setWordComment(       safeJSONObject.getString ("wordComment"))
+                .setTranslation(       safeJSONObject.getString ("translation"))
+                .setTranslationComment(safeJSONObject.getString ("translationComment"))
+                .setDifficulty(        difficulty)
+                .setHidden(            safeJSONObject.getBoolean("isHidden"))
+                .setPictureUrl(        "")
+                .setCropPicture(       safeJSONObject.getBoolean("cropPicture"))
+                .build();
     }
 
     public JSONObject toJson() {
         SafeJSONObject safeJSONObject = new SafeJSONObject(new JSONObject());
-        safeJSONObject.put("word", getWord());
-        safeJSONObject.put("wordComment", getWordComment());
-        safeJSONObject.put("translation", getTranslation());
+        safeJSONObject.put("word",               getWord());
+        safeJSONObject.put("wordComment",        getWordComment());
+        safeJSONObject.put("translation",        getTranslation());
         safeJSONObject.put("translationComment", getTranslationComment());
-        safeJSONObject.put("difficulty", getDifficulty());
-        safeJSONObject.put("isHidden", isHidden());
-        safeJSONObject.put("cropPicture", cropPicture());
+        safeJSONObject.put("difficulty",         getDifficulty());
+        safeJSONObject.put("isHidden",           isHidden());
+        safeJSONObject.put("cropPicture",        cropPicture());
         return safeJSONObject.getJSONObject();
     }
 
@@ -115,41 +119,25 @@ public class Card {
         return mDeckName;
     }
 
-    public void setDeckName(@NonNull String deckName) {
-        mDeckName = deckName;
-    }
-
     public String getWord() {
         return mWord;
-    }
-
-    public void setWord(@NonNull String word) {
-        mWord = word;
     }
 
     public String getWordComment() {
         return mWordComment;
     }
 
-    public void setWordComment(@NonNull String wordComment) {
-        mWordComment = wordComment;
-    }
+    public boolean hasWordComment() { return !(mWordComment.trim().isEmpty()); }
 
     public String getTranslation() {
         return mTranslation;
-    }
-
-    public void setTranslation(@NonNull String translation) {
-        mTranslation = translation;
     }
 
     public String getTranslationComment() {
         return mTranslationComment;
     }
 
-    public void setTranslationComment(@NonNull String translationComment) {
-        mTranslationComment = translationComment;
-    }
+    public boolean hasTranslationComment() { return !(mTranslationComment.trim().isEmpty()); }
 
     public static int getMinDifficulty() {
         return 0;
@@ -167,38 +155,12 @@ public class Card {
         return mDifficulty;
     }
 
-    public void setDifficulty(int difficulty) {
-        mDifficulty = difficulty;
-    }
-
-    public void increaseDifficulty() {
-        if (mDifficulty < getMaxDifficulty())
-            ++ mDifficulty;
-    }
-
-    public void decreaseDifficulty() {
-        if (mDifficulty > getMinDifficulty())
-            -- mDifficulty;
-    }
-
-    public void resetDifficulty() {
-        mDifficulty = getDefaultDifficulty();
-    }
-
     public boolean isHidden() {
         return mIsHidden;
     }
 
-    public void setIsHidden(boolean isHidden) {
-        mIsHidden = isHidden;
-    }
-
     public String getPictureUrl() {
         return mPictureUrl;
-    }
-
-    public void setPictureUrl(String pictureUrl) {
-        mPictureUrl = pictureUrl;
     }
 
     public boolean hasPicture() {
@@ -209,7 +171,64 @@ public class Card {
         return mCropPicture;
     }
 
-    public void setCropPicture(boolean cropPicture) {
-        mCropPicture = cropPicture;
+    public static class Builder {
+        private Card mCard;
+
+        public Builder() {
+            mCard = new Card();
+        }
+
+        public Builder(Card other) {
+            mCard = new Card(other);
+        }
+
+        public Builder setDeckName(String deckName) {
+            mCard.mDeckName = deckName;
+            return this;
+        }
+
+        public Builder setWord(String word) {
+            mCard.mWord = word;
+            return this;
+        }
+
+        public Builder setWordComment(String wordComment) {
+            mCard.mWordComment = wordComment;
+            return this;
+        }
+
+        public Builder setTranslation(String translation) {
+            mCard.mTranslation = translation;
+            return this;
+        }
+
+        public Builder setTranslationComment(String translationComment) {
+            mCard.mTranslationComment = translationComment;
+            return this;
+        }
+
+        public Builder setHidden(boolean isHidden) {
+            mCard.mIsHidden = isHidden;
+            return this;
+        }
+
+        public Builder setDifficulty(int difficulty) {
+            mCard.mDifficulty = difficulty;
+            return this;
+        }
+
+        public Builder setPictureUrl(String pictureUrl) {
+            mCard.mPictureUrl = pictureUrl;
+            return this;
+        }
+
+        public Builder setCropPicture(boolean cropPicture) {
+            mCard.mCropPicture = cropPicture;
+            return this;
+        }
+
+        public Card build() {
+            return new Card(mCard);
+        }
     }
 }

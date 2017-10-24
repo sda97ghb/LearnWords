@@ -13,7 +13,9 @@ import java.io.InputStream;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -109,6 +111,9 @@ public class DB {
             }
         });
 
+        if (deckFiles == null)
+            return new ArrayList<>();
+
         List<String> deckNames = new ArrayList<>();
         for (File file : deckFiles) {
             String name = file.getName();
@@ -125,23 +130,26 @@ public class DB {
         }
     }
 
-    private static Deck loadDeck(String name) throws UnableToLoadDeckException {
-        File deckFile = new File(getDeckStorageDirectory(), name + ".json");
-        String jsonString = null;
+    private static String getFileContent(File file) throws UnableToLoadDeckException {
+        String content = null;
         try {
-            InputStream inputStream = new FileInputStream(deckFile);
+            InputStream inputStream = new FileInputStream(file);
             int size = inputStream.available();
             byte[] bytes = new byte[size];
             inputStream.read(bytes);
             inputStream.close();
-            jsonString = new String(bytes, "UTF-8");
+            content = new String(bytes, "UTF-8");
         } catch (IOException e) {
-            throw new UnableToLoadDeckException(name);
+            throw new UnableToLoadDeckException(file.getName());
         }
+        return content;
+    }
+
+    private static Deck loadDeck(String deckName) throws UnableToLoadDeckException {
         try {
-            return Deck.fromJson(name, jsonString);
+            return Deck.fromJson(deckName, getFileContent(new File(getDeckStorageDirectory(), deckName + ".json")));
         } catch (JSONException e) {
-            throw new UnableToLoadDeckException(name);
+            throw new UnableToLoadDeckException(deckName);
         }
     }
 
@@ -169,18 +177,15 @@ public class DB {
         }
     }
 
-    private List<DeckInfo> private_getListOfDeckInfos() {
-        List<DeckInfo> infos = new ArrayList<>();
-        for (Deck deck : mDecks)
-            infos.add(new DeckInfo(deck.getName(), deck.getCards().size()));
-        return infos;
-    }
-
     private Deck private_getDeck(String name) throws DeckNotFoundException {
         for (Deck deck : mDecks)
             if (deck.getName().equals(name))
-                return new Deck(deck);
+                return deck;
         throw new DeckNotFoundException(name);
+    }
+
+    private List<Deck> private_getDecks() {
+        return Collections.unmodifiableList(mDecks);
     }
 
     // Public
@@ -189,8 +194,8 @@ public class DB {
         new LoadAllDecksTask().execute();
     }
 
-    public static List<DeckInfo> getListOfDeckInfos() {
-        return getInstance().private_getListOfDeckInfos();
+    public static List<Deck> getDecks() {
+        return getInstance().private_getDecks();
     }
 
     public static Deck getDeck(String name) throws DeckNotFoundException {

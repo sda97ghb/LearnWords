@@ -37,7 +37,7 @@ public class DeckEditActivity extends AppCompatActivity implements RenameDeckDia
             mDeck = DB.getDeck(getIntent().getExtras().getString(getDeckNameExtraName()));
         } catch (DB.DeckNotFoundException e) {
             e.printStackTrace();
-            mDeck = new Deck("ERROR:( Press back and select deck again.");
+            mDeck = new Deck.Builder().setName("ERROR:( Press back and select deck again.").build();
         }
 
         // Setup toolbar
