@@ -42,11 +42,21 @@
                 android:textSize="18sp"/>
 
             <TextView
+                android:id="@+id/word_comment_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Word comment"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:visibility="gone"/>
+
+            <TextView
                 android:id="@+id/card_parts_separator"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
                 android:text="-"
                 android:textAlignment="center"
                 android:textSize="18sp"/>
@@ -58,6 +68,16 @@
                 android:text="Translation"
                 android:textAlignment="center"
                 android:textSize="18sp"/>
+
+            <TextView
+                android:id="@+id/translation_comment_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Translation comment"
+                android:textAlignment="center"
+                android:textSize="16sp"
+                android:visibility="gone"/>
 
         </LinearLayout>
 

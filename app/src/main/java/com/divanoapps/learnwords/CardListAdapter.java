@@ -99,7 +99,9 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
         View mItemView;
 
         TextView mWordView;
+        TextView mWordCommentView;
         TextView mTranslationView;
+        TextView mTranslationCommentView;
 
         TextView mDifficultyView;
         TextView mDifficultyMaximumView;
@@ -113,7 +115,9 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
             mItemView = itemView;
 
             mWordView = (TextView) itemView.findViewById(R.id.word_view);
+            mWordCommentView = (TextView) itemView.findViewById(R.id.word_comment_view);
             mTranslationView = (TextView) itemView.findViewById(R.id.translation_view);
+            mTranslationCommentView = (TextView) itemView.findViewById(R.id.translation_comment_view);
 
             mDifficultyView = (TextView) itemView.findViewById(R.id.difficulty_view);
             mDifficultyMaximumView = (TextView) itemView.findViewById(R.id.difficulty_maximum_view);
@@ -124,7 +128,12 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
 
         void setFromCard(final Card card, final int cardIndex) {
             mWordView.setText(card.getWord());
+            mWordCommentView.setText(card.getWordComment());
             mTranslationView.setText(card.getTranslation());
+            mTranslationCommentView.setText(card.getTranslationComment());
+
+            mWordCommentView.setVisibility(card.getWordComment().isEmpty() ? View.GONE : View.VISIBLE);
+            mTranslationCommentView.setVisibility(card.getTranslationComment().isEmpty() ? View.GONE : View.VISIBLE);
 
             mDifficultyView.setText(Integer.valueOf(card.getDifficulty()).toString());
             mDifficultyMaximumView.setText(Integer.valueOf(Card.getMaxDifficulty()).toString());
@@ -142,7 +151,9 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
             };
             mItemView.setOnClickListener(editCardClickListener);
             mWordView.setOnClickListener(editCardClickListener);
+            mWordCommentView.setOnClickListener(editCardClickListener);
             mTranslationView.setOnClickListener(editCardClickListener);
+            mTranslationCommentView.setOnClickListener(editCardClickListener);
             mDifficultyView.setOnClickListener(editCardClickListener);
             mDifficultyMaximumView.setOnClickListener(editCardClickListener);
 
