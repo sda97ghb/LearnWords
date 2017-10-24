@@ -50,6 +50,18 @@ public class Deck {
         return Collections.unmodifiableList(mCards);
     }
 
+    public int getNumberOfCards() {
+        return mCards.size();
+    }
+
+    public int getNumberOfHiddenCards() {
+        int i = 0;
+        for (Card card : mCards)
+            if (card.isHidden())
+                ++ i;
+        return i;
+    }
+
     public static class Builder {
         private Deck mDeck;
 

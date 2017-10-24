@@ -9,4 +9,11 @@
     <string name="search">Поиск</string>
     <string name="decorator_difficulty_is">Сложность</string>
     <string name="decorator_out_of">из</string>
+    <string name="delete">Удалить</string>
+    <string name="cancel">Отмена</string>
+    <string name="new_name">Новое имя</string>
+    <string name="rename">Переименовать</string>
+    <string name="rename_deck">Переименовать колоду</string>
+    <string name="cards">карточек</string>
+    <string name="of_them_is_hidden">из них скрыто</string>
 </resources>

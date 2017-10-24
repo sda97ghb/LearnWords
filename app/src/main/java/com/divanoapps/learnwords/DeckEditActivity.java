@@ -14,6 +14,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.divanoapps.learnwords.Data.DB;
 import com.divanoapps.learnwords.Entities.Card;
@@ -46,8 +47,12 @@ public class DeckEditActivity extends AppCompatActivity implements RenameDeckDia
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // Set number of cards and number of hidden cards views
+        ((TextView) findViewById(R.id.number_of_cards)).setText(Integer.valueOf(mDeck.getNumberOfCards()).toString());
+        ((TextView) findViewById(R.id.number_of_hidden_card)).setText(Integer.valueOf(mDeck.getNumberOfHiddenCards()).toString());
+
         // Setup "Add card" FAB
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -79,6 +84,17 @@ public class DeckEditActivity extends AppCompatActivity implements RenameDeckDia
             }
         });
         cardListView.setAdapter(cardListAdapter);
+
+        cardListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                if (dy > 0)
+                    fab.hide();
+                else
+                    fab.show();
+            }
+        });
     }
 
     @Override

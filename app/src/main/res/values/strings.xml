@@ -107,4 +107,6 @@
     <string name="cancel">Cancel</string>
     <string name="rename_deck">Rename deck</string>
     <string name="new_name">New name</string>
+    <string name="of_them_is_hidden">of them is hidden</string>
+    <string name="cards">cards</string>
 </resources>
