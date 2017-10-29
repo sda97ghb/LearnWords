@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.divanoapps.learnwords.Auxiliary.RussianNumberConjugation;
 import com.divanoapps.learnwords.Data.DB;
 import com.divanoapps.learnwords.Entities.Card;
 import com.divanoapps.learnwords.Entities.Deck;
@@ -50,6 +51,13 @@ public class DeckEditActivity extends AppCompatActivity implements RenameDeckDia
         // Set number of cards and number of hidden cards views
         ((TextView) findViewById(R.id.number_of_cards)).setText(Integer.valueOf(mDeck.getNumberOfCards()).toString());
         ((TextView) findViewById(R.id.number_of_hidden_card)).setText(Integer.valueOf(mDeck.getNumberOfHiddenCards()).toString());
+
+        if (getResources().getString(R.string.language_code).equals("ru")) {
+            ((TextView) findViewById(R.id.decorator_number_of_cards))
+                    .setText(RussianNumberConjugation.getCards(mDeck.getNumberOfCards()));
+            ((TextView) findViewById(R.id.decorator_number_of_hidden_card))
+                    .setText("из них " + RussianNumberConjugation.getHidden(mDeck.getNumberOfHiddenCards()));
+        }
 
         // Setup "Add card" FAB
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);

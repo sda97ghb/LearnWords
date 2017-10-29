@@ -16,4 +16,5 @@
     <string name="rename_deck">Переименовать колоду</string>
     <string name="cards">карточек</string>
     <string name="of_them_is_hidden">из них скрыто</string>
+    <string name="language_code">ru</string>
 </resources>
