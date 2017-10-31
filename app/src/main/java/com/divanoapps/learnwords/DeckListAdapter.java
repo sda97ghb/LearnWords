@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.divanoapps.learnwords.Data.DB;
-import com.divanoapps.learnwords.Entities.Deck;
+import com.divanoapps.learnwords.Entities.DeckId;
+import com.divanoapps.learnwords.Entities.DeckShort;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -17,52 +17,49 @@ import java.util.List;
 class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHolder> {
 
     public interface EditDeckClickedListener {
-        void onEditDeckClicked(String deckName);
+        void onEditDeckClicked(DeckId id);
     }
 
     public interface StartExerciseClickedListener {
-        void onStartExerciseClickedListener(String deckName, CardRetriever.Order order);
+        void onStartExerciseClicked(DeckId id, CardRetriever.Order order);
     }
 
-    private List<EditDeckClickedListener> mEditDeckClickedListeners;
-    private List<StartExerciseClickedListener> mStartExerciseClickedListeners;
+    private EditDeckClickedListener mEditDeckClickedListener = new EditDeckClickedListener() {
+        @Override
+        public void onEditDeckClicked(DeckId id) {}
+    };
+    private StartExerciseClickedListener mStartExerciseClickedListener = new StartExerciseClickedListener() {
+        @Override
+        public void onStartExerciseClicked(DeckId id, CardRetriever.Order order) {}
+    };
 
-    public void addEditDeckClickedListener(EditDeckClickedListener listener) {
-        mEditDeckClickedListeners.add(listener);
+    public void setEditDeckClickedListener(EditDeckClickedListener listener) {
+        mEditDeckClickedListener = listener;
     }
 
-    public void addStartExerciseClickedListener(StartExerciseClickedListener listener) {
-        mStartExerciseClickedListeners.add(listener);
+    public void setStartExerciseClickedListener(StartExerciseClickedListener listener) {
+        mStartExerciseClickedListener = listener;
     }
 
-    private void notifyEditDeckClicked(String deckName) {
-        for (EditDeckClickedListener listener : mEditDeckClickedListeners) {
-            listener.onEditDeckClicked(deckName);
-        }
+    private void notifyEditDeckClicked(DeckId id) {
+        mEditDeckClickedListener.onEditDeckClicked(id);
     }
 
-    private void notifyStartExerciseClicked(String deckName, CardRetriever.Order order) {
-        for (StartExerciseClickedListener listener : mStartExerciseClickedListeners) {
-            listener.onStartExerciseClickedListener(deckName, order);
-        }
-    }
-
-    private void initializeListenerLists() {
-        mEditDeckClickedListeners = new LinkedList<>();
-        mStartExerciseClickedListeners = new LinkedList<>();
+    private void notifyStartExerciseClicked(DeckId id, CardRetriever.Order order) {
+        mStartExerciseClickedListener.onStartExerciseClicked(id, order);
     }
 
     private Context mContext = null; // as DeckListActivity
 
+    private List<DeckShort> mDecks = new LinkedList<>();
+
+    public void setDecks(List<DeckShort> decks) {
+        mDecks = decks == null ? new LinkedList<DeckShort>() : decks;
+        notifyDataSetChanged();
+    }
+
     DeckListAdapter(Context context) {
-        initializeListenerLists();
         mContext = context;
-        DB.addListener(new DB.AllDecksLoadedListener() {
-            @Override
-            public void onAllDecksLoaded() {
-                notifyDataSetChanged();
-            }
-        });
     }
 
     @Override
@@ -72,13 +69,13 @@ class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.setContent(DB.getDecks().get(position), position);
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
+        holder.setContent(mDecks.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return DB.getDecks().size();
+        return mDecks.size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -108,57 +105,57 @@ class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHolder> {
             mLower30Button       = (ImageButton) itemView.findViewById(R.id.lower_30_button);
         }
 
-        void setContent(final Deck deck, int position) {
+        void setContent(final DeckShort deck) {
             mDeckNameView.setText(deck.getName());
-            mDeckSizeView.setText(Integer.valueOf(deck.getCards().size()).toString());
+            mDeckSizeView.setText(Integer.valueOf(deck.getNumberOfCards()).toString());
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyEditDeckClicked(deck.getName());
+                    notifyEditDeckClicked(deck.getId());
                 }
             });
             mDeckNameView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyEditDeckClicked(deck.getName());
+                    notifyEditDeckClicked(deck.getId());
                 }
             });
             mDeckSizeView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyEditDeckClicked(deck.getName());
+                    notifyEditDeckClicked(deck.getId());
                 }
             });
 
             mAlphabetOrderButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyStartExerciseClicked(deck.getName(), CardRetriever.Order.alphabetical);
+                    notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.alphabetical);
                 }
             });
             mFileOrderButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyStartExerciseClicked(deck.getName(), CardRetriever.Order.file);
+                    notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.file);
                 }
             });
             mRandomOrderButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyStartExerciseClicked(deck.getName(), CardRetriever.Order.random);
+                    notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.random);
                 }
             });
             mHigher30Button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyStartExerciseClicked(deck.getName(), CardRetriever.Order.higher30);
+                    notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.higher30);
                 }
             });
             mLower30Button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyStartExerciseClicked(deck.getName(), CardRetriever.Order.lower30);
+                    notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.lower30);
                 }
             });
         }

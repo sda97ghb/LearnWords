@@ -19,11 +19,21 @@ import android.widget.TextView;
 import com.divanoapps.learnwords.Auxiliary.RussianNumberConjugation;
 import com.divanoapps.learnwords.Data.DB;
 import com.divanoapps.learnwords.Entities.Card;
+import com.divanoapps.learnwords.Entities.CardId;
 import com.divanoapps.learnwords.Entities.Deck;
+import com.divanoapps.learnwords.Entities.DeckId;
 
-public class DeckEditActivity extends AppCompatActivity implements RenameDeckDialogFragment.RenameDeckDialogListener {
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 
-    public static String getDeckNameExtraName() {
+public class DeckEditActivity extends AppCompatActivity implements
+        RenameDeckDialogFragment.RenameDeckDialogListener,
+        CardListAdapter.EditCardClickedListener,
+        CardListAdapter.ToggleCardEnabledClickedListener,
+        CardListAdapter.DeleteCardClickedListener {
+
+    public static String getDeckIdExtraName() {
         return "DECK_NAME";
     }
 
@@ -34,63 +44,28 @@ public class DeckEditActivity extends AppCompatActivity implements RenameDeckDia
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_deck_edit);
 
-        // Get deck with given name
-        try {
-            mDeck = DB.getDeck(getIntent().getExtras().getString(getDeckNameExtraName()));
-        } catch (DB.DeckNotFoundException e) {
-            e.printStackTrace();
-            mDeck = new Deck.Builder().setName("ERROR:( Press back and select deck again.").build();
-        }
-
         // Setup toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(mDeck.getName());
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        // Set number of cards and number of hidden cards views
-        ((TextView) findViewById(R.id.number_of_cards)).setText(Integer.valueOf(mDeck.getNumberOfCards()).toString());
-        ((TextView) findViewById(R.id.number_of_hidden_card)).setText(Integer.valueOf(mDeck.getNumberOfHiddenCards()).toString());
-
-        if (getResources().getString(R.string.language_code).equals("ru")) {
-            ((TextView) findViewById(R.id.decorator_number_of_cards))
-                    .setText(RussianNumberConjugation.getCards(mDeck.getNumberOfCards()));
-            ((TextView) findViewById(R.id.decorator_number_of_hidden_card))
-                    .setText("из них " + RussianNumberConjugation.getHidden(mDeck.getNumberOfHiddenCards()));
-        }
 
         // Setup "Add card" FAB
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "FAB in deck " + mDeck.getName(), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Snackbar.make(view, "FAB in deck " + mDeck.getName(), Snackbar.LENGTH_LONG).show();
             }
         });
 
         // Setup card list
         RecyclerView cardListView = (RecyclerView) findViewById(R.id.card_list_view);
         cardListView.setLayoutManager(new LinearLayoutManager(this));
-        CardListAdapter cardListAdapter = new CardListAdapter(this, mDeck);
-        cardListAdapter.setEditCardClickedListener(new CardListAdapter.EditCardClickedListener() {
-            @Override
-            public void onEditCardClicked(Card card) {
-                Snackbar.make(findViewById(R.id.coordinator_layout), "Edit card " + card.getWord(), Snackbar.LENGTH_LONG).show();
-            }
-        });
-        cardListAdapter.setToggleCardEnabledClickedListener(new CardListAdapter.ToggleCardEnabledClickedListener() {
-            @Override
-            public void onToggleCardEnabledClicked(Card card) {
-                Snackbar.make(findViewById(R.id.coordinator_layout), "Toggle card enable " + card.getWord(), Snackbar.LENGTH_LONG).show();
-            }
-        });
-        cardListAdapter.setDeleteCardClickedListener(new CardListAdapter.DeleteCardClickedListener() {
-            @Override
-            public void onDeleteCardClicked(Card card) {
-                Snackbar.make(findViewById(R.id.coordinator_layout), "Delete card " + card.getWord(), Snackbar.LENGTH_LONG).show();
-            }
-        });
+
+        CardListAdapter cardListAdapter = new CardListAdapter(this);
+        cardListAdapter.setEditCardClickedListener(this);
+        cardListAdapter.setToggleCardEnabledClickedListener(this);
+        cardListAdapter.setDeleteCardClickedListener(this);
         cardListView.setAdapter(cardListAdapter);
 
         cardListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -103,6 +78,71 @@ public class DeckEditActivity extends AppCompatActivity implements RenameDeckDia
                     fab.show();
             }
         });
+
+        // Get deck with given name
+        DeckId deckId = (DeckId) getIntent().getExtras().getSerializable(getDeckIdExtraName());
+        DB.getDeck(deckId)
+                .setOnDoneListener(new DB.Request.OnDoneListener<Deck>() {
+                    @Override
+                    public void onDone(Deck result) {
+                        onDeckReceived(result);
+                    }
+                })
+                .setOnErrorListener(new DB.Request.OnErrorListener() {
+                    @Override
+                    public void onError(DB.Error error) {
+                        onDeckNotFound();
+                    }
+                })
+                .execute();
+    }
+
+    private void onDeckReceived(Deck deck) {
+        mDeck = deck;
+
+        Snackbar.make(findViewById(R.id.coordinator_layout), mDeck.getName(),
+                Snackbar.LENGTH_LONG).show();
+
+        updateUi();
+    }
+
+    private void onDeckNotFound() {
+        mDeck = new Deck.Builder().setName("ERROR:(")
+                .setCards(Collections.singletonList(
+                        new Card.Builder()
+                                .setWord("Your deck has been lost.")
+                                .setWordComment("Don't worry, we have a copy!")
+                                .setTranslation("Press back and select deck again.")
+                                .setDifficulty(1)
+                                .build()))
+                .build();
+        updateUi();
+    }
+
+    private void updateUi() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(mDeck.getName());
+
+        // Set language from and language to
+        ((TextView) findViewById(R.id.language_from)).setText(mDeck.getLanguageFrom());
+        ((TextView) findViewById(R.id.language_to)).setText(mDeck.getLanguageTo());
+
+        // Set number of cards and number of hidden cards views
+        ((TextView) findViewById(R.id.number_of_cards))
+                .setText(Integer.valueOf(mDeck.getNumberOfCards()).toString());
+        ((TextView) findViewById(R.id.number_of_hidden_card))
+                .setText(Integer.valueOf(mDeck.getNumberOfHiddenCards()).toString());
+
+        if (getResources().getString(R.string.language_code).equals("ru")) {
+            ((TextView) findViewById(R.id.decorator_number_of_cards))
+                    .setText(RussianNumberConjugation.getCards(mDeck.getNumberOfCards()));
+            ((TextView) findViewById(R.id.decorator_number_of_hidden_card))
+                    .setText("из них " + RussianNumberConjugation.getHidden(mDeck.getNumberOfHiddenCards()));
+        }
+
+        RecyclerView cardListView = (RecyclerView) findViewById(R.id.card_list_view);
+        CardListAdapter cardListAdapter = (CardListAdapter) cardListView.getAdapter();
+        cardListAdapter.setCards(mDeck.getCards());
     }
 
     @Override
@@ -145,13 +185,16 @@ public class DeckEditActivity extends AppCompatActivity implements RenameDeckDia
     }
 
     private void renameCurrentDeck() {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Rename deck " + mDeck.getName(), Snackbar.LENGTH_LONG).show();
+        Snackbar.make(findViewById(R.id.coordinator_layout), "Rename deck " + mDeck.getName(),
+                Snackbar.LENGTH_LONG).show();
         String uniqueDialogTag = "com.divanoapps.learnwords.RenameDeckDialogFragment." + mDeck.getName();
-        RenameDeckDialogFragment.newInstance(mDeck.getName()).show(getSupportFragmentManager(), uniqueDialogTag);
+        RenameDeckDialogFragment.newInstance(mDeck.getName()).show(getSupportFragmentManager(),
+                uniqueDialogTag);
     }
 
     private void deleteCurrentDeck() {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Delete deck " + mDeck.getName(), Snackbar.LENGTH_LONG).show();
+        Snackbar.make(findViewById(R.id.coordinator_layout), "Delete deck " + mDeck.getName(),
+                Snackbar.LENGTH_LONG).show();
     }
 
     @Override
@@ -161,5 +204,23 @@ public class DeckEditActivity extends AppCompatActivity implements RenameDeckDia
             Snackbar.make(findViewById(R.id.coordinator_layout), "Rename deck " + mDeck.getName() +
                     " to " + renameDeckDialog.getNewDeckName(), Snackbar.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public void onEditCardClicked(CardId id) {
+        Snackbar.make(findViewById(R.id.coordinator_layout), "Edit card " + id.getWord(),
+                Snackbar.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onToggleCardEnabledClicked(CardId id) {
+        Snackbar.make(findViewById(R.id.coordinator_layout), "Toggle card enable " + id.getWord(),
+                Snackbar.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onDeleteCardClicked(CardId id) {
+        Snackbar.make(findViewById(R.id.coordinator_layout), "Delete card " + id.getWord(),
+                Snackbar.LENGTH_LONG).show();
     }
 }

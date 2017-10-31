@@ -40,53 +40,95 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-                    <TextView
-                        android:id="@+id/number_of_cards"
+                    <LinearLayout
+                        android:orientation="horizontal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:layout_constraintBottom_toTopOf="@+id/number_of_hidden_card"
-                        app:layout_constraintLeft_toLeftOf="parent"
+                        android:layout_marginBottom="5dp"
                         android:layout_marginLeft="35dp"
-                        android:layout_marginBottom="5dp"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/white"
-                        android:text="100" />
+                        app:layout_constraintBottom_toTopOf="@+id/number_of_cards_statistic_layout"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        android:layout_marginStart="35dp">
 
-                    <TextView
-                        android:id="@+id/decorator_number_of_cards"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:layout_constraintBaseline_toBaselineOf="@id/number_of_cards"
-                        app:layout_constraintLeft_toRightOf="@id/number_of_cards"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginBottom="5dp"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/white"
-                        android:text="@string/cards" />
+                        <TextView
+                            android:id="@+id/language_from"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="En"
+                            android:textSize="18sp"
+                            android:textColor="@android:color/white" />
 
-                    <TextView
-                        android:id="@+id/number_of_hidden_card"
-                        android:layout_width="wrap_content"
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="→"
+                            android:textSize="18sp"
+                            android:textColor="@android:color/white" />
+
+                        <TextView
+                            android:id="@+id/language_to"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="En"
+                            android:textSize="18sp"
+                            android:textColor="@android:color/white" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/number_of_cards_statistic_layout"
+                        android:layout_width="344dp"
                         android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginLeft="35dp"
+                        android:layout_marginBottom="12dp"
+                        app:layout_constraintLeft_toLeftOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        android:layout_marginLeft="35dp"
-                        android:layout_marginBottom="16dp"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/white"
-                        android:text="5" />
+                        android:layout_marginStart="35dp">
 
-                    <TextView
-                        android:id="@+id/decorator_number_of_hidden_card"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:layout_constraintBaseline_toBaselineOf="@id/number_of_hidden_card"
-                        app:layout_constraintLeft_toRightOf="@id/number_of_hidden_card"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginBottom="16dp"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/white"
-                        android:text="@string/of_them_is_hidden" />
+                        <TextView
+                            android:id="@+id/number_of_cards"
+                            android:textSize="16sp"
+                            android:textColor="@android:color/white"
+                            android:text="100"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/decorator_number_of_cards"
+                            android:textSize="16sp"
+                            android:textColor="@android:color/white"
+                            android:text="@string/cards"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp" />
+
+                        <TextView
+                            android:textSize="16sp"
+                            android:textColor="@android:color/white"
+                            android:text=","
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/number_of_hidden_card"
+                            android:textSize="16sp"
+                            android:textColor="@android:color/white"
+                            android:text="5"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp" />
+
+                        <TextView
+                            android:id="@+id/decorator_number_of_hidden_card"
+                            android:textSize="16sp"
+                            android:textColor="@android:color/white"
+                            android:text="@string/of_them_is_hidden"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="5dp" />
+
+                    </LinearLayout>
                 </android.support.constraint.ConstraintLayout>
             </FrameLayout>
 

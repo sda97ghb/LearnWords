@@ -9,25 +9,40 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.divanoapps.learnwords.Entities.Card;
+import com.divanoapps.learnwords.Entities.CardId;
 import com.divanoapps.learnwords.Entities.Deck;
+
+import java.util.LinkedList;
+import java.util.List;
 
 class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
 
     public interface EditCardClickedListener {
-        void onEditCardClicked(Card card);
+        void onEditCardClicked(CardId id);
     }
 
     public interface ToggleCardEnabledClickedListener {
-        void onToggleCardEnabledClicked(Card card);
+        void onToggleCardEnabledClicked(CardId id);
     }
 
     public interface DeleteCardClickedListener {
-        void onDeleteCardClicked(Card card);
+        void onDeleteCardClicked(CardId id);
     }
 
-    private EditCardClickedListener mEditCardClickedListener;
-    private ToggleCardEnabledClickedListener mToggleCardEnabledClickedListener;
-    private DeleteCardClickedListener mDeleteCardClickedListener;
+    private EditCardClickedListener mEditCardClickedListener = new EditCardClickedListener() {
+        @Override
+        public void onEditCardClicked(CardId id) {}
+    };
+
+    private ToggleCardEnabledClickedListener mToggleCardEnabledClickedListener = new ToggleCardEnabledClickedListener() {
+        @Override
+        public void onToggleCardEnabledClicked(CardId id) {}
+    };
+
+    private DeleteCardClickedListener mDeleteCardClickedListener = new DeleteCardClickedListener() {
+        @Override
+        public void onDeleteCardClicked(CardId id) {}
+    };
 
     public void setEditCardClickedListener(EditCardClickedListener  listener) {
         mEditCardClickedListener = listener;
@@ -41,42 +56,28 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
         mDeleteCardClickedListener = listener;
     }
 
-    void notifyEditCardClicked(Card card) {
-        mEditCardClickedListener.onEditCardClicked(card);
+    void notifyEditCardClicked(CardId id) {
+        mEditCardClickedListener.onEditCardClicked(id);
     }
 
-    void notifyToggleCardEnabledClicked(Card card) {
-        mToggleCardEnabledClickedListener.onToggleCardEnabledClicked(card);
+    void notifyToggleCardEnabledClicked(CardId id) {
+        mToggleCardEnabledClickedListener.onToggleCardEnabledClicked(id);
     }
 
-    void notifyDeleteCardClicked(Card card) {
-        mDeleteCardClickedListener.onDeleteCardClicked(card);
-    }
-
-    void initializeListeners() {
-        mEditCardClickedListener = new EditCardClickedListener() {
-            @Override
-            public void onEditCardClicked(Card card) {
-            }
-        };
-        mToggleCardEnabledClickedListener = new ToggleCardEnabledClickedListener() {
-            @Override
-            public void onToggleCardEnabledClicked(Card card) {
-            }
-        };
-        mDeleteCardClickedListener = new DeleteCardClickedListener() {
-            @Override
-            public void onDeleteCardClicked(Card card) {
-            }
-        };
+    void notifyDeleteCardClicked(CardId id) {
+        mDeleteCardClickedListener.onDeleteCardClicked(id);
     }
 
     private Context mContext; // as CardListActivity
-    private Deck mDeck;
+    private List<Card> mCards = new LinkedList<>();
 
-    public CardListAdapter(Context context, Deck deck) {
+    public CardListAdapter(Context context) {
         mContext = context;
-        mDeck = deck;
+    }
+
+    public void setCards(List<Card> cards) {
+        mCards = cards == null ? new LinkedList<Card>() : cards;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -87,12 +88,12 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.setFromCard(mDeck.getCards().get(position), position);
+        holder.setFromCard(mCards.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return mDeck.getCards().size();
+        return mCards.size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -126,7 +127,7 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
             mToggleCardEnableButton = (ImageButton) itemView.findViewById(R.id.switch_enable_button);
         }
 
-        void setFromCard(final Card card, final int cardIndex) {
+        void setFromCard(final Card card) {
             mWordView.setText(card.getWord());
             mWordCommentView.setText(card.getWordComment());
             mTranslationView.setText(card.getTranslation());
@@ -146,7 +147,7 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
             View.OnClickListener editCardClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyEditCardClicked(card);
+                    notifyEditCardClicked(card.getId());
                 }
             };
             mItemView.setOnClickListener(editCardClickListener);
@@ -160,14 +161,14 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
             mToggleCardEnableButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyToggleCardEnabledClicked(card);
+                    notifyToggleCardEnabledClicked(card.getId());
                 }
             });
 
             mDeleteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    notifyDeleteCardClicked(card);
+                    notifyDeleteCardClicked(card.getId());
                 }
             });
         }

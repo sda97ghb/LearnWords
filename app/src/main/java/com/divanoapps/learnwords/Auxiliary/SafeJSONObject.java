@@ -1,5 +1,6 @@
 package com.divanoapps.learnwords.Auxiliary;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -53,6 +54,32 @@ public class SafeJSONObject {
         }
     }
 
+    public JSONArray getJsonArray(String name) {
+        return getJsonArray(name, new JSONArray());
+    }
+
+    public JSONArray getJsonArray(String name, JSONArray defaultValue) {
+        try {
+            return mObject.getJSONArray(name);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return defaultValue;
+        }
+    }
+
+    public JSONObject getJsonObject(String name) {
+        return getJsonObject(name, new JSONObject());
+    }
+
+    public JSONObject getJsonObject(String name, JSONObject defaultValue) {
+        try {
+            return mObject.getJSONObject(name);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return defaultValue;
+        }
+    }
+
     public void put(String name, String value) {
         try {
             mObject.put(name, value);
@@ -77,7 +104,23 @@ public class SafeJSONObject {
         }
     }
 
-    public JSONObject getJSONObject() {
+    public void put(String name, JSONArray value) {
+        try {
+            mObject.put(name, value);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void put(String name, JSONObject value) {
+        try {
+            mObject.put(name, value);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public JSONObject getInternalJSONObject() {
         return mObject;
     }
 }

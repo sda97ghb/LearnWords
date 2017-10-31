@@ -2,6 +2,8 @@ package com.divanoapps.learnwords.Entities;
 
 import android.support.annotation.NonNull;
 
+import com.divanoapps.learnwords.Auxiliary.SafeJSONObject;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,32 +19,74 @@ import java.util.List;
  */
 public class Deck {
     private String mName;
+    private String mLanguageFrom;
+    private String mLanguageTo;
     private List<Card> mCards;
 
     public Deck() {
-        mName = "";
+        mName = getDefaultName();
+        mLanguageFrom = getDefaultLanguageFrom();
+        mLanguageTo = getDefaultLanguageTo();
         mCards = new ArrayList<>();
     }
 
     public Deck(Deck other) {
         mName = other.getName();
+        mLanguageFrom = other.getLanguageFrom();
+        mLanguageTo = other.getLanguageTo();
         mCards = new ArrayList<>(other.getCards());
     }
 
     public static Deck fromJson(@NonNull String name, @NonNull String json) throws JSONException {
         Deck.Builder builder = new Deck.Builder();
-        builder.setName(name);
-        JSONArray jsonArray = new JSONArray(json);
-        for (int i = 0; i < jsonArray.length(); ++ i) {
-            JSONObject object = jsonArray.getJSONObject(i);
-            builder.addCard(Card.fromJson(name, object));
+
+        JSONObject deckJsonObject = new JSONObject(json);
+        builder.setName(deckJsonObject.getString("name"));
+        builder.setLanguageFrom(deckJsonObject.getString("languageFrom"));
+        builder.setLanguageTo(deckJsonObject.getString("languageTo"));
+
+        JSONArray cardsJsonArray = deckJsonObject.getJSONArray("cards");
+        if (cardsJsonArray != null) {
+            for (int i = 0; i < cardsJsonArray.length(); ++ i) {
+                JSONObject object = cardsJsonArray.getJSONObject(i);
+                builder.addCard(Card.fromJson(name, object));
+            }
         }
         return builder.build();
+    }
+
+    public static String getDefaultName() {
+        return "No name";
+    }
+
+    public static String getDefaultLanguageFrom() {
+        return "English";
+    }
+
+    public static String getDefaultLanguageTo() {
+        return "English";
+    }
+
+    public DeckId getId() {
+        return new DeckId(getName());
+    }
+
+    public DeckShort getShortDescription() {
+        return new DeckShort(getName(), getNumberOfCards(), getNumberOfHiddenCards(),
+                getLanguageFrom(), getLanguageTo());
     }
 
     public String getName()
     {
         return mName;
+    }
+
+    public String getLanguageFrom() {
+        return mLanguageFrom;
+    }
+
+    public String getLanguageTo() {
+        return mLanguageTo;
     }
 
     public List<Card> getCards()
@@ -75,6 +119,16 @@ public class Deck {
 
         public Builder setName(String name) {
             mDeck.mName = name;
+            return this;
+        }
+
+        public Builder setLanguageFrom(String language) {
+            mDeck.mLanguageFrom = language;
+            return this;
+        }
+
+        public Builder setLanguageTo(String language) {
+            mDeck.mLanguageTo = language;
             return this;
         }
 

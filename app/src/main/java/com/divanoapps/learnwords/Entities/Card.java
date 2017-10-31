@@ -1,7 +1,6 @@
 package com.divanoapps.learnwords.Entities;
 
 import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
 
 import com.divanoapps.learnwords.Auxiliary.SafeJSONObject;
 
@@ -81,7 +80,7 @@ public class Card {
         safeJSONObject.put("difficulty",         getDifficulty());
         safeJSONObject.put("isHidden",           isHidden());
         safeJSONObject.put("cropPicture",        cropPicture());
-        return safeJSONObject.getJSONObject();
+        return safeJSONObject.getInternalJSONObject();
     }
 
     @Override
@@ -113,6 +112,10 @@ public class Card {
                 "pictureUrl"         + "=" + getPictureUrl()         + ", " +
                 "cropPicture"        + "=" + cropPicture()           +
                 "}";
+    }
+
+    public CardId getId() {
+        return new CardId(mDeckName, mWord, mWordComment);
     }
 
     public String getDeckName() {
