@@ -10,5 +10,5 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.divanoapps.learnwords.DeckEditActivity"
     tools:showIn="@layout/activity_deck_edit"
-    android:paddingBottom="48dp"
+    android:paddingBottom="8dp"
     android:clipToPadding="false" />

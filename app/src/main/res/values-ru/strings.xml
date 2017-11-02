@@ -17,4 +17,5 @@
     <string name="cards">карточек</string>
     <string name="of_them_is_hidden">из них скрыто</string>
     <string name="language_code">ru</string>
+    <string name="title_edit_card">Редактировать карточку</string>
 </resources>

@@ -110,4 +110,5 @@
     <string name="of_them_is_hidden">of them is hidden</string>
     <string name="cards">cards</string>
     <string name="language_code">en</string>
+    <string name="title_edit_card">Edit card</string>
 </resources>
