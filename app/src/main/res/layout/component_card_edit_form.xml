@@ -18,12 +18,14 @@
         android:foreground="?android:attr/selectableItemBackground" />
 
     <EditText
+        android:id="@+id/word_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="a banana"
         android:textAlignment="center" />
 
     <EditText
+        android:id="@+id/word_comment_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="yellow long tropical fruit"
@@ -38,12 +40,14 @@
         android:textSize="30sp" />
 
     <EditText
+        android:id="@+id/translation_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="банан"
         android:textAlignment="center" />
 
     <EditText
+        android:id="@+id/translation_comment_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="длинный желтый тропический фрукт"

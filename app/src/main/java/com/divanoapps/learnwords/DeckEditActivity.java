@@ -55,8 +55,6 @@ public class DeckEditActivity extends AppCompatActivity implements
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "FAB in deck " + mDeck.getName(), Snackbar.LENGTH_LONG).show();
-                Intent intent = new Intent(DeckEditActivity.this, CardEditActivity.class);
-                startActivity(intent);
             }
         });
 
@@ -214,8 +212,12 @@ public class DeckEditActivity extends AppCompatActivity implements
 
     @Override
     public void onEditCardClicked(CardId id) {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Edit card " + id.getWord(),
-                Snackbar.LENGTH_LONG).show();
+        Intent intent = new Intent(DeckEditActivity.this, CardEditActivity.class);
+        intent.putExtra(CardEditActivity.getCardIdExtraKey(), id);
+        startActivity(intent);
+
+//        Snackbar.make(findViewById(R.id.coordinator_layout), "Edit card " + id.getWord(),
+//                Snackbar.LENGTH_LONG).show();
     }
 
     @Override

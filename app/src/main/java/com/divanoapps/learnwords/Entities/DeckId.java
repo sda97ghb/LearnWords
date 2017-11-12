@@ -7,14 +7,14 @@ import java.io.Serializable;
  */
 
 public class DeckId implements Serializable {
-    private String mDeckName;
+    private String mName;
 
     public DeckId(String deckName) {
-        mDeckName = deckName;
+        mName = deckName;
     }
 
     public String getDeckName() {
-        return mDeckName;
+        return mName;
     }
 
     @Override

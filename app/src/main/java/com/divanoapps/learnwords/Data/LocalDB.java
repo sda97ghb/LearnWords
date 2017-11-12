@@ -1,6 +1,5 @@
 package com.divanoapps.learnwords.Data;
 
-import android.os.AsyncTask;
 import android.os.Environment;
 
 import com.divanoapps.learnwords.Entities.Card;
@@ -22,14 +21,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by dmitry on 30.10.17.
+ * DB implementation that works with local storage.
  */
 
-public class LocalDB implements IDB {
+class LocalDB implements IDB {
     ////////////////////////////////////////////////////////////////
     // Exceptions
 
-    public static class UnableToReadFileException extends Exception {
+    static class UnableToReadFileException extends Exception {
         UnableToReadFileException(String filename) {
             super("Unable to read file " + filename);
         }
@@ -44,7 +43,7 @@ public class LocalDB implements IDB {
         return new File(Environment.getExternalStorageDirectory(), "Learn words");
     }
 
-    private static List<String> getListOfNamesOfExistingDecks() {
+    private static List<String> getListOfNamesOfFilesOfExistingDecks() {
         File[] deckFiles = getDeckStorageDirectory().listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -55,14 +54,14 @@ public class LocalDB implements IDB {
         if (deckFiles == null)
             return new ArrayList<>();
 
-        List<String> deckNames = new ArrayList<>();
+        List<String> deckFileNames = new ArrayList<>();
         for (File file : deckFiles) {
             String name = file.getName();
             name = name.substring(0, name.length() - 5);
-            deckNames.add(name);
+            deckFileNames.add(name);
         }
 
-        return deckNames;
+        return deckFileNames;
     }
 
     private static String getTextFileContent(File file) throws UnableToReadFileException {
@@ -83,22 +82,18 @@ public class LocalDB implements IDB {
         return new File(getDeckStorageDirectory(), deckName + ".json");
     }
 
-    private static Deck loadDeckFromFile(String deckName) throws UnableToReadFileException, JSONException {
-        return Deck.fromJson(deckName, getTextFileContent(getFileForDeck(deckName)));
-    }
-
-    private void loadAll() throws UnableToReadFileException, JSONException {
+    private void loadAllDecks() throws UnableToReadFileException, JSONException {
         mDecks = new LinkedList<>();
 
-        for (String deckName : getListOfNamesOfExistingDecks())
-            mDecks.add(loadDeckFromFile(deckName));
+        for (String deckName : getListOfNamesOfFilesOfExistingDecks())
+            mDecks.add(Deck.fromJson(getTextFileContent(getFileForDeck(deckName))));
     }
 
     ////////////////////////////////////////////////////////////////
     // Public
 
-    public void initialize() throws UnableToReadFileException, JSONException {
-        loadAll();
+    void initialize() throws UnableToReadFileException, JSONException {
+        loadAllDecks();
     }
 
     @Override

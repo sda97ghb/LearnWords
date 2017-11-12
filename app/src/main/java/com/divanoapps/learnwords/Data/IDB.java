@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by dmitry on 30.10.17.
+ * Common interface for all DB implementations such as LocalDB and NetDB.
  */
 
-public interface IDB {
+interface IDB {
     class NotFoundException extends Exception {
         NotFoundException() {
             super("Not found.");

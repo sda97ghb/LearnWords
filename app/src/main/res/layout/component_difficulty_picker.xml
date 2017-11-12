@@ -8,6 +8,7 @@
     android:orientation="horizontal">
 
     <ImageButton
+        android:id="@+id/decrease_difficulty_button"
         android:layout_width="64dp"
         android:layout_height="70dp"
         android:layout_alignParentLeft="true"
@@ -37,6 +38,7 @@
             android:layout_height="wrap_content">
 
             <TextView
+                android:id="@+id/difficulty_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="17"
@@ -53,6 +55,7 @@
                 android:textSize="18sp" />
 
             <TextView
+                android:id="@+id/difficulty_maximum_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="30"
@@ -64,6 +67,7 @@
     </LinearLayout>
 
     <ImageButton
+        android:id="@+id/increase_difficulty_button"
         android:layout_width="64dp"
         android:layout_height="70dp"
         android:layout_alignParentRight="true"

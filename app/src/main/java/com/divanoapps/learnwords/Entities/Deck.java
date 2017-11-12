@@ -37,20 +37,23 @@ public class Deck {
         mCards = new ArrayList<>(other.getCards());
     }
 
-    public static Deck fromJson(@NonNull String name, @NonNull String json) throws JSONException {
-        Deck.Builder builder = new Deck.Builder();
+    public static Deck fromJson(@NonNull String json) throws JSONException {
+        final Deck.Builder builder = new Deck.Builder();
 
         JSONObject deckJsonObject = new JSONObject(json);
-        builder.setName(deckJsonObject.getString("name"));
-        builder.setLanguageFrom(deckJsonObject.getString("languageFrom"));
-        builder.setLanguageTo(deckJsonObject.getString("languageTo"));
+
+        String name         = deckJsonObject.getString("name");
+        String languageFrom = deckJsonObject.getString("languageFrom");
+        String languageTo   = deckJsonObject.getString("languageTo");
+
+        builder.setName(name);
+        builder.setLanguageFrom(languageFrom);
+        builder.setLanguageTo(languageTo);
 
         JSONArray cardsJsonArray = deckJsonObject.getJSONArray("cards");
         if (cardsJsonArray != null) {
-            for (int i = 0; i < cardsJsonArray.length(); ++ i) {
-                JSONObject object = cardsJsonArray.getJSONObject(i);
-                builder.addCard(Card.fromJson(name, object));
-            }
+            for (int i = 0; i < cardsJsonArray.length(); ++ i)
+                builder.addCard(Card.fromJson(name, cardsJsonArray.getJSONObject(i)));
         }
         return builder.build();
     }
