@@ -2,6 +2,7 @@ package com.divanoapps.learnwords;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
@@ -54,7 +55,7 @@ public class DeckEditActivity extends AppCompatActivity implements
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "FAB in deck " + mDeck.getName(), Snackbar.LENGTH_LONG).show();
+                onAddCardClicked();
             }
         });
 
@@ -101,12 +102,28 @@ public class DeckEditActivity extends AppCompatActivity implements
                 .execute();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        DeckId deckId = (DeckId) getIntent().getExtras().getSerializable(getDeckIdExtraName());
+        DB.getDeck(deckId)
+                .setOnDoneListener(new DB.Request.OnDoneListener<Deck>() {
+                    @Override
+                    public void onDone(Deck result) {
+                        onDeckReceived(result);
+                    }
+                })
+                .setOnErrorListener(new DB.Request.OnErrorListener() {
+                    @Override
+                    public void onError(DB.Error error) {
+                        onDeckNotFound();
+                    }
+                })
+                .execute();
+    }
+
     private void onDeckReceived(Deck deck) {
         mDeck = deck;
-
-        Snackbar.make(findViewById(R.id.coordinator_layout), mDeck.getName(),
-                Snackbar.LENGTH_LONG).show();
-
         updateUi();
     }
 
@@ -149,6 +166,32 @@ public class DeckEditActivity extends AppCompatActivity implements
         cardListAdapter.setCards(mDeck.getCards());
     }
 
+//    @Override
+//    protected void onSaveInstanceState(Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        outState.putSerializable(getDeckIdExtraName(), mDeck.getId());
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        DeckId deckId = (DeckId) getIntent().getExtras().getSerializable(getDeckIdExtraName());
+//        DB.getDeck(deckId)
+//                .setOnDoneListener(new DB.Request.OnDoneListener<Deck>() {
+//                    @Override
+//                    public void onDone(Deck result) {
+//                        onDeckReceived(result);
+//                    }
+//                })
+//                .setOnErrorListener(new DB.Request.OnErrorListener() {
+//                    @Override
+//                    public void onError(DB.Error error) {
+//                        onDeckNotFound();
+//                    }
+//                })
+//                .execute();
+//    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar.
@@ -189,8 +232,6 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     private void renameCurrentDeck() {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Rename deck " + mDeck.getName(),
-                Snackbar.LENGTH_LONG).show();
         String uniqueDialogTag = "com.divanoapps.learnwords.RenameDeckDialogFragment." + mDeck.getName();
         RenameDeckDialogFragment.newInstance(mDeck.getName()).show(getSupportFragmentManager(),
                 uniqueDialogTag);
@@ -210,14 +251,19 @@ public class DeckEditActivity extends AppCompatActivity implements
         }
     }
 
+    public void onAddCardClicked() {
+        Intent intent = new Intent(this, CardEditActivity.class);
+        intent.putExtra(CardEditActivity.getModeExtraKey(), CardEditActivity.Mode.ADD_CARD);
+        intent.putExtra(CardEditActivity.getDeckIdExtraKey(), mDeck.getId());
+        startActivity(intent);
+    }
+
     @Override
     public void onEditCardClicked(CardId id) {
         Intent intent = new Intent(DeckEditActivity.this, CardEditActivity.class);
+        intent.putExtra(CardEditActivity.getModeExtraKey(), CardEditActivity.Mode.EDIT_CARD);
         intent.putExtra(CardEditActivity.getCardIdExtraKey(), id);
         startActivity(intent);
-
-//        Snackbar.make(findViewById(R.id.coordinator_layout), "Edit card " + id.getWord(),
-//                Snackbar.LENGTH_LONG).show();
     }
 
     @Override

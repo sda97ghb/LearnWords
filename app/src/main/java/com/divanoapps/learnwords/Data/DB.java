@@ -95,6 +95,10 @@ public class DB {
         return new ModifyCardRequest(getDb(), id, properties);
     }
 
+    public static UpdateCardRequest updateCard(CardId id, Card newCard) {
+        return new UpdateCardRequest(getDb(), id, newCard);
+    }
+
     public static DeleteCardRequest deleteCard(CardId id) {
         return new DeleteCardRequest(getDb(), id);
     }
@@ -304,6 +308,10 @@ public class DB {
                 e.printStackTrace();
                 setError(new Error(Error.Type.Forbidden, e.getMessage()));
                 return null;
+            } catch (IDB.NotFoundException e) {
+                e.printStackTrace();
+                setError(new Error(Error.Type.NotFound, e.getMessage()));
+                return null;
             }
         }
     }
@@ -326,6 +334,10 @@ public class DB {
             catch (IDB.ForbiddenException e) {
                 e.printStackTrace();
                 setError(new Error(Error.Type.Forbidden, e.getMessage()));
+                return null;
+            } catch (IDB.NotFoundException e) {
+                e.printStackTrace();
+                setError(new Error(Error.Type.NotFound, e.getMessage()));
                 return null;
             }
         }
@@ -401,6 +413,31 @@ public class DB {
         }
     }
 
+    public static class UpdateCardRequest extends Request<Void> {
+
+        private CardId mId;
+        private Card mNewCard;
+
+        UpdateCardRequest(IDB db, CardId id, Card newCard) {
+            super(db);
+            mId = id;
+            mNewCard = newCard;
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                getDb().updateCard(mId, mNewCard);
+                return null;
+            }
+            catch (IDB.ForbiddenException | IDB.NotFoundException e) {
+                e.printStackTrace();
+                setError(new Error(Error.Type.Forbidden, e.getMessage()));
+                return null;
+            }
+        }
+    }
+
     public static class DeleteCardRequest extends Request<Void> {
 
         private CardId mId;
@@ -419,6 +456,10 @@ public class DB {
             catch (IDB.ForbiddenException e) {
                 e.printStackTrace();
                 setError(new Error(Error.Type.Forbidden, e.getMessage()));
+                return null;
+            } catch (IDB.NotFoundException e) {
+                e.printStackTrace();
+                setError(new Error(Error.Type.NotFound, e.getMessage()));
                 return null;
             }
         }

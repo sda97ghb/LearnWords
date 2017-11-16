@@ -1,5 +1,6 @@
 package com.divanoapps.learnwords;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -127,6 +128,7 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
             mToggleCardEnableButton = (ImageButton) itemView.findViewById(R.id.switch_enable_button);
         }
 
+        @SuppressLint("SetTextI18n")
         void setFromCard(final Card card) {
             mWordView.setText(card.getWord());
             mWordCommentView.setText(card.getWordComment());
@@ -139,10 +141,9 @@ class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
             mDifficultyView.setText(Integer.valueOf(card.getDifficulty()).toString());
             mDifficultyMaximumView.setText(Integer.valueOf(Card.getMaxDifficulty()).toString());
 
-            if (card.isHidden())
-                mToggleCardEnableButton.setImageResource(R.drawable.ic_card_item_invisible);
-            else
-                mToggleCardEnableButton.setImageResource(R.drawable.ic_card_item_visible);
+            mToggleCardEnableButton.setImageResource(card.isHidden() ?
+                                                     R.drawable.ic_card_item_invisible :
+                                                     R.drawable.ic_card_item_visible);
 
             View.OnClickListener editCardClickListener = new View.OnClickListener() {
                 @Override

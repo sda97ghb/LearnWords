@@ -108,6 +108,25 @@ public class DeckListActivity extends AppCompatActivity
             .execute();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        DB.getDecks()
+            .setOnDoneListener(new DB.Request.OnDoneListener<List<DeckShort>>() {
+                    @Override
+                    public void onDone(List<DeckShort> result) {
+                        onGetDeckListDone(result);
+                    }
+                })
+            .setOnErrorListener(new DB.Request.OnErrorListener() {
+                    @Override
+                    public void onError(DB.Error error) {
+                        onGetDeckListError(error);
+                    }
+                })
+            .execute();
+    }
+
     public void onDbInitialized() {
         Snackbar.make(findViewById(R.id.coordinator_layout), "Successfully initialized.",
                 Snackbar.LENGTH_LONG).show();
@@ -233,7 +252,7 @@ public class DeckListActivity extends AppCompatActivity
             case higher30: orderString = "higher 30"; break;
             case lower30: orderString = "lower 30"; break;
         }
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Start exercise " + id.getDeckName() +
+        Snackbar.make(findViewById(R.id.coordinator_layout), "Start exercise " + id.getName() +
                 " in " + orderString + " order.", Snackbar.LENGTH_LONG).show();
     }
 }

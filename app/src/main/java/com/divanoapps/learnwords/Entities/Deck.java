@@ -58,6 +58,20 @@ public class Deck {
         return builder.build();
     }
 
+    public JSONObject toJson() throws JSONException {
+        JSONObject deckJson = new JSONObject();
+        deckJson.put("name", getName());
+        deckJson.put("languageFrom", getLanguageFrom());
+        deckJson.put("languageTo", getLanguageTo());
+
+        JSONArray cardsJson = new JSONArray();
+        for (Card card : getCards())
+            cardsJson.put(card.toJson());
+        deckJson.put("cards", cardsJson);
+
+        return deckJson;
+    }
+
     public static String getDefaultName() {
         return "No name";
     }

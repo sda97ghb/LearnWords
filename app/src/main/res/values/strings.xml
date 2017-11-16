@@ -111,4 +111,5 @@
     <string name="cards">cards</string>
     <string name="language_code">en</string>
     <string name="title_edit_card">Edit card</string>
+    <string name="done">Done</string>
 </resources>

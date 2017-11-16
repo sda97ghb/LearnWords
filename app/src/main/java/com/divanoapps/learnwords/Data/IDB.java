@@ -30,11 +30,12 @@ interface IDB {
 
     Deck getDeck(DeckId id) throws NotFoundException;
     void saveDeck(Deck deck) throws ForbiddenException;
-    void modifyDeck(DeckId id, Map<String, Object> properties) throws ForbiddenException;
-    void deleteDeck(DeckId id) throws ForbiddenException;
+    void modifyDeck(DeckId id, Map<String, Object> properties) throws ForbiddenException, NotFoundException;
+    void deleteDeck(DeckId id) throws ForbiddenException, NotFoundException;
 
     Card getCard(CardId id) throws NotFoundException;
-    void saveCard(Card deck) throws ForbiddenException;
+    void saveCard(Card card) throws ForbiddenException;
     void modifyCard(CardId id, Map<String, Object> properties) throws ForbiddenException;
-    void deleteCard(CardId id) throws ForbiddenException;
+    void updateCard(CardId id, Card newCard) throws ForbiddenException, NotFoundException;
+    void deleteCard(CardId id) throws ForbiddenException, NotFoundException;
 }

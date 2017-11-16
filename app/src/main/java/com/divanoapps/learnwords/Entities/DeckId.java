@@ -13,7 +13,7 @@ public class DeckId implements Serializable {
         mName = deckName;
     }
 
-    public String getDeckName() {
+    public String getName() {
         return mName;
     }
 
@@ -21,7 +21,7 @@ public class DeckId implements Serializable {
     public boolean equals(Object obj) {
         if (obj instanceof DeckId) {
             DeckId other = (DeckId) obj;
-            return other.getDeckName().equals(getDeckName());
+            return other.getName().equals(getName());
         }
 
         if (obj instanceof Deck)
