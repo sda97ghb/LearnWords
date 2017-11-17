@@ -1,5 +1,6 @@
 package com.divanoapps.learnwords.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -14,13 +15,13 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.divanoapps.learnwords.auxiliary.RussianNumberConjugation;
 import com.divanoapps.learnwords.adapters.CardListAdapter;
 import com.divanoapps.learnwords.data.DB;
+import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.entities.Card;
 import com.divanoapps.learnwords.entities.CardId;
 import com.divanoapps.learnwords.entities.Deck;
@@ -29,12 +30,11 @@ import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DeckEditActivity extends AppCompatActivity implements
-        RenameDeckDialogFragment.RenameDeckDialogListener,
-        CardListAdapter.EditCardClickedListener,
-        CardListAdapter.ToggleCardEnabledClickedListener,
-        CardListAdapter.DeleteCardClickedListener {
+        RenameDeckDialogFragment.RenameDeckDialogListener {
 
     public static String getDeckIdExtraName() {
         return "DECK_NAME";
@@ -54,12 +54,7 @@ public class DeckEditActivity extends AppCompatActivity implements
 
         // Setup "Add card" FAB
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onAddCardClicked();
-            }
-        });
+        fab.setOnClickListener(view -> onAddCardClicked());
 
         // Expand activity to make transparent notification bar
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -70,9 +65,9 @@ public class DeckEditActivity extends AppCompatActivity implements
         cardListView.setLayoutManager(new LinearLayoutManager(this));
 
         CardListAdapter cardListAdapter = new CardListAdapter(this);
-        cardListAdapter.setEditCardClickedListener(this);
-        cardListAdapter.setToggleCardEnabledClickedListener(this);
-        cardListAdapter.setDeleteCardClickedListener(this);
+        cardListAdapter.setEditCardClickedListener(this::onEditCardClicked);
+        cardListAdapter.setToggleCardEnabledClickedListener(this::onToggleCardEnabledClicked);
+        cardListAdapter.setDeleteCardClickedListener(this::onDeleteCardClicked);
         cardListView.setAdapter(cardListAdapter);
 
         cardListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -87,41 +82,21 @@ public class DeckEditActivity extends AppCompatActivity implements
         });
 
         // Get deck with given name
-        DeckId deckId = (DeckId) getIntent().getExtras().getSerializable(getDeckIdExtraName());
-        DB.getDeck(deckId)
-                .setOnDoneListener(new DB.Request.OnDoneListener<Deck>() {
-                    @Override
-                    public void onDone(Deck result) {
-                        onDeckReceived(result);
-                    }
-                })
-                .setOnErrorListener(new DB.Request.OnErrorListener() {
-                    @Override
-                    public void onError(DB.Error error) {
-                        onDeckNotFound();
-                    }
-                })
-                .execute();
+        requestDeck();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        requestDeck();
+    }
+
+    private void requestDeck() {
         DeckId deckId = (DeckId) getIntent().getExtras().getSerializable(getDeckIdExtraName());
         DB.getDeck(deckId)
-                .setOnDoneListener(new DB.Request.OnDoneListener<Deck>() {
-                    @Override
-                    public void onDone(Deck result) {
-                        onDeckReceived(result);
-                    }
-                })
-                .setOnErrorListener(new DB.Request.OnErrorListener() {
-                    @Override
-                    public void onError(DB.Error error) {
-                        onDeckNotFound();
-                    }
-                })
-                .execute();
+            .setOnDoneListener(this::onDeckReceived)
+            .setOnErrorListener(this::onDeckNotFound)
+            .execute();
     }
 
     private void onDeckReceived(Deck deck) {
@@ -129,19 +104,21 @@ public class DeckEditActivity extends AppCompatActivity implements
         updateUi();
     }
 
-    private void onDeckNotFound() {
+    private void onDeckNotFound(DB.Error error) {
         mDeck = new Deck.Builder().setName("ERROR:(")
-                .setCards(Collections.singletonList(
-                        new Card.Builder()
-                                .setWord("Your deck has been lost.")
-                                .setWordComment("Don't worry, we have a copy!")
-                                .setTranslation("Press back and select deck again.")
-                                .setDifficulty(1)
-                                .build()))
-                .build();
+            .setCards(Collections.singletonList(
+                    new Card.Builder()
+                            .setWord("Your deck has been lost.")
+                            .setWordComment("Don't worry, we have a copy!")
+                            .setTranslation("Press back and select deck again.")
+                            .setTranslationComment(error.getMessage())
+                            .setDifficulty(1)
+                            .build()))
+            .build();
         updateUi();
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateUi() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(mDeck.getName());
@@ -167,32 +144,6 @@ public class DeckEditActivity extends AppCompatActivity implements
         CardListAdapter cardListAdapter = (CardListAdapter) cardListView.getAdapter();
         cardListAdapter.setCards(mDeck.getCards());
     }
-
-//    @Override
-//    protected void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
-//        outState.putSerializable(getDeckIdExtraName(), mDeck.getId());
-//    }
-//
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        DeckId deckId = (DeckId) getIntent().getExtras().getSerializable(getDeckIdExtraName());
-//        DB.getDeck(deckId)
-//                .setOnDoneListener(new DB.Request.OnDoneListener<Deck>() {
-//                    @Override
-//                    public void onDone(Deck result) {
-//                        onDeckReceived(result);
-//                    }
-//                })
-//                .setOnErrorListener(new DB.Request.OnErrorListener() {
-//                    @Override
-//                    public void onError(DB.Error error) {
-//                        onDeckNotFound();
-//                    }
-//                })
-//                .execute();
-//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -260,7 +211,6 @@ public class DeckEditActivity extends AppCompatActivity implements
         startActivity(intent);
     }
 
-    @Override
     public void onEditCardClicked(CardId id) {
         Intent intent = new Intent(DeckEditActivity.this, CardEditActivity.class);
         intent.putExtra(CardEditActivity.getModeExtraKey(), CardEditActivity.Mode.EDIT_CARD);
@@ -268,15 +218,34 @@ public class DeckEditActivity extends AppCompatActivity implements
         startActivity(intent);
     }
 
-    @Override
-    public void onToggleCardEnabledClicked(CardId id) {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Toggle card enable " + id.getWord(),
-                Snackbar.LENGTH_LONG).show();
+    public void onToggleCardEnabledClicked(final CardId id) {
+        DB.getCard(id)
+            .setOnDoneListener(result -> {
+                Map<String, Object> properties = new HashMap<>();
+                properties.put("isHidden", !(result.isHidden()));
+                DB.modifyCard(id, properties)
+                    .setOnDoneListener(result1 -> requestDeck())
+                    .setOnErrorListener(DeckEditActivity.this::showErrorMessage)
+                    .execute();
+            })
+            .setOnErrorListener(this::showErrorMessage)
+            .execute();
     }
 
-    @Override
     public void onDeleteCardClicked(CardId id) {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Delete card " + id.getWord(),
-                Snackbar.LENGTH_LONG).show();
+        DB.deleteCard(id)
+            .setOnDoneListener(result -> requestDeck())
+            .setOnErrorListener(this::showErrorMessage)
+            .execute();
+    }
+
+    private void showErrorMessage(String message) {
+        MessageOkDialogFragment.newInstance(message).show(
+                getSupportFragmentManager(),
+                MessageOkDialogFragment.getUniqueTag());
+    }
+
+    private void showErrorMessage(DB.Error error) {
+        showErrorMessage(error.getMessage());
     }
 }

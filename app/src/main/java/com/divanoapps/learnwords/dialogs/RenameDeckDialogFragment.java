@@ -69,22 +69,13 @@ public class RenameDeckDialogFragment extends DialogFragment {
         View dialogView = layoutInflater.inflate(R.layout.dialog_rename_deck, null);
         final EditText deckNameEdit = (EditText) dialogView.findViewById(R.id.deck_name_edit);
         deckNameEdit.setText(mNewDeckName);
-        Dialog dialog = new AlertDialog.Builder(getActivity())
+        return new AlertDialog.Builder(getActivity())
             .setView(dialogView)
-            .setPositiveButton(R.string.rename, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    mNewDeckName = deckNameEdit.getText().toString();
-                    mListener.onDialogPositiveClick(RenameDeckDialogFragment.this);
-                }
+            .setPositiveButton(R.string.rename, (dialog, which) -> {
+                mNewDeckName = deckNameEdit.getText().toString();
+                mListener.onDialogPositiveClick(RenameDeckDialogFragment.this);
             })
-            .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    RenameDeckDialogFragment.this.getDialog().cancel();
-                }
-            })
+            .setNegativeButton(R.string.cancel, (dialog, which) -> RenameDeckDialogFragment.this.getDialog().cancel())
             .create();
-        return dialog;
     }
 }

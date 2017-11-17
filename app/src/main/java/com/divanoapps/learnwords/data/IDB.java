@@ -35,7 +35,7 @@ interface IDB {
 
     Card getCard(CardId id) throws NotFoundException;
     void saveCard(Card card) throws ForbiddenException;
-    void modifyCard(CardId id, Map<String, Object> properties) throws ForbiddenException;
+    void modifyCard(CardId id, Map<String, Object> properties) throws ForbiddenException, NotFoundException;
     void updateCard(CardId id, Card newCard) throws ForbiddenException, NotFoundException;
     void deleteCard(CardId id) throws ForbiddenException, NotFoundException;
 }

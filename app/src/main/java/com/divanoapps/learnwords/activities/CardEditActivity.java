@@ -6,11 +6,10 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.divanoapps.learnwords.dialogs.CannotSaveCardDialogFragment;
+import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.data.DB;
 import com.divanoapps.learnwords.entities.Card;
 import com.divanoapps.learnwords.entities.CardId;
@@ -55,20 +54,10 @@ public class CardEditActivity extends AppCompatActivity {
 
         // Set difficulty adjustment buttons
         findViewById(R.id.increase_difficulty_button)
-                .setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onIncreaseDifficultyClicked();
-            }
-        });
+                .setOnClickListener(v -> onIncreaseDifficultyClicked());
 
         findViewById(R.id.decrease_difficulty_button)
-                .setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onDecreaseDifficultyClicked();
-            }
-        });
+                .setOnClickListener(v -> onDecreaseDifficultyClicked());
 
         // Run required mode
         // TODO: Add exception when mode is not passed
@@ -87,18 +76,8 @@ public class CardEditActivity extends AppCompatActivity {
         mCardId = (CardId) getIntent().getSerializableExtra(getCardIdExtraKey());
         mDeckId = new DeckId(mCardId.getDeckName());
         DB.getCard(mCardId)
-            .setOnDoneListener(new DB.Request.OnDoneListener<Card>() {
-                    @Override
-                    public void onDone(Card result) {
-                        onCardReceived(result);
-                    }
-                })
-            .setOnErrorListener(new DB.Request.OnErrorListener() {
-                    @Override
-                    public void onError(DB.Error error) {
-                        onCardRequestError(error);
-                    }
-                })
+            .setOnDoneListener(this::onCardReceived)
+            .setOnErrorListener(this::onCardRequestError)
             .execute();
     }
 
@@ -151,66 +130,43 @@ public class CardEditActivity extends AppCompatActivity {
     }
 
     private void showErrorMessage(String message) {
-        CannotSaveCardDialogFragment.newInstance(message).show(
+        MessageOkDialogFragment.newInstance(message).show(
                 getSupportFragmentManager(),
-                CannotSaveCardDialogFragment.getUniqueTag());
+                MessageOkDialogFragment.getUniqueTag());
+    }
+
+    private void showErrorMessage(DB.Error error) {
+        showErrorMessage(error.getMessage());
     }
 
     private void onDoneClicked() {
         final Card card = getCurrentStateAsCard();
         DB.getCard(card.getId())
-            .setOnDoneListener(new DB.Request.OnDoneListener<Card>() {
-                @Override
-                public void onDone(Card result) {
-                    showErrorMessage("Card with this word and its comment already exists.\n" +
-                            "Cards with same word and its comment are indistinguishable and can't be saved in one deck.\n" +
-                            "Change word or its comment (or both of them) and save the card again.");
-                }
-            })
-            .setOnErrorListener(new DB.Request.OnErrorListener() {
-                @Override
-                public void onError(DB.Error error) {
-                    switch (mMode) {
-                        case ADD_CARD: {
-                            DB.saveCard(card)
-                            .setOnDoneListener(new DB.Request.OnDoneListener<Void>() {
-                                @Override
-                                public void onDone(Void result) {
-                                    CardEditActivity.this.finish();
-                                }
-                            })
-                            .setOnErrorListener(new DB.Request.OnErrorListener() {
-                                @Override
-                                public void onError(DB.Error error) {
-                                    showErrorMessage(error.getMessage());
-                                }
-                            })
-                            .execute();
-                        }
-                        break;
-                        case EDIT_CARD: {
-                            DB.updateCard(mCardId, card)
-                            .setOnDoneListener(new DB.Request.OnDoneListener<Void>() {
-                                @Override
-                                public void onDone(Void result) {
-                                    CardEditActivity.this.finish();
-                                }
-                            })
-                            .setOnErrorListener(new DB.Request.OnErrorListener() {
-                                @Override
-                                public void onError(DB.Error error) {
-                                    showErrorMessage(error.getMessage());
-                                }
-                            })
-                            .execute();
-                        }
-                        break;
+            .setOnDoneListener(result -> showErrorMessage("Card with this word and its comment already exists.\n" +
+                    "Cards with same word and its comment are indistinguishable and can't be saved in one deck.\n" +
+                    "Change word or its comment (or both of them) and save the card again."))
+            .setOnErrorListener(error -> {
+                switch (mMode) {
+                    case ADD_CARD: {
+                        DB.saveCard(card)
+                        .setOnDoneListener(result -> CardEditActivity.this.finish())
+                        .setOnErrorListener(this::showErrorMessage)
+                        .execute();
                     }
+                    break;
+                    case EDIT_CARD: {
+                        DB.updateCard(mCardId, card)
+                        .setOnDoneListener(result -> CardEditActivity.this.finish())
+                        .setOnErrorListener(this::showErrorMessage)
+                        .execute();
+                    }
+                    break;
                 }
             })
             .execute();
     }
 
+    @SuppressLint("SetTextI18n")
     private void onIncreaseDifficultyClicked() {
         ++ mDifficulty;
         if (mDifficulty > Card.getMaxDifficulty())
@@ -219,6 +175,7 @@ public class CardEditActivity extends AppCompatActivity {
                 .setText(Integer.valueOf(mDifficulty).toString());
     }
 
+    @SuppressLint("SetTextI18n")
     private void onDecreaseDifficultyClicked() {
         -- mDifficulty;
         if (mDifficulty < Card.getMinDifficulty())

@@ -10,7 +10,6 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -31,12 +30,9 @@ import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 
 import java.util.List;
 
-public class DeckListActivity extends AppCompatActivity
-        implements
+public class DeckListActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
-        RenameDeckDialogFragment.RenameDeckDialogListener,
-        DeckListAdapter.EditDeckClickedListener,
-        DeckListAdapter.StartExerciseClickedListener {
+        RenameDeckDialogFragment.RenameDeckDialogListener {
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
@@ -54,12 +50,7 @@ public class DeckListActivity extends AppCompatActivity
 
         // Fab setup
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onFabClicked();
-            }
-        });
+        fab.setOnClickListener(view -> onFabClicked());
 
         // Setup navigation drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -80,8 +71,8 @@ public class DeckListActivity extends AppCompatActivity
         deckListView.setLayoutManager(new LinearLayoutManager(this));
 
         final DeckListAdapter deckListAdapter = new DeckListAdapter(this);
-        deckListAdapter.setEditDeckClickedListener(this);
-        deckListAdapter.setStartExerciseClickedListener(this);
+        deckListAdapter.setEditDeckClickedListener(this::onEditDeckClicked);
+        deckListAdapter.setStartExerciseClickedListener(this::onStartExerciseClicked);
 
         deckListView.setAdapter(deckListAdapter);
 
@@ -98,56 +89,21 @@ public class DeckListActivity extends AppCompatActivity
 
         // Load all decks
         DB.initialize()
-            .setOnDoneListener(new DB.Request.OnDoneListener<Void>() {
-                @Override
-                public void onDone(Void result) {
-                    onDbInitialized();
-                }
-            })
-            .setOnErrorListener(new DB.Request.OnErrorListener() {
-                @Override
-                public void onError(DB.Error error) {
-                    onDbInitializationError(error);
-                }
-            })
+            .setOnDoneListener(result -> requestDeckList())
+            .setOnErrorListener(this::onDbInitializationError)
             .execute();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        DB.getDecks()
-            .setOnDoneListener(new DB.Request.OnDoneListener<List<DeckShort>>() {
-                    @Override
-                    public void onDone(List<DeckShort> result) {
-                        onGetDeckListDone(result);
-                    }
-                })
-            .setOnErrorListener(new DB.Request.OnErrorListener() {
-                    @Override
-                    public void onError(DB.Error error) {
-                        onGetDeckListError(error);
-                    }
-                })
-            .execute();
+        requestDeckList();
     }
 
-    public void onDbInitialized() {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Successfully initialized.",
-                Snackbar.LENGTH_LONG).show();
+    public void requestDeckList() {
         DB.getDecks()
-            .setOnDoneListener(new DB.Request.OnDoneListener<List<DeckShort>>() {
-                @Override
-                public void onDone(List<DeckShort> result) {
-                    onGetDeckListDone(result);
-                }
-            })
-            .setOnErrorListener(new DB.Request.OnErrorListener() {
-                @Override
-                public void onError(DB.Error error) {
-                    onGetDeckListError(error);
-                }
-            })
+            .setOnDoneListener(this::onGetDeckListDone)
+            .setOnErrorListener(this::onGetDeckListError)
             .execute();
     }
 
@@ -157,8 +113,6 @@ public class DeckListActivity extends AppCompatActivity
     }
 
     private void onGetDeckListDone(List<DeckShort> decks) {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Loaded list of decks.",
-                Snackbar.LENGTH_LONG).show();
         RecyclerView deckListView = (RecyclerView) findViewById(R.id.DeckListView);
         DeckListAdapter deckListAdapter = (DeckListAdapter) deckListView.getAdapter();
         deckListAdapter.setDecks(decks);
@@ -186,7 +140,7 @@ public class DeckListActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar.
         getMenuInflater().inflate(R.menu.menu_deck_list_activity_toolbar, menu);
-        MenuItem settingsMenuItem = (MenuItem) menu.findItem(R.id.action_search);
+        MenuItem settingsMenuItem = menu.findItem(R.id.action_search);
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(settingsMenuItem);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -240,14 +194,12 @@ public class DeckListActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
     public void onEditDeckClicked(DeckId id) {
         Intent intent = new Intent(DeckListActivity.this, DeckEditActivity.class);
         intent.putExtra(DeckEditActivity.getDeckIdExtraName(), id);
         startActivity(intent);
     }
 
-    @Override
     public void onStartExerciseClicked(DeckId id, CardRetriever.Order order) {
         String orderString = "";
         switch (order) {

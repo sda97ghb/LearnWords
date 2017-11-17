@@ -6,14 +6,15 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 
-public class CannotSaveCardDialogFragment extends DialogFragment {
+public class MessageOkDialogFragment extends DialogFragment {
     public static String getUniqueTag() {
-        return "com.divanoapps.learnwords.dialogs.CannotSaveCardDialogFragment";
+        return "com.divanoapps.learnwords.dialogs.MessageOkDialogFragment";
     }
 
-    public static CannotSaveCardDialogFragment newInstance(String message) {
-        CannotSaveCardDialogFragment instance = new CannotSaveCardDialogFragment();
+    public static MessageOkDialogFragment newInstance(String message) {
+        MessageOkDialogFragment instance = new MessageOkDialogFragment();
 
         Bundle arguments = new Bundle();
         arguments.putString("message", message);
@@ -27,12 +28,12 @@ public class CannotSaveCardDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle saveInstanceState) {
         return new AlertDialog.Builder(getActivity())
             .setMessage(getArguments().getString("message"))
-            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    ;
-                }
-            })
+            .setPositiveButton("Ok", (dialog, which) -> {})
             .create();
+    }
+
+    public static void show(AppCompatActivity activity, String message) {
+        MessageOkDialogFragment.newInstance(message)
+                .show(activity.getSupportFragmentManager(), getUniqueTag());
     }
 }

@@ -153,15 +153,8 @@ public class DB {
             void onError(Error error);
         }
 
-        private OnDoneListener<T> mOnDoneListener = new OnDoneListener<T>() {
-            @Override
-            public void onDone(T result) {}
-        };
-
-        private OnErrorListener mOnErrorListener = new OnErrorListener() {
-            @Override
-            public void onError(Error error) {}
-        };
+        private OnDoneListener<T> mOnDoneListener = result -> {};
+        private OnErrorListener mOnErrorListener = error -> {};
 
         public Request<T> setOnDoneListener(OnDoneListener<T> listener) {
             mOnDoneListener = listener;
@@ -243,8 +236,7 @@ public class DB {
         protected Deck doInBackground(Void... params) {
             try {
                 IDB db = getDb();
-                Deck deck = db.getDeck(mId);
-                return deck;
+                return db.getDeck(mId);
             }
             catch (IDB.NotFoundException e) {
                 e.printStackTrace();
@@ -395,7 +387,7 @@ public class DB {
                 getDb().modifyCard(mId, mProperties);
                 return null;
             }
-            catch (IDB.ForbiddenException e) {
+            catch (IDB.ForbiddenException | IDB.NotFoundException e) {
                 e.printStackTrace();
                 setError(new Error(Error.Type.Forbidden, e.getMessage()));
                 return null;

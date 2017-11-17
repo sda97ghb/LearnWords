@@ -233,7 +233,12 @@ class LocalDB implements IDB {
     }
 
     @Override
-    public void modifyCard(CardId id, Map<String, Object> properties) throws ForbiddenException {
+    public void modifyCard(CardId id, Map<String, Object> properties) throws ForbiddenException, NotFoundException {
+//        Card.Builder builder = new Card.Builder(getCard(id));
+//        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+//            String key = entry.getKey();
+//            Object value = entry.getValue();
+//        }
         throw new ForbiddenException();
     }
 

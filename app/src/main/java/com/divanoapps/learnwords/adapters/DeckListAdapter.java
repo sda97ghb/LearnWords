@@ -1,5 +1,6 @@
 package com.divanoapps.learnwords.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -26,14 +27,8 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         void onStartExerciseClicked(DeckId id, CardRetriever.Order order);
     }
 
-    private EditDeckClickedListener mEditDeckClickedListener = new EditDeckClickedListener() {
-        @Override
-        public void onEditDeckClicked(DeckId id) {}
-    };
-    private StartExerciseClickedListener mStartExerciseClickedListener = new StartExerciseClickedListener() {
-        @Override
-        public void onStartExerciseClicked(DeckId id, CardRetriever.Order order) {}
-    };
+    private EditDeckClickedListener mEditDeckClickedListener = id -> {};
+    private StartExerciseClickedListener mStartExerciseClickedListener = (id, order) -> {};
 
     public void setEditDeckClickedListener(EditDeckClickedListener listener) {
         mEditDeckClickedListener = listener;
@@ -56,7 +51,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
     private List<DeckShort> mDecks = new LinkedList<>();
 
     public void setDecks(List<DeckShort> decks) {
-        mDecks = decks == null ? new LinkedList<DeckShort>() : decks;
+        mDecks = decks == null ? new LinkedList<>() : decks;
         notifyDataSetChanged();
     }
 
@@ -81,8 +76,6 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        private View mItemView;
-
         private TextView mDeckNameView;
         private TextView mDeckSizeView;
 
@@ -95,8 +88,6 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         ViewHolder(View itemView) {
             super(itemView);
 
-            mItemView = itemView;
-
             mDeckNameView = (TextView) itemView.findViewById(R.id.deck_name_view);
             mDeckSizeView = (TextView) itemView.findViewById(R.id.card_count_view);
 
@@ -107,59 +98,20 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
             mLower30Button       = (ImageButton) itemView.findViewById(R.id.lower_30_button);
         }
 
+        @SuppressLint("SetTextI18n")
         void setContent(final DeckShort deck) {
             mDeckNameView.setText(deck.getName());
             mDeckSizeView.setText(Integer.valueOf(deck.getNumberOfCards()).toString());
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyEditDeckClicked(deck.getId());
-                }
-            });
-            mDeckNameView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyEditDeckClicked(deck.getId());
-                }
-            });
-            mDeckSizeView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyEditDeckClicked(deck.getId());
-                }
-            });
+            itemView.setOnClickListener(v -> notifyEditDeckClicked(deck.getId()));
+            mDeckNameView.setOnClickListener(v -> notifyEditDeckClicked(deck.getId()));
+            mDeckSizeView.setOnClickListener(v -> notifyEditDeckClicked(deck.getId()));
 
-            mAlphabetOrderButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.alphabetical);
-                }
-            });
-            mFileOrderButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.file);
-                }
-            });
-            mRandomOrderButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.random);
-                }
-            });
-            mHigher30Button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.higher30);
-                }
-            });
-            mLower30Button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.lower30);
-                }
-            });
+            mAlphabetOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.alphabetical));
+            mFileOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.file));
+            mRandomOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.random));
+            mHigher30Button.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.higher30));
+            mLower30Button.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.lower30));
         }
     }
 }
