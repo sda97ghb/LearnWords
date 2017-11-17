@@ -1,4 +1,4 @@
-package com.divanoapps.learnwords.Auxiliary;
+package com.divanoapps.learnwords.auxiliary;
 
 import org.json.JSONArray;
 import org.json.JSONException;

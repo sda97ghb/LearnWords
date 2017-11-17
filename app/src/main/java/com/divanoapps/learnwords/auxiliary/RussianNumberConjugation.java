@@ -1,4 +1,4 @@
-package com.divanoapps.learnwords.Auxiliary;
+package com.divanoapps.learnwords.auxiliary;
 
 public class RussianNumberConjugation {
     public static String getCards(int number) {

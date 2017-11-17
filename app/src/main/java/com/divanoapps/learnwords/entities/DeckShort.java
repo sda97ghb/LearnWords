@@ -1,4 +1,4 @@
-package com.divanoapps.learnwords.Entities;
+package com.divanoapps.learnwords.entities;
 
 /**
  * Created by dmitry on 30.10.17.

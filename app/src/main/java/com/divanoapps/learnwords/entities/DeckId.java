@@ -1,4 +1,4 @@
-package com.divanoapps.learnwords.Entities;
+package com.divanoapps.learnwords.entities;
 
 import java.io.Serializable;
 

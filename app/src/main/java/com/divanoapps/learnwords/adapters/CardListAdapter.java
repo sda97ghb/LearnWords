@@ -1,4 +1,4 @@
-package com.divanoapps.learnwords;
+package com.divanoapps.learnwords.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -9,14 +9,14 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.divanoapps.learnwords.Entities.Card;
-import com.divanoapps.learnwords.Entities.CardId;
-import com.divanoapps.learnwords.Entities.Deck;
+import com.divanoapps.learnwords.entities.Card;
+import com.divanoapps.learnwords.entities.CardId;
+import com.divanoapps.learnwords.R;
 
 import java.util.LinkedList;
 import java.util.List;
 
-class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
+public class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
 
     public interface EditCardClickedListener {
         void onEditCardClicked(CardId id);

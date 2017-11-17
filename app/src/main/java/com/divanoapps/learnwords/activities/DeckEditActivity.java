@@ -1,8 +1,7 @@
-package com.divanoapps.learnwords;
+package com.divanoapps.learnwords.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
@@ -19,12 +18,15 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.divanoapps.learnwords.Auxiliary.RussianNumberConjugation;
-import com.divanoapps.learnwords.Data.DB;
-import com.divanoapps.learnwords.Entities.Card;
-import com.divanoapps.learnwords.Entities.CardId;
-import com.divanoapps.learnwords.Entities.Deck;
-import com.divanoapps.learnwords.Entities.DeckId;
+import com.divanoapps.learnwords.auxiliary.RussianNumberConjugation;
+import com.divanoapps.learnwords.adapters.CardListAdapter;
+import com.divanoapps.learnwords.data.DB;
+import com.divanoapps.learnwords.entities.Card;
+import com.divanoapps.learnwords.entities.CardId;
+import com.divanoapps.learnwords.entities.Deck;
+import com.divanoapps.learnwords.entities.DeckId;
+import com.divanoapps.learnwords.R;
+import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 
 import java.util.Collections;
 
@@ -232,7 +234,7 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     private void renameCurrentDeck() {
-        String uniqueDialogTag = "com.divanoapps.learnwords.RenameDeckDialogFragment." + mDeck.getName();
+        String uniqueDialogTag = "com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment." + mDeck.getName();
         RenameDeckDialogFragment.newInstance(mDeck.getName()).show(getSupportFragmentManager(),
                 uniqueDialogTag);
     }

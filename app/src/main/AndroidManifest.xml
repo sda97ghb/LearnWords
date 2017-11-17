@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".DeckListActivity"
+            android:name=".activities.DeckListActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -22,14 +22,14 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DeckEditActivity"
+            android:name=".activities.DeckEditActivity"
             android:label="@string/title_activity_deck_edit"
-            android:parentActivityName=".DeckListActivity"
+            android:parentActivityName=".activities.DeckListActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".CardEditActivity"
+            android:name=".activities.CardEditActivity"
             android:label="CardEditActivity"
-            android:parentActivityName=".DeckEditActivity"
+            android:parentActivityName=".activities.DeckEditActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
     </application>
 

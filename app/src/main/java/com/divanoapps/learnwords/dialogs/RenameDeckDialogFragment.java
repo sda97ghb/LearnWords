@@ -1,4 +1,4 @@
-package com.divanoapps.learnwords;
+package com.divanoapps.learnwords.dialogs;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -9,8 +9,9 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.EditText;
+
+import com.divanoapps.learnwords.R;
 
 /**
  * Created by dmitry on 10.10.17.

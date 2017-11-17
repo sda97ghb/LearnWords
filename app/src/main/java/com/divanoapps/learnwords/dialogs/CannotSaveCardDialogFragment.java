@@ -1,4 +1,4 @@
-package com.divanoapps.learnwords;
+package com.divanoapps.learnwords.dialogs;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -9,7 +9,7 @@ import android.support.v7.app.AlertDialog;
 
 public class CannotSaveCardDialogFragment extends DialogFragment {
     public static String getUniqueTag() {
-        return "com.divanoapps.learnwords.CannotSaveCardDialogFragment";
+        return "com.divanoapps.learnwords.dialogs.CannotSaveCardDialogFragment";
     }
 
     public static CannotSaveCardDialogFragment newInstance(String message) {

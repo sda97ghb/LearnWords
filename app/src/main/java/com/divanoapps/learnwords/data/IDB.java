@@ -1,10 +1,10 @@
-package com.divanoapps.learnwords.Data;
+package com.divanoapps.learnwords.data;
 
-import com.divanoapps.learnwords.Entities.Card;
-import com.divanoapps.learnwords.Entities.CardId;
-import com.divanoapps.learnwords.Entities.Deck;
-import com.divanoapps.learnwords.Entities.DeckId;
-import com.divanoapps.learnwords.Entities.DeckShort;
+import com.divanoapps.learnwords.entities.Card;
+import com.divanoapps.learnwords.entities.CardId;
+import com.divanoapps.learnwords.entities.Deck;
+import com.divanoapps.learnwords.entities.DeckId;
+import com.divanoapps.learnwords.entities.DeckShort;
 
 import java.util.List;
 import java.util.Map;

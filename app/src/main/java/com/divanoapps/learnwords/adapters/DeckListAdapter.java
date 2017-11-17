@@ -1,4 +1,4 @@
-package com.divanoapps.learnwords;
+package com.divanoapps.learnwords.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -8,13 +8,15 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.divanoapps.learnwords.Entities.DeckId;
-import com.divanoapps.learnwords.Entities.DeckShort;
+import com.divanoapps.learnwords.CardRetriever;
+import com.divanoapps.learnwords.entities.DeckId;
+import com.divanoapps.learnwords.entities.DeckShort;
+import com.divanoapps.learnwords.R;
 
 import java.util.LinkedList;
 import java.util.List;
 
-class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHolder> {
+public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHolder> {
 
     public interface EditDeckClickedListener {
         void onEditDeckClicked(DeckId id);
@@ -58,7 +60,7 @@ class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    DeckListAdapter(Context context) {
+    public DeckListAdapter(Context context) {
         mContext = context;
     }
 

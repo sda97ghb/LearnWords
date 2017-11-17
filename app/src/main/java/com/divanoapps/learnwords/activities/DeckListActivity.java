@@ -1,4 +1,4 @@
-package com.divanoapps.learnwords;
+package com.divanoapps.learnwords.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,17 +21,22 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
-import com.divanoapps.learnwords.Data.DB;
-import com.divanoapps.learnwords.Entities.DeckId;
-import com.divanoapps.learnwords.Entities.DeckShort;
+import com.divanoapps.learnwords.CardRetriever;
+import com.divanoapps.learnwords.data.DB;
+import com.divanoapps.learnwords.adapters.DeckListAdapter;
+import com.divanoapps.learnwords.entities.DeckId;
+import com.divanoapps.learnwords.entities.DeckShort;
+import com.divanoapps.learnwords.R;
+import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 
 import java.util.List;
 
 public class DeckListActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
-                   RenameDeckDialogFragment.RenameDeckDialogListener,
-                   DeckListAdapter.EditDeckClickedListener,
-                   DeckListAdapter.StartExerciseClickedListener {
+        implements
+        NavigationView.OnNavigationItemSelectedListener,
+        RenameDeckDialogFragment.RenameDeckDialogListener,
+        DeckListAdapter.EditDeckClickedListener,
+        DeckListAdapter.StartExerciseClickedListener {
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {

@@ -1,8 +1,6 @@
-package com.divanoapps.learnwords.Entities;
+package com.divanoapps.learnwords.entities;
 
 import android.support.annotation.NonNull;
-
-import com.divanoapps.learnwords.Auxiliary.SafeJSONObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;

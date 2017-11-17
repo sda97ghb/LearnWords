@@ -1,12 +1,12 @@
-package com.divanoapps.learnwords.Data;
+package com.divanoapps.learnwords.data;
 
 import android.os.Environment;
 
-import com.divanoapps.learnwords.Entities.Card;
-import com.divanoapps.learnwords.Entities.CardId;
-import com.divanoapps.learnwords.Entities.Deck;
-import com.divanoapps.learnwords.Entities.DeckId;
-import com.divanoapps.learnwords.Entities.DeckShort;
+import com.divanoapps.learnwords.entities.Card;
+import com.divanoapps.learnwords.entities.CardId;
+import com.divanoapps.learnwords.entities.Deck;
+import com.divanoapps.learnwords.entities.DeckId;
+import com.divanoapps.learnwords.entities.DeckShort;
 
 import org.json.JSONException;
 
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

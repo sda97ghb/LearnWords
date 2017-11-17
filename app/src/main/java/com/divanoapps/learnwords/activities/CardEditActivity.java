@@ -1,8 +1,6 @@
-package com.divanoapps.learnwords;
+package com.divanoapps.learnwords.activities;
 
 import android.annotation.SuppressLint;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -12,10 +10,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.divanoapps.learnwords.Data.DB;
-import com.divanoapps.learnwords.Entities.Card;
-import com.divanoapps.learnwords.Entities.CardId;
-import com.divanoapps.learnwords.Entities.DeckId;
+import com.divanoapps.learnwords.dialogs.CannotSaveCardDialogFragment;
+import com.divanoapps.learnwords.data.DB;
+import com.divanoapps.learnwords.entities.Card;
+import com.divanoapps.learnwords.entities.CardId;
+import com.divanoapps.learnwords.entities.DeckId;
+import com.divanoapps.learnwords.R;
 
 public class CardEditActivity extends AppCompatActivity {
     enum Mode {
