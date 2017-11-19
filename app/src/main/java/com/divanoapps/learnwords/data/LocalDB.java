@@ -22,6 +22,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.divanoapps.learnwords.auxiliary.Setter;
+
 /**
  * DB implementation that works with local storage.
  */
@@ -108,6 +110,13 @@ class LocalDB implements IDB {
         saveTextToFile(getFileForDeck(deck), deck.toJson().toString());
     }
 
+    private static <T> void checkSet(Class<T> clazz, Object value, Setter<T> setter) throws ForbiddenException {
+        if (clazz.isInstance(value))
+            setter.set(clazz.cast(value));
+        else
+            throw new ForbiddenException();
+    }
+
     ////////////////////////////////////////////////////////////////
     // Public
 
@@ -161,35 +170,20 @@ class LocalDB implements IDB {
             String property = entry.getKey();
             Object value = entry.getValue();
             switch (property) {
-                case "name": {
-                    if (value instanceof String)
-                        builder.setName((String) value);
-                    else
-                        throw new ForbiddenException();
-                } break;
-                case "languageFrom": {
-                    if (value instanceof String)
-                        builder.setLanguageFrom((String) value);
-                    else
-                        throw new ForbiddenException();
-                }
-                case "languageTo": {
-                    if (value instanceof String)
-                        builder.setLanguageTo((String) value);
-                    else
-                        throw new ForbiddenException();
-                }
+                case "name":         checkSet(String.class, value, builder::setName);         break;
+                case "languageFrom": checkSet(String.class, value, builder::setLanguageFrom); break;
+                case "languageTo":   checkSet(String.class, value, builder::setLanguageTo);   break;
                 case "cards": {
                     if (value instanceof List<?>) {
                         List<?> list = (List<?>) value;
                         if (list.isEmpty())
-                            builder.setCards(new LinkedList<Card>());
+                            builder.setCards(new LinkedList<>());
                         else if (list.get(0) instanceof Card)
                             builder.setCards((List<Card>) list);
                         else
                             throw new ForbiddenException();
                     }
-                }
+                } break;
                 default: throw new ForbiddenException();
             }
         }
@@ -234,12 +228,22 @@ class LocalDB implements IDB {
 
     @Override
     public void modifyCard(CardId id, Map<String, Object> properties) throws ForbiddenException, NotFoundException {
-//        Card.Builder builder = new Card.Builder(getCard(id));
-//        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-//            String key = entry.getKey();
-//            Object value = entry.getValue();
-//        }
-        throw new ForbiddenException();
+        Card.Builder builder = new Card.Builder(getCard(id));
+
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            Object value = entry.getValue();
+            switch (entry.getKey()) {
+                case "word":               checkSet(String.class,  value, builder::setWord);               break;
+                case "wordComment":        checkSet(String.class,  value, builder::setWordComment);        break;
+                case "translation":        checkSet(String.class,  value, builder::setTranslation);        break;
+                case "translationComment": checkSet(String.class,  value, builder::setTranslationComment); break;
+                case "difficulty":         checkSet(Integer.class, value, builder::setDifficulty);         break;
+                case "isHidden":           checkSet(Boolean.class, value, builder::setHidden);             break;
+                case "cropPicture":        checkSet(Boolean.class, value, builder::setCropPicture);        break;
+                default: throw new ForbiddenException();
+            }
+        }
+        updateCard(id, builder.build());
     }
 
     @Override
