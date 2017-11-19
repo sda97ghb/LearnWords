@@ -219,12 +219,13 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     public void onToggleCardEnabledClicked(final CardId id) {
+        // Get the card to know its visibility
         DB.getCard(id)
             .setOnDoneListener(result -> {
                 Map<String, Object> properties = new HashMap<>();
                 properties.put("isHidden", !(result.isHidden()));
                 DB.modifyCard(id, properties)
-                    .setOnDoneListener(result1 -> requestDeck())
+                    .setOnDoneListener(this::requestDeck)
                     .setOnErrorListener(DeckEditActivity.this::showErrorMessage)
                     .execute();
             })
@@ -234,7 +235,7 @@ public class DeckEditActivity extends AppCompatActivity implements
 
     public void onDeleteCardClicked(CardId id) {
         DB.deleteCard(id)
-            .setOnDoneListener(result -> requestDeck())
+            .setOnDoneListener(this::requestDeck)
             .setOnErrorListener(this::showErrorMessage)
             .execute();
     }

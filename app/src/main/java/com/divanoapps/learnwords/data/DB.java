@@ -133,15 +133,15 @@ public class DB {
             mDb = db;
         }
 
-        public IDB getDb() {
+        IDB getDb() {
             return mDb;
         }
 
-        public Error getError() {
+        Error getError() {
             return mError;
         }
 
-        public void setError(Error error) {
+        void setError(Error error) {
             mError = error;
         }
 
@@ -149,8 +149,16 @@ public class DB {
             void onDone(T result);
         }
 
+        public interface NoArgsOnDoneListener {
+            void onDone();
+        }
+
         public interface OnErrorListener {
             void onError(Error error);
+        }
+
+        public interface NoArgsOnErrorListener {
+            void onError();
         }
 
         private OnDoneListener<T> mOnDoneListener = result -> {};
@@ -161,8 +169,18 @@ public class DB {
             return this;
         }
 
+        public Request<T> setOnDoneListener(NoArgsOnDoneListener listener) {
+            mOnDoneListener = result -> listener.onDone();
+            return this;
+        }
+
         public Request<T> setOnErrorListener(OnErrorListener listener) {
             mOnErrorListener = listener;
+            return this;
+        }
+
+        public Request<T> setOnErrorListener(NoArgsOnErrorListener listener) {
+            mOnErrorListener = result -> listener.onError();
             return this;
         }
 

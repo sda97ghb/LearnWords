@@ -149,14 +149,14 @@ public class CardEditActivity extends AppCompatActivity {
                 switch (mMode) {
                     case ADD_CARD: {
                         DB.saveCard(card)
-                        .setOnDoneListener(result -> CardEditActivity.this.finish())
+                        .setOnDoneListener(CardEditActivity.this::finish)
                         .setOnErrorListener(this::showErrorMessage)
                         .execute();
                     }
                     break;
                     case EDIT_CARD: {
                         DB.updateCard(mCardId, card)
-                        .setOnDoneListener(result -> CardEditActivity.this.finish())
+                        .setOnDoneListener(CardEditActivity.this::finish)
                         .setOnErrorListener(this::showErrorMessage)
                         .execute();
                     }
