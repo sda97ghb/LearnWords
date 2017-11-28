@@ -21,15 +21,15 @@ import android.widget.TextView;
 import com.divanoapps.learnwords.auxiliary.RussianNumberConjugation;
 import com.divanoapps.learnwords.adapters.CardListAdapter;
 import com.divanoapps.learnwords.data.DB;
+import com.divanoapps.learnwords.data.RequestError;
+import com.divanoapps.learnwords.data.requests.Request;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
-import com.divanoapps.learnwords.entities.Card;
 import com.divanoapps.learnwords.entities.CardId;
 import com.divanoapps.learnwords.entities.Deck;
 import com.divanoapps.learnwords.entities.DeckId;
 import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -104,17 +104,11 @@ public class DeckEditActivity extends AppCompatActivity implements
         updateUi();
     }
 
-    private void onDeckNotFound(DB.Error error) {
-        mDeck = new Deck.Builder().setName("ERROR:(")
-            .setCards(Collections.singletonList(
-                    new Card.Builder()
-                            .setWord("Your deck has been lost.")
-                            .setWordComment("Don't worry, we have a copy!")
-                            .setTranslation("Press back and select deck again.")
-                            .setTranslationComment(error.getMessage())
-                            .setDifficulty(1)
-                            .build()))
-            .build();
+    private void onDeckNotFound(RequestError error) {
+        String message = "Something went wrong, please tap back and select the deck again.\n" +
+                error.getMessage();
+        MessageOkDialogFragment.show(this, message);
+        mDeck = new Deck.Builder().setName("Error :(").setLanguageFrom("Undefined").setLanguageTo("Undefined").build();
         updateUi();
     }
 
@@ -133,7 +127,7 @@ public class DeckEditActivity extends AppCompatActivity implements
         ((TextView) findViewById(R.id.number_of_hidden_card))
                 .setText(Integer.valueOf(mDeck.getNumberOfHiddenCards()).toString());
 
-        if (getResources().getString(R.string.language_code).equals("ru")) {
+        if (getResources().getString(R.string.version_language_code).equals("ru")) {
             ((TextView) findViewById(R.id.decorator_number_of_cards))
                     .setText(RussianNumberConjugation.getCards(mDeck.getNumberOfCards()));
             ((TextView) findViewById(R.id.decorator_number_of_hidden_card))
@@ -142,7 +136,7 @@ public class DeckEditActivity extends AppCompatActivity implements
 
         RecyclerView cardListView = (RecyclerView) findViewById(R.id.card_list_view);
         CardListAdapter cardListAdapter = (CardListAdapter) cardListView.getAdapter();
-        cardListAdapter.setCards(mDeck.getCards());
+        cardListAdapter.setCards(mDeck.getCardsAsList());
     }
 
     @Override
@@ -186,13 +180,15 @@ public class DeckEditActivity extends AppCompatActivity implements
 
     private void renameCurrentDeck() {
         String uniqueDialogTag = "com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment." + mDeck.getName();
-        RenameDeckDialogFragment.newInstance(mDeck.getName()).show(getSupportFragmentManager(),
-                uniqueDialogTag);
+        RenameDeckDialogFragment.newInstance(mDeck.getName())
+                .show(getSupportFragmentManager(), uniqueDialogTag);
     }
 
     private void deleteCurrentDeck() {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Delete deck " + mDeck.getName(),
-                Snackbar.LENGTH_LONG).show();
+        DB.deleteDeck(mDeck.getId())
+            .setOnDoneListener(() -> NavUtils.navigateUpFromSameTask(this))
+            .setOnErrorListener(error -> MessageOkDialogFragment.show(this, error.getMessage()))
+            .execute();
     }
 
     @Override
@@ -206,15 +202,15 @@ public class DeckEditActivity extends AppCompatActivity implements
 
     public void onAddCardClicked() {
         Intent intent = new Intent(this, CardEditActivity.class);
-        intent.putExtra(CardEditActivity.getModeExtraKey(), CardEditActivity.Mode.ADD_CARD);
-        intent.putExtra(CardEditActivity.getDeckIdExtraKey(), mDeck.getId());
+        intent.putExtra(CardEditActivity.getModeExtraName(), CardEditActivity.Mode.ADD_CARD);
+        intent.putExtra(CardEditActivity.getDeckIdExtraName(), mDeck.getId());
         startActivity(intent);
     }
 
     public void onEditCardClicked(CardId id) {
         Intent intent = new Intent(DeckEditActivity.this, CardEditActivity.class);
-        intent.putExtra(CardEditActivity.getModeExtraKey(), CardEditActivity.Mode.EDIT_CARD);
-        intent.putExtra(CardEditActivity.getCardIdExtraKey(), id);
+        intent.putExtra(CardEditActivity.getModeExtraName(), CardEditActivity.Mode.EDIT_CARD);
+        intent.putExtra(CardEditActivity.getCardIdExtraName(), id);
         startActivity(intent);
     }
 
@@ -226,7 +222,7 @@ public class DeckEditActivity extends AppCompatActivity implements
                 properties.put("isHidden", !(result.isHidden()));
                 DB.modifyCard(id, properties)
                     .setOnDoneListener(this::requestDeck)
-                    .setOnErrorListener(DeckEditActivity.this::showErrorMessage)
+                    .setOnErrorListener(this::showErrorMessage)
                     .execute();
             })
             .setOnErrorListener(this::showErrorMessage)
@@ -241,12 +237,10 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     private void showErrorMessage(String message) {
-        MessageOkDialogFragment.newInstance(message).show(
-                getSupportFragmentManager(),
-                MessageOkDialogFragment.getUniqueTag());
+        MessageOkDialogFragment.show(this, message);
     }
 
-    private void showErrorMessage(DB.Error error) {
+    private void showErrorMessage(RequestError error) {
         showErrorMessage(error.getMessage());
     }
 }

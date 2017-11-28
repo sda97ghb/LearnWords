@@ -6,9 +6,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a deck as a named bunch of cards.
@@ -19,20 +21,20 @@ public class Deck {
     private String mName;
     private String mLanguageFrom;
     private String mLanguageTo;
-    private List<Card> mCards;
+    private Map<CardId, Card> mCards;
 
     public Deck() {
         mName = getDefaultName();
         mLanguageFrom = getDefaultLanguageFrom();
         mLanguageTo = getDefaultLanguageTo();
-        mCards = new ArrayList<>();
+        mCards = new LinkedHashMap<>();
     }
 
-    public Deck(Deck other) {
+    public Deck(@NonNull Deck other) {
         mName = other.getName();
         mLanguageFrom = other.getLanguageFrom();
         mLanguageTo = other.getLanguageTo();
-        mCards = new ArrayList<>(other.getCards());
+        mCards = new LinkedHashMap<>(other.getCards());
     }
 
     public static Deck fromJson(@NonNull String json) throws JSONException {
@@ -63,8 +65,8 @@ public class Deck {
         deckJson.put("languageTo", getLanguageTo());
 
         JSONArray cardsJson = new JSONArray();
-        for (Card card : getCards())
-            cardsJson.put(card.toJson());
+        for (Map.Entry<CardId, Card> entry : getCards().entrySet())
+            cardsJson.put(entry.getValue().toJson());
         deckJson.put("cards", cardsJson);
 
         return deckJson;
@@ -87,7 +89,9 @@ public class Deck {
     }
 
     public DeckShort getShortDescription() {
-        return new DeckShort(getName(), getNumberOfCards(), getNumberOfHiddenCards(),
+        return new DeckShort(
+                getName(),
+                getNumberOfCards(), getNumberOfHiddenCards(),
                 getLanguageFrom(), getLanguageTo());
     }
 
@@ -104,9 +108,16 @@ public class Deck {
         return mLanguageTo;
     }
 
-    public List<Card> getCards()
+    public Map<CardId, Card> getCards()
     {
-        return Collections.unmodifiableList(mCards);
+        return Collections.unmodifiableMap(mCards);
+    }
+
+    public List<Card> getCardsAsList() {
+        List<Card> list = new LinkedList<>();
+        for (Map.Entry<CardId, Card> entry : mCards.entrySet())
+            list.add(entry.getValue());
+        return Collections.unmodifiableList(list);
     }
 
     public int getNumberOfCards() {
@@ -115,8 +126,8 @@ public class Deck {
 
     public int getNumberOfHiddenCards() {
         int i = 0;
-        for (Card card : mCards)
-            if (card.isHidden())
+        for (Map.Entry<CardId, Card> entry : mCards.entrySet())
+            if (entry.getValue().isHidden())
                 ++ i;
         return i;
     }
@@ -128,32 +139,32 @@ public class Deck {
             mDeck = new Deck();
         }
 
-        public Builder(Deck other) {
+        public Builder(@NonNull Deck other) {
             mDeck = new Deck(other);
         }
 
-        public Builder setName(String name) {
+        public Builder setName(@NonNull String name) {
             mDeck.mName = name;
             return this;
         }
 
-        public Builder setLanguageFrom(String language) {
+        public Builder setLanguageFrom(@NonNull String language) {
             mDeck.mLanguageFrom = language;
             return this;
         }
 
-        public Builder setLanguageTo(String language) {
+        public Builder setLanguageTo(@NonNull String language) {
             mDeck.mLanguageTo = language;
             return this;
         }
 
-        public Builder setCards(List<Card> cards) {
-            mDeck.mCards = new ArrayList<>(cards);
+        public Builder setCards(@NonNull Map<CardId, Card> cards) {
+            mDeck.mCards = new LinkedHashMap<>(cards);
             return this;
         }
 
-        public Builder addCard(Card card) {
-            mDeck.mCards.add(card);
+        public Builder addCard(@NonNull Card card) {
+            mDeck.mCards.put(card.getId(), card);
             return this;
         }
 

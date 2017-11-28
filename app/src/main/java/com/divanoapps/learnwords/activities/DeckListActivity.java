@@ -22,7 +22,9 @@ import android.view.WindowManager;
 
 import com.divanoapps.learnwords.CardRetriever;
 import com.divanoapps.learnwords.data.DB;
+import com.divanoapps.learnwords.data.RequestError;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
+import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.entities.DeckId;
 import com.divanoapps.learnwords.entities.DeckShort;
 import com.divanoapps.learnwords.R;
@@ -89,7 +91,7 @@ public class DeckListActivity extends AppCompatActivity implements
 
         // Load all decks
         DB.initialize()
-            .setOnDoneListener(result -> requestDeckList())
+            .setOnDoneListener(this::requestDeckList)
             .setOnErrorListener(this::onDbInitializationError)
             .execute();
     }
@@ -107,9 +109,8 @@ public class DeckListActivity extends AppCompatActivity implements
             .execute();
     }
 
-    public void onDbInitializationError(DB.Error error) {
-        Snackbar.make(findViewById(R.id.coordinator_layout), error.getMessage(),
-                Snackbar.LENGTH_LONG).show();
+    public void onDbInitializationError(RequestError error) {
+        MessageOkDialogFragment.show(this, error.getMessage());
     }
 
     private void onGetDeckListDone(List<DeckShort> decks) {
@@ -118,13 +119,12 @@ public class DeckListActivity extends AppCompatActivity implements
         deckListAdapter.setDecks(decks);
     }
 
-    private void onGetDeckListError(DB.Error error) {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Unable to load list of decks.",
-                Snackbar.LENGTH_LONG).show();
+    private void onGetDeckListError(RequestError error) {
+        MessageOkDialogFragment.show(this, "Unable to load list of decks.");
     }
 
     private void onFabClicked() {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "FAB", Snackbar.LENGTH_LONG).show();
+        Snackbar.make(findViewById(R.id.coordinator_layout), "Add new deck", Snackbar.LENGTH_LONG).show();
     }
 
     @Override

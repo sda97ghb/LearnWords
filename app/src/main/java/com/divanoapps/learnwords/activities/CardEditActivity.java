@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.divanoapps.learnwords.data.RequestError;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.data.DB;
 import com.divanoapps.learnwords.entities.Card;
@@ -25,16 +26,16 @@ public class CardEditActivity extends AppCompatActivity {
     private CardId mCardId;
     private DeckId mDeckId;
     private int mDifficulty = Card.getDefaultDifficulty();
-    private boolean mVisibility;
+    private boolean mVisibility = true;
     private Mode mMode;
 
-    public static String getModeExtraKey() {
+    public static String getModeExtraName() {
         return "MODE_EXTRA";
     }
-    public static String getCardIdExtraKey() {
+    public static String getCardIdExtraName() {
         return "CARD_ID_EXTRA";
     }
-    public static String getDeckIdExtraKey() {
+    public static String getDeckIdExtraName() {
         return "CARD_ID_EXTRA";
     }
 
@@ -61,7 +62,7 @@ public class CardEditActivity extends AppCompatActivity {
 
         // Run required mode
         // TODO: Add exception when mode is not passed
-        mMode = (Mode) getIntent().getSerializableExtra(getModeExtraKey());
+        mMode = (Mode) getIntent().getSerializableExtra(getModeExtraName());
         switch (mMode) {
             case ADD_CARD:  runAddCardMode();  break;
             case EDIT_CARD: runEditCardMode(); break;
@@ -69,11 +70,11 @@ public class CardEditActivity extends AppCompatActivity {
     }
 
     private void runAddCardMode() {
-        mDeckId = (DeckId) getIntent().getSerializableExtra(getDeckIdExtraKey());
+        mDeckId = (DeckId) getIntent().getSerializableExtra(getDeckIdExtraName());
     }
 
     private void runEditCardMode() {
-        mCardId = (CardId) getIntent().getSerializableExtra(getCardIdExtraKey());
+        mCardId = (CardId) getIntent().getSerializableExtra(getCardIdExtraName());
         mDeckId = new DeckId(mCardId.getDeckName());
         DB.getCard(mCardId)
             .setOnDoneListener(this::onCardReceived)
@@ -95,7 +96,7 @@ public class CardEditActivity extends AppCompatActivity {
                 .setText(Integer.valueOf(Card.getMaxDifficulty()).toString());
     }
 
-    private void onCardRequestError(DB.Error error) {
+    private void onCardRequestError(RequestError error) {
         showErrorMessage(error.getMessage());
     }
 
@@ -130,38 +131,52 @@ public class CardEditActivity extends AppCompatActivity {
     }
 
     private void showErrorMessage(String message) {
-        MessageOkDialogFragment.newInstance(message).show(
-                getSupportFragmentManager(),
-                MessageOkDialogFragment.getUniqueTag());
+        MessageOkDialogFragment.show(this, message);
     }
 
-    private void showErrorMessage(DB.Error error) {
+    private void showErrorMessage(RequestError error) {
         showErrorMessage(error.getMessage());
     }
 
+    private void showCardAlreadyExistsErrorMessage() {
+        final String message = "Card with this word and its comment already exists.\n" +
+                "Cards with same word and its comment are indistinguishable and can't be saved in one deck.\n" +
+                "Change word or its comment (or both of them) and save the card again.";
+        showErrorMessage(message);
+    }
+
     private void onDoneClicked() {
+        // TODO: add exception when card id is empty
+        switch (mMode) {
+            case ADD_CARD:  addCard();  break;
+            case EDIT_CARD: editCard(); break;
+        }
+    }
+
+    private void addCard() {
         final Card card = getCurrentStateAsCard();
+
         DB.getCard(card.getId())
-            .setOnDoneListener(result -> showErrorMessage("Card with this word and its comment already exists.\n" +
-                    "Cards with same word and its comment are indistinguishable and can't be saved in one deck.\n" +
-                    "Change word or its comment (or both of them) and save the card again."))
+            .setOnDoneListener(this::showCardAlreadyExistsErrorMessage)
+            .setOnErrorListener(() ->
+                DB.saveCard(card)
+                        .setOnDoneListener(this::finish)
+                        .setOnErrorListener(this::showErrorMessage)
+                        .execute()
+            )
+            .execute();
+    }
+
+    private void editCard() {
+        final Card card = getCurrentStateAsCard();
+
+        DB.updateCard(mCardId, card)
+            .setOnDoneListener(this::finish)
             .setOnErrorListener(error -> {
-                switch (mMode) {
-                    case ADD_CARD: {
-                        DB.saveCard(card)
-                        .setOnDoneListener(CardEditActivity.this::finish)
-                        .setOnErrorListener(this::showErrorMessage)
-                        .execute();
-                    }
-                    break;
-                    case EDIT_CARD: {
-                        DB.updateCard(mCardId, card)
-                        .setOnDoneListener(CardEditActivity.this::finish)
-                        .setOnErrorListener(this::showErrorMessage)
-                        .execute();
-                    }
-                    break;
-                }
+                if (error.getType() == RequestError.Type.AlreadyExists)
+                    showCardAlreadyExistsErrorMessage();
+                else
+                    showErrorMessage(error.getMessage());
             })
             .execute();
     }
