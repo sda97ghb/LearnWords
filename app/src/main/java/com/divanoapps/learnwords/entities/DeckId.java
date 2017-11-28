@@ -1,6 +1,7 @@
 package com.divanoapps.learnwords.entities;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Created by dmitry on 30.10.17.
@@ -28,5 +29,10 @@ public class DeckId implements Serializable {
             return equals(((Deck) obj).getId());
 
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName());
     }
 }
