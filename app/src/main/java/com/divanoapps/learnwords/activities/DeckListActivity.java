@@ -24,7 +24,9 @@ import com.divanoapps.learnwords.CardRetriever;
 import com.divanoapps.learnwords.data.DB;
 import com.divanoapps.learnwords.data.RequestError;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
+import com.divanoapps.learnwords.dialogs.AddDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
+import com.divanoapps.learnwords.entities.Deck;
 import com.divanoapps.learnwords.entities.DeckId;
 import com.divanoapps.learnwords.entities.DeckShort;
 import com.divanoapps.learnwords.R;
@@ -124,7 +126,29 @@ public class DeckListActivity extends AppCompatActivity implements
     }
 
     private void onFabClicked() {
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Add new deck", Snackbar.LENGTH_LONG).show();
+        AddDeckDialogFragment dialog = new AddDeckDialogFragment();
+        dialog.setOnOkClickedListener(this::addDeck);
+        dialog.show(getFragmentManager(), AddDeckDialogFragment.getUniqueTag());
+    }
+
+    private void addDeck(String name, String languageFrom, String languageTo) {
+        Deck deck = new Deck.Builder()
+                .setName(name)
+                .setLanguageFrom(languageFrom)
+                .setLanguageTo(languageTo)
+                .build();
+        DB.saveDeck(deck)
+            .setOnDoneListener(this::requestDeckList)
+            .setOnErrorListener(this::showErrorMessage)
+            .execute();
+    }
+
+    private void showErrorMessage(String message) {
+        MessageOkDialogFragment.show(this, message);
+    }
+
+    private void showErrorMessage(RequestError error) {
+        showErrorMessage(error.getMessage());
     }
 
     @Override

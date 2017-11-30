@@ -19,4 +19,9 @@
     <string name="version_language_code">ru</string>
     <string name="title_edit_card">Редактировать карточку</string>
     <string name="done">Готово</string>
+    <string name="add_deck">Добавить колоду</string>
+    <string name="name">Имя</string>
+    <string name="from_language">Исходный язык</string>
+    <string name="to_language">Язык перевода</string>
+    <string name="dialog_add_button_text">Добавить</string>
 </resources>
