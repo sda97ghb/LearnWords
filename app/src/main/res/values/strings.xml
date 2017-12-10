@@ -28,6 +28,9 @@
     <string name="from_language">From language</string>
     <string name="to_language">To language</string>
     <string name="dialog_add_button_text">Add</string>
+    <string name="undefined_language">Undefined</string>
+    <string name="deck_edit_error_title">Error :(</string>
+    <string name="deck_edit_error_message">Something went wrong, please tap back and select the deck again.</string>
 
     <string-array name="languages">
         <item>English</item>

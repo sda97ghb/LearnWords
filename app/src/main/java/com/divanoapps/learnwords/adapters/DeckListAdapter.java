@@ -4,9 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.divanoapps.learnwords.CardRetriever;
@@ -27,8 +29,13 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         void onStartExerciseClicked(DeckId id, CardRetriever.Order order);
     }
 
+    public interface DeleteDeckClickedListener {
+        void onDeleteDeckClicked(DeckId id);
+    }
+
     private EditDeckClickedListener mEditDeckClickedListener = id -> {};
     private StartExerciseClickedListener mStartExerciseClickedListener = (id, order) -> {};
+    private DeleteDeckClickedListener mDeleteDeckClickedListener = id -> {};
 
     public void setEditDeckClickedListener(EditDeckClickedListener listener) {
         mEditDeckClickedListener = listener;
@@ -38,12 +45,20 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         mStartExerciseClickedListener = listener;
     }
 
+    public void setDeleteDeckClickedListener(DeleteDeckClickedListener listener) {
+        mDeleteDeckClickedListener = listener;
+    }
+
     private void notifyEditDeckClicked(DeckId id) {
         mEditDeckClickedListener.onEditDeckClicked(id);
     }
 
     private void notifyStartExerciseClicked(DeckId id, CardRetriever.Order order) {
         mStartExerciseClickedListener.onStartExerciseClicked(id, order);
+    }
+
+    private void notifyDeleteDeckClicked(DeckId id) {
+        mDeleteDeckClickedListener.onDeleteDeckClicked(id);
     }
 
     private Context mContext = null; // as DeckListActivity
@@ -84,6 +99,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         private ImageButton mRandomOrderButton;
         private ImageButton mHigher30Button;
         private ImageButton mLower30Button;
+        private ImageButton mMoreButton;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -96,6 +112,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
             mRandomOrderButton   = (ImageButton) itemView.findViewById(R.id.random_order_button);
             mHigher30Button      = (ImageButton) itemView.findViewById(R.id.higher_30_button);
             mLower30Button       = (ImageButton) itemView.findViewById(R.id.lower_30_button);
+            mMoreButton          = (ImageButton) itemView.findViewById(R.id.more_button);
         }
 
         @SuppressLint("SetTextI18n")
@@ -112,6 +129,22 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
             mRandomOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.random));
             mHigher30Button.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.higher30));
             mLower30Button.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.lower30));
+
+            mMoreButton.setOnClickListener(view -> {
+                PopupMenu popupMenu = new PopupMenu(mContext, view);
+                MenuInflater menuInflater = popupMenu.getMenuInflater();
+                menuInflater.inflate(R.menu.menu_deck_item, popupMenu.getMenu());
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    if (item.getItemId() == R.id.action_delete) {
+                        notifyDeleteDeckClicked(deck.getId());
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                });
+                popupMenu.show();
+            });
         }
     }
 }

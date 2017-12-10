@@ -23,6 +23,12 @@ public class RequestError {
         mCause = e;
     }
 
+    public RequestError(IDB.ConnectionFailureException e) {
+        mType = Type.ConnectionFailure;
+        mMessage = e.getMessage();
+        mCause = e;
+    }
+
     public RequestError(IDB.PropertyNotExistsException e) {
         mType = Type.PropertyNotExists;
         mMessage = e.getMessage();

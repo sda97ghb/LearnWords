@@ -14,6 +14,12 @@ import java.util.Map;
  */
 
 public interface IDB {
+    class ConnectionFailureException extends Exception {
+        ConnectionFailureException() {
+            super("Connection failure.");
+        }
+    }
+
     class ForbiddenException extends Exception {
         ForbiddenException() {
             super("Forbidden.");
@@ -41,7 +47,7 @@ public interface IDB {
     /**
      * @return list of deck descriptions or empty list if there are no decks loaded.
      */
-    List<DeckShort> getDecks();
+    List<DeckShort> getDecks() throws ConnectionFailureException;
 
     /**
      * Returns a deck with specified id or throws NotFoundException if it does not exist.
@@ -49,7 +55,7 @@ public interface IDB {
      * @return required deck
      * @throws NotFoundException when deck not found
      */
-    Deck getDeck(DeckId id) throws NotFoundException;
+    Deck getDeck(DeckId id) throws NotFoundException, ConnectionFailureException;
 
     /**
      * Create new record in DB if there is no deck with the same id as argument deck id,
@@ -58,7 +64,7 @@ public interface IDB {
      * @throws ForbiddenException when the deck can't be saved (for example, when unable
      * to write to file for local DB or there is no connection with remote DB)
      */
-    void saveDeck(Deck deck) throws ForbiddenException;
+    void saveDeck(Deck deck) throws ConnectionFailureException, ForbiddenException;
 
     /**
      * Saves new deck instead of deck with id if it exist,
@@ -70,7 +76,7 @@ public interface IDB {
      * @throws AlreadyExistsException when deck with id as newDeck's id already exists
      * @throws ForbiddenException when the deck can't be updated (when unable to write to file)
      */
-    void updateDeck(DeckId id, Deck newDeck) throws NotFoundException, AlreadyExistsException, ForbiddenException;
+    void updateDeck(DeckId id, Deck newDeck) throws ConnectionFailureException, NotFoundException, AlreadyExistsException, ForbiddenException;
 
     /**
      * Change properties of existing deck.
@@ -88,7 +94,7 @@ public interface IDB {
      * @throws ForbiddenException when the deck can't be modified (for example,
      * when unable to write to file for local DB or there is no connection with remote DB)
      */
-    void modifyDeck(DeckId id, Map<String, Object> properties) throws NotFoundException, PropertyNotExistsException, AlreadyExistsException, ForbiddenException;
+    void modifyDeck(DeckId id, Map<String, Object> properties) throws ConnectionFailureException, NotFoundException, PropertyNotExistsException, AlreadyExistsException, ForbiddenException;
 
     /**
      * Delete deck with id if it exists, throws exception otherwise.
@@ -97,7 +103,7 @@ public interface IDB {
      * @throws ForbiddenException when the deck can't be deleted (for example,
      * when unable to delete file for local DB or there is no connection with remote DB)
      */
-    void deleteDeck(DeckId id) throws NotFoundException, ForbiddenException;
+    void deleteDeck(DeckId id) throws ConnectionFailureException, NotFoundException, ForbiddenException;
 
     /**
      * Returns a card with required id or throws NotFoundException if card does not exist.
@@ -105,7 +111,7 @@ public interface IDB {
      * @return required card
      * @throws NotFoundException when card not found
      */
-    Card getCard(CardId id) throws NotFoundException;
+    Card getCard(CardId id) throws NotFoundException, ConnectionFailureException;
 
     /**
      * Create new record in DB if there is no card with the same id as argument card id,
@@ -114,7 +120,7 @@ public interface IDB {
      * @throws NotFoundException when deck which should contain the card does not exist
      * @throws ForbiddenException when the card can't be saved (when unable to write to file)
      */
-    void saveCard(Card card) throws NotFoundException, ForbiddenException;
+    void saveCard(Card card) throws ConnectionFailureException, NotFoundException, ForbiddenException;
 
     /**
      * Saves new card instead of card with id if it exist,
@@ -126,7 +132,7 @@ public interface IDB {
      * @throws AlreadyExistsException when card with id as newCard's id already exists
      * @throws ForbiddenException when the card can't be updated (when unable to write to file)
      */
-    void updateCard(CardId id, Card newCard) throws NotFoundException, AlreadyExistsException, ForbiddenException;
+    void updateCard(CardId id, Card newCard) throws ConnectionFailureException, NotFoundException, AlreadyExistsException, ForbiddenException;
 
     /**
      * Change properties of existing card.
@@ -147,7 +153,7 @@ public interface IDB {
      * @throws ForbiddenException when the card can't be modified (for example,
      * when unable to write to file for local DB or there is no connection with remote DB)
      */
-    void modifyCard(CardId id, Map<String, Object> properties) throws ForbiddenException, NotFoundException, AlreadyExistsException, PropertyNotExistsException;
+    void modifyCard(CardId id, Map<String, Object> properties) throws ConnectionFailureException, ForbiddenException, NotFoundException, AlreadyExistsException, PropertyNotExistsException;
 
     /**
      * Delete card with id if it exists, throws exception otherwise.
@@ -156,5 +162,5 @@ public interface IDB {
      * @throws ForbiddenException when the card can't be deleted (for example,
      * when unable to delete file for local DB or there is no connection with remote DB)
      */
-    void deleteCard(CardId id) throws ForbiddenException, NotFoundException;
+    void deleteCard(CardId id) throws ConnectionFailureException, ForbiddenException, NotFoundException;
 }

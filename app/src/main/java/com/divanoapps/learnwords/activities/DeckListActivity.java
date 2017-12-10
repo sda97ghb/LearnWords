@@ -18,7 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 
 import com.divanoapps.learnwords.CardRetriever;
 import com.divanoapps.learnwords.data.DB;
@@ -67,8 +66,8 @@ public class DeckListActivity extends AppCompatActivity implements
         navigationView.setNavigationItemSelectedListener(this);
 
         // Expand activity to make transparent notification bar
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+//                             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         // Setup deck list
         final RecyclerView deckListView = (RecyclerView) findViewById(R.id.DeckListView);
@@ -77,6 +76,7 @@ public class DeckListActivity extends AppCompatActivity implements
         final DeckListAdapter deckListAdapter = new DeckListAdapter(this);
         deckListAdapter.setEditDeckClickedListener(this::onEditDeckClicked);
         deckListAdapter.setStartExerciseClickedListener(this::onStartExerciseClicked);
+        deckListAdapter.setDeleteDeckClickedListener(this::onDeleteDeckClicked);
 
         deckListView.setAdapter(deckListAdapter);
 
@@ -93,7 +93,7 @@ public class DeckListActivity extends AppCompatActivity implements
 
         // Load all decks
         DB.initialize()
-            .setOnDoneListener(this::requestDeckList)
+//            .setOnDoneListener(this::requestDeckList)
             .setOnErrorListener(this::onDbInitializationError)
             .execute();
     }
@@ -219,21 +219,22 @@ public class DeckListActivity extends AppCompatActivity implements
     }
 
     public void onEditDeckClicked(DeckId id) {
-        Intent intent = new Intent(DeckListActivity.this, DeckEditActivity.class);
+        Intent intent = new Intent(this, DeckEditActivity.class);
         intent.putExtra(DeckEditActivity.getDeckIdExtraName(), id);
         startActivity(intent);
     }
 
     public void onStartExerciseClicked(DeckId id, CardRetriever.Order order) {
-        String orderString = "";
-        switch (order) {
-            case alphabetical: orderString = "alphabetical"; break;
-            case file: orderString = "file"; break;
-            case random: orderString = "random"; break;
-            case higher30: orderString = "higher 30"; break;
-            case lower30: orderString = "lower 30"; break;
-        }
-        Snackbar.make(findViewById(R.id.coordinator_layout), "Start exercise " + id.getName() +
-                " in " + orderString + " order.", Snackbar.LENGTH_LONG).show();
+        Intent intent = new Intent(this, ExerciseActivity.class);
+        intent.putExtra(ExerciseActivity.getDeckIdExtraName(), id);
+        intent.putExtra(ExerciseActivity.getOrderExtraName(), order);
+        startActivity(intent);
+    }
+
+    public void onDeleteDeckClicked(DeckId id) {
+        DB.deleteDeck(id)
+            .setOnDoneListener(this::requestDeckList)
+            .setOnErrorListener(this::showErrorMessage)
+            .execute();
     }
 }

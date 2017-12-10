@@ -45,11 +45,11 @@ public class Card {
         mCropPicture        = other.cropPicture();
     }
 
-    static Card fromJson(@NonNull String deckName, @NonNull String json) throws JSONException {
+    public static Card fromJson(@NonNull String deckName, @NonNull String json) throws JSONException {
         return fromJson(deckName, new JSONObject(json));
     }
 
-    static Card fromJson(@NonNull String deckName, @NonNull JSONObject jsonObject) {
+    public static Card fromJson(@NonNull String deckName, @NonNull JSONObject jsonObject) {
         SafeJSONObject safeJSONObject = new SafeJSONObject(jsonObject);
 
         int difficulty = safeJSONObject.getInt("difficulty", Card.getDefaultDifficulty());

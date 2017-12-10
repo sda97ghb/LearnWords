@@ -47,11 +47,6 @@ public class DeckEditActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_deck_edit);
 
-        // Setup toolbar
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
         // Setup "Add card" FAB
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(view -> onAddCardClicked());
@@ -82,7 +77,7 @@ public class DeckEditActivity extends AppCompatActivity implements
         });
 
         // Get deck with given name
-        requestDeck();
+//        requestDeck();
     }
 
     @Override
@@ -105,10 +100,12 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     private void onDeckNotFound(RequestError error) {
-        String message = "Something went wrong, please tap back and select the deck again.\n" +
-                error.getMessage();
+        String message = getString(R.string.deck_edit_error_message) + "\n" + error.getMessage();
         MessageOkDialogFragment.show(this, message);
-        mDeck = new Deck.Builder().setName("Error :(").setLanguageFrom("Undefined").setLanguageTo("Undefined").build();
+        mDeck = new Deck.Builder().setName(getString(R.string.deck_edit_error_title))
+                .setLanguageFrom(getString(R.string.undefined_language))
+                .setLanguageTo(getString(R.string.undefined_language))
+                .build();
         updateUi();
     }
 
@@ -116,6 +113,8 @@ public class DeckEditActivity extends AppCompatActivity implements
     private void updateUi() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         toolbar.setTitle(mDeck.getName());
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Set language from and language to
         ((TextView) findViewById(R.id.language_from)).setText(mDeck.getLanguageFrom());

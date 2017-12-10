@@ -1,5 +1,9 @@
 package com.divanoapps.learnwords.entities;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by dmitry on 30.10.17.
  */
@@ -18,6 +22,15 @@ public class DeckShort {
         mNumberOfHiddenCards = numberOfHiddenCards;
         mLanguageFrom = languageFrom;
         mLanguageTo = languageTo;
+    }
+
+    public static DeckShort fromJson(JSONObject json) throws JSONException {
+        return new DeckShort(
+                json.getString("name"),
+                json.getInt("numberOfCards"),
+                json.getInt("numberOfHiddenCards"),
+                json.getString("languageFrom"),
+                json.getString("languageTo"));
     }
 
     public DeckId getId() {
