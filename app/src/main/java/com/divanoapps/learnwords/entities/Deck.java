@@ -37,10 +37,8 @@ public class Deck {
         mCards = new LinkedHashMap<>(other.getCards());
     }
 
-    public static Deck fromJson(@NonNull String json) throws JSONException {
+    public static Deck fromJson(@NonNull JSONObject deckJsonObject) throws JSONException {
         final Deck.Builder builder = new Deck.Builder();
-
-        JSONObject deckJsonObject = new JSONObject(json);
 
         String name         = deckJsonObject.getString("name");
         String languageFrom = deckJsonObject.getString("languageFrom");
@@ -56,6 +54,10 @@ public class Deck {
                 builder.addCard(Card.fromJson(name, cardsJsonArray.getJSONObject(i)));
         }
         return builder.build();
+    }
+
+    public static Deck fromJson(@NonNull String json) throws JSONException {
+        return fromJson(new JSONObject(json));
     }
 
     public JSONObject toJson() throws JSONException {
