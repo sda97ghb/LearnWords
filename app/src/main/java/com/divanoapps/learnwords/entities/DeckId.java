@@ -1,6 +1,13 @@
 package com.divanoapps.learnwords.entities;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -12,6 +19,12 @@ public class DeckId implements Serializable {
 
     public DeckId(String deckName) {
         mName = deckName;
+    }
+
+    public JSONObject toJson() throws JSONException {
+        return new JSONObject() {{
+            put("name", getName());
+        }};
     }
 
     public String getName() {
@@ -34,5 +47,14 @@ public class DeckId implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(getName());
+    }
+
+    public String toQuery() {
+        try {
+            return "name=" + URLEncoder.encode(getName(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
