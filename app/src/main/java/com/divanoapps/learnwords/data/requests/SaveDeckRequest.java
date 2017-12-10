@@ -20,5 +20,6 @@ public class SaveDeckRequest extends Request<Void> {
             return null;
         }
         catch (IDB.ForbiddenException e) { setError(new RequestError(e)); return null; }
+        catch (IDB.ConnectionFailureException e) { setError(new RequestError(e)); return null; }
     }
 }

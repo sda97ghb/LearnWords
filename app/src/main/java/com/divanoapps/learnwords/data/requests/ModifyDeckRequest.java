@@ -27,5 +27,6 @@ public class ModifyDeckRequest extends Request<Void> {
         catch (IDB.NotFoundException e)          { setError(new RequestError(e)); return null; }
         catch (IDB.AlreadyExistsException e)     { setError(new RequestError(e)); return null; }
         catch (IDB.PropertyNotExistsException e) { setError(new RequestError(e)); return null; }
+        catch (IDB.ConnectionFailureException e) { setError(new RequestError(e)); return null; }
     }
 }

@@ -25,5 +25,6 @@ public class UpdateDeckRequest extends Request<Void> {
         catch (IDB.ForbiddenException e)     { setError(new RequestError(e)); return null; }
         catch (IDB.NotFoundException e)      { setError(new RequestError(e)); return null; }
         catch (IDB.AlreadyExistsException e) { setError(new RequestError(e)); return null; }
+        catch (IDB.ConnectionFailureException e) { setError(new RequestError(e)); return null; }
     }
 }

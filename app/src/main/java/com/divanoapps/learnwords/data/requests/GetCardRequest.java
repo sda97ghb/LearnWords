@@ -19,6 +19,7 @@ public class GetCardRequest extends Request<Card> {
         try {
             return getDb().getCard(mId);
         }
-        catch (IDB.NotFoundException e) { setError(new RequestError(e)); return null; }
+        catch (IDB.NotFoundException e)          { setError(new RequestError(e)); return null; }
+        catch (IDB.ConnectionFailureException e) { setError(new RequestError(e)); return null; }
     }
 }

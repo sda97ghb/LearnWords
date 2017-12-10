@@ -19,6 +19,7 @@ public class GetDeckRequest extends Request<Deck> {
         try {
             return getDb().getDeck(mId);
         }
-        catch (IDB.NotFoundException e) { setError(new RequestError(e)); return null; }
+        catch (IDB.NotFoundException e)          { setError(new RequestError(e)); return null; }
+        catch (IDB.ConnectionFailureException e) { setError(new RequestError(e)); return null; }
     }
 }

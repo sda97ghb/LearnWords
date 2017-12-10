@@ -1,6 +1,7 @@
 package com.divanoapps.learnwords.data.requests;
 
 import com.divanoapps.learnwords.data.IDB;
+import com.divanoapps.learnwords.data.RequestError;
 import com.divanoapps.learnwords.entities.DeckShort;
 
 import java.util.List;
@@ -13,6 +14,9 @@ public class DeckListRequest extends Request<List<DeckShort>> {
 
     @Override
     protected List<DeckShort> doInBackground(Void... params) {
-        return getDb().getDecks();
+        try {
+            return getDb().getDecks();
+        }
+        catch (IDB.ConnectionFailureException e) { setError(new RequestError(e)); return null; }
     }
 }
