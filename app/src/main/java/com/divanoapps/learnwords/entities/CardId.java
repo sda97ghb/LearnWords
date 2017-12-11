@@ -1,5 +1,7 @@
 package com.divanoapps.learnwords.entities;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,6 +23,12 @@ public class CardId implements Serializable {
         mDeckName = deckName;
         mWord = word;
         mWordComment = wordComment;
+    }
+
+    public static CardId fromJson(@NonNull JSONObject json) throws JSONException {
+        return new CardId(json.getString("deck"),
+                          json.getString("word"),
+                          json.getString("comment"));
     }
 
     public JSONObject toJson() throws JSONException {
