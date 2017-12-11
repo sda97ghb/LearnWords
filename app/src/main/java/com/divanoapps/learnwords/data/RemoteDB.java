@@ -260,13 +260,75 @@ public class RemoteDB implements IDB {
     }
 
     @Override
-    public void updateDeck(DeckId id, Deck newDeck) throws NotFoundException, AlreadyExistsException, ForbiddenException {
+    public void updateDeck(DeckId id, Deck newDeck) throws NotFoundException, AlreadyExistsException, ForbiddenException, ConnectionFailureException {
+        try {
+            JSONObject requestJson = new JSONObject() {{
+                put("entity", "deck");
+                put("method", "update");
+                put("id",   id.toJson());
+                put("deck", newDeck.toJson());
+            }};
 
+            String entireResponseString = request(requestJson.toString());
+            JSONObject entireResponseJson = new JSONObject(entireResponseString);
+
+            if (entireResponseJson.has("error")) {
+                JSONObject errorJson = entireResponseJson.getJSONObject("error");
+                ApiError error = new ApiError(errorJson.getInt("code"),
+                        errorJson.getString("description"));
+                throw new ConnectionFailureException();
+            }
+            else if (entireResponseJson.has("response")) {
+                JSONObject responseJson = entireResponseJson.getJSONObject("response");
+                return;
+            }
+            else {
+                throw new ConnectionFailureException();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            throw new ConnectionFailureException();
+        }
     }
 
     @Override
-    public void modifyDeck(DeckId id, Map<String, Object> properties) throws NotFoundException, PropertyNotExistsException, AlreadyExistsException, ForbiddenException {
+    public void modifyDeck(DeckId id, Map<String, Object> properties) throws NotFoundException, PropertyNotExistsException, AlreadyExistsException, ForbiddenException, ConnectionFailureException {
+        try {
+            JSONObject requestJson = new JSONObject() {{
+                put("entity", "deck");
+                put("method", "modify");
+                put("id", id.toJson());
+            }};
 
+            JSONArray propertiesJson = new JSONArray();
+            for (Map.Entry<String, Object> entry : properties.entrySet())
+                propertiesJson.put(new JSONObject() {{
+                    put("name", entry.getKey());
+                    put("value", entry.getValue());
+                }});
+            requestJson.put("properties", propertiesJson);
+
+            String entireResponseString = request(requestJson.toString());
+            JSONObject entireResponseJson = new JSONObject(entireResponseString);
+
+            if (entireResponseJson.has("error")) {
+                JSONObject errorJson = entireResponseJson.getJSONObject("error");
+                ApiError error = new ApiError(errorJson.getInt("code"),
+                        errorJson.getString("description"));
+                throw new ConnectionFailureException();
+            }
+            else if (entireResponseJson.has("response")) {
+                JSONObject responseJson = entireResponseJson.getJSONObject("response");
+                return;
+            }
+            else {
+                throw new ConnectionFailureException();
+            }
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+            throw new ConnectionFailureException();
+        }
     }
 
     @Override
@@ -335,21 +397,141 @@ public class RemoteDB implements IDB {
 
     @Override
     public void saveCard(Card card) throws ConnectionFailureException, NotFoundException, ForbiddenException {
-        requestString("card", "save", null, card.toJson().toString());
+        try {
+            JSONObject requestJson = new JSONObject() {{
+                put("entity", "card");
+                put("method", "save");
+            }};
+
+            JSONObject cardJson = card.toJson();
+            cardJson.put("deck", card.getDeckName());
+            requestJson.put("card", cardJson);
+
+            String entireResponseString = request(requestJson.toString());
+            JSONObject entireResponseJson = new JSONObject(entireResponseString);
+
+            if (entireResponseJson.has("error")) {
+                JSONObject errorJson = entireResponseJson.getJSONObject("error");
+                ApiError error = new ApiError(errorJson.getInt("code"),
+                        errorJson.getString("description"));
+                throw new ConnectionFailureException();
+            }
+            else if (entireResponseJson.has("response")) {
+                JSONObject responseJson = entireResponseJson.getJSONObject("response");
+                return;
+            }
+            else {
+                throw new ConnectionFailureException();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            throw new ConnectionFailureException();
+        }
     }
 
     @Override
-    public void updateCard(CardId id, Card newCard) throws NotFoundException, AlreadyExistsException, ForbiddenException {
+    public void updateCard(CardId id, Card newCard) throws NotFoundException, AlreadyExistsException, ForbiddenException, ConnectionFailureException {
+        try {
+            JSONObject requestJson = new JSONObject() {{
+                put("entity", "card");
+                put("method", "update");
+                put("id",   id.toJson());
+            }};
 
+            JSONObject cardJson = newCard.toJson();
+            cardJson.put("deck", id.getDeckName());
+            requestJson.put("card", cardJson);
+
+            String entireResponseString = request(requestJson.toString());
+            JSONObject entireResponseJson = new JSONObject(entireResponseString);
+
+            if (entireResponseJson.has("error")) {
+                JSONObject errorJson = entireResponseJson.getJSONObject("error");
+                ApiError error = new ApiError(errorJson.getInt("code"),
+                        errorJson.getString("description"));
+                throw new ConnectionFailureException();
+            }
+            else if (entireResponseJson.has("response")) {
+                JSONObject responseJson = entireResponseJson.getJSONObject("response");
+                return;
+            }
+            else {
+                throw new ConnectionFailureException();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            throw new ConnectionFailureException();
+        }
     }
 
     @Override
-    public void modifyCard(CardId id, Map<String, Object> properties) throws ForbiddenException, NotFoundException, AlreadyExistsException, PropertyNotExistsException {
+    public void modifyCard(CardId id, Map<String, Object> properties) throws ForbiddenException, NotFoundException, AlreadyExistsException, PropertyNotExistsException, ConnectionFailureException {
+        try {
+            JSONObject requestJson = new JSONObject() {{
+                put("entity", "card");
+                put("method", "modify");
+                put("id", id.toJson());
+            }};
 
+            JSONArray propertiesJson = new JSONArray();
+            for (Map.Entry<String, Object> entry : properties.entrySet())
+                propertiesJson.put(new JSONObject() {{
+                    put("name", entry.getKey());
+                    put("value", entry.getValue());
+                }});
+            requestJson.put("properties", propertiesJson);
+
+            String entireResponseString = request(requestJson.toString());
+            JSONObject entireResponseJson = new JSONObject(entireResponseString);
+
+            if (entireResponseJson.has("error")) {
+                JSONObject errorJson = entireResponseJson.getJSONObject("error");
+                ApiError error = new ApiError(errorJson.getInt("code"),
+                        errorJson.getString("description"));
+                throw new ConnectionFailureException();
+            }
+            else if (entireResponseJson.has("response")) {
+                JSONObject responseJson = entireResponseJson.getJSONObject("response");
+                return;
+            }
+            else {
+                throw new ConnectionFailureException();
+            }
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+            throw new ConnectionFailureException();
+        }
     }
 
     @Override
-    public void deleteCard(CardId id) throws ForbiddenException, NotFoundException {
+    public void deleteCard(CardId id) throws ForbiddenException, NotFoundException, ConnectionFailureException {
+        try {
+            JSONObject requestJson = new JSONObject() {{
+                put("entity", "card");
+                put("method", "delete");
+                put("id", id.toJson());
+            }};
 
+            String entireResponseString = request(requestJson.toString());
+            JSONObject entireResponseJson = new JSONObject(entireResponseString);
+
+            if (entireResponseJson.has("error")) {
+                JSONObject errorJson = entireResponseJson.getJSONObject("error");
+                ApiError error = new ApiError(errorJson.getInt("code"),
+                        errorJson.getString("description"));
+                throw new ConnectionFailureException();
+            }
+            else if (entireResponseJson.has("response")) {
+                JSONObject responseJson = entireResponseJson.getJSONObject("response");
+                return;
+            }
+            else {
+                throw new ConnectionFailureException();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            throw new ConnectionFailureException();
+        }
     }
 }
