@@ -31,6 +31,9 @@
     <string name="undefined_language">Undefined</string>
     <string name="deck_edit_error_title">Error :(</string>
     <string name="deck_edit_error_message">Something went wrong, please tap back and select the deck again.</string>
+    <string name="ui_preferences">UI preferences</string>
+    <string name="data_and_sync"><![CDATA[Data & sync]]></string>
+    <string name="silent">Silent</string>
 
     <string-array name="languages">
         <item>English</item>

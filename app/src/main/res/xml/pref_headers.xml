@@ -1,0 +1,18 @@
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- These settings headers are only used on tablets. -->
+
+    <header/>
+    <header/>
+
+    <header
+        android:fragment="com.divanoapps.learnwords.activities.SettingsActivity$UiPreferencesPreferenceFragment"
+        android:icon="@drawable/ic_preference_category_ui_preferences"
+        android:title="@string/ui_preferences" />
+
+    <header
+        android:fragment="com.divanoapps.learnwords.activities.SettingsActivity$DataSyncPreferenceFragment"
+        android:icon="@drawable/ic_preference_category_data_and_sync"
+        android:title="@string/data_and_sync" />
+
+</preference-headers>

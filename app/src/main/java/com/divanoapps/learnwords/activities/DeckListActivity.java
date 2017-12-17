@@ -208,8 +208,7 @@ public class DeckListActivity extends AppCompatActivity implements
                         Snackbar.LENGTH_LONG).show();
                 break;
             case R.id.nav_settings:
-                Snackbar.make(findViewById(R.id.coordinator_layout), "Navigate settings.",
-                        Snackbar.LENGTH_LONG).show();
+                startActivity(new Intent(this, SettingsActivity.class));
                 break;
         }
 

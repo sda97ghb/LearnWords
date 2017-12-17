@@ -17,10 +17,8 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,11 +26,20 @@ import java.util.Map;
 
 public class RemoteDB implements IDB {
 
-    static class ApiError {
+    private enum Api0p1Error {
+        Unknown                     (1, "Unknown"),
+        ServerIsClosedForMaintenance(2, "Server is closed for maintenance"),
+        UnknownEntity               (3, "Unknown entity"),
+        UnsupportedMethod           (4, "Unsupported method"),
+        Forbidden                   (5, "Forbidden"),
+        NotFound                    (6, "Not found"),
+        AlreadyExists               (7, "Already exists"),
+        PropertyDoesNotExist        (8, "Property does not exist");
+
         private int mCode;
         private String mDescription;
 
-        ApiError(int code, String description) {
+        Api0p1Error(int code, String description) {
             mCode = code;
             mDescription = description;
         }
@@ -43,6 +50,50 @@ public class RemoteDB implements IDB {
 
         String getDescription() {
             return mDescription;
+        }
+
+        JSONObject toJson() throws JSONException {
+            return new JSONObject() {{
+                put("code",        getCode());
+                put("description", getDescription());
+            }};
+        }
+    }
+
+    static class ApiError {
+        private int mCode;
+        private String mDescription;
+
+        ApiError(int code, String description) {
+            mCode = code;
+            mDescription = description;
+        }
+
+        ApiError(Api0p1Error error) {
+            mCode = error.getCode();
+            mDescription = error.getDescription();
+        }
+
+        int getCode() {
+            return mCode;
+        }
+
+        String getDescription() {
+            return mDescription;
+        }
+
+        public boolean equals(Object object) {
+            if (object instanceof ApiError) {
+                ApiError other = (ApiError) object;
+                return getCode() == other.getCode() &&
+                       getDescription().equals(other.getDescription());
+            }
+            if (object instanceof Api0p1Error) {
+                Api0p1Error other = (Api0p1Error) object;
+                return getCode() == other.getCode() &&
+                       getDescription().equals(other.getDescription());
+            }
+            return false;
         }
     }
 
@@ -88,55 +139,6 @@ public class RemoteDB implements IDB {
                 wr.write(bodyBytes);
             }
             connection.connect();
-
-            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK)
-                throw new ConnectionFailureException();
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String line = reader.readLine();
-            if (line == null)
-                throw new ConnectionFailureException();
-            reader.close();
-
-            return line;
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            throw new ConnectionFailureException();
-        } finally {
-            if (connection != null)
-                connection.disconnect();
-        }
-    }
-
-    private String requestString(@NonNull String entity, @NonNull String method, @Nullable String selector, @Nullable String body) throws ConnectionFailureException {
-        URL url;
-        HttpURLConnection connection = null;
-        try {
-            if (selector == null)
-                url = new URL("http://" + getServerAddress() + "/" + entity);
-            else
-                url = new URL("http://" + getServerAddress() + "/" + entity + "?" + selector);
-
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestProperty("X-HTTP-Method-Override", method);
-            connection.setRequestMethod("POST");
-            connection.setInstanceFollowRedirects(false);
-            connection.setUseCaches(false);
-            connection.setAllowUserInteraction(false);
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(10000);
-
-            if (body != null) {
-                byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
-
-                connection.setRequestProperty("Content-Length", Integer.toString(bodyBytes.length));
-                connection.setDoOutput(true);
-                try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
-                    wr.write(bodyBytes);
-                }
-                connection.connect();
-            }
 
             if (connection.getResponseCode() != HttpURLConnection.HTTP_OK)
                 throw new ConnectionFailureException();
@@ -212,6 +214,8 @@ public class RemoteDB implements IDB {
                 JSONObject errorJson = entireResponseJson.getJSONObject("error");
                 ApiError error = new ApiError(errorJson.getInt("code"),
                         errorJson.getString("description"));
+                if (error.equals(Api0p1Error.NotFound))
+                    throw new NotFoundException();
                 throw new ConnectionFailureException();
             }
             else if (entireResponseJson.has("response")) {
@@ -244,6 +248,8 @@ public class RemoteDB implements IDB {
                 JSONObject errorJson = entireResponseJson.getJSONObject("error");
                 ApiError error = new ApiError(errorJson.getInt("code"),
                         errorJson.getString("description"));
+                if (error.equals(Api0p1Error.Forbidden))
+                    throw new ForbiddenException();
                 throw new ConnectionFailureException();
             }
             else if (entireResponseJson.has("response")) {
@@ -276,6 +282,12 @@ public class RemoteDB implements IDB {
                 JSONObject errorJson = entireResponseJson.getJSONObject("error");
                 ApiError error = new ApiError(errorJson.getInt("code"),
                         errorJson.getString("description"));
+                if (error.equals(Api0p1Error.NotFound))
+                    throw new NotFoundException();
+                if (error.equals(Api0p1Error.AlreadyExists))
+                    throw new AlreadyExistsException();
+                if (error.equals(Api0p1Error.Forbidden))
+                    throw new ForbiddenException();
                 throw new ConnectionFailureException();
             }
             else if (entireResponseJson.has("response")) {
@@ -315,6 +327,14 @@ public class RemoteDB implements IDB {
                 JSONObject errorJson = entireResponseJson.getJSONObject("error");
                 ApiError error = new ApiError(errorJson.getInt("code"),
                         errorJson.getString("description"));
+                if (error.equals(Api0p1Error.NotFound))
+                    throw new NotFoundException();
+                if (error.equals(Api0p1Error.PropertyDoesNotExist))
+                    throw new PropertyNotExistsException();
+                if (error.equals(Api0p1Error.AlreadyExists))
+                    throw new AlreadyExistsException();
+                if (error.equals(Api0p1Error.Forbidden))
+                    throw new ForbiddenException();
                 throw new ConnectionFailureException();
             }
             else if (entireResponseJson.has("response")) {
@@ -347,6 +367,10 @@ public class RemoteDB implements IDB {
                 JSONObject errorJson = entireResponseJson.getJSONObject("error");
                 ApiError error = new ApiError(errorJson.getInt("code"),
                         errorJson.getString("description"));
+                if (error.equals(Api0p1Error.NotFound))
+                    throw new NotFoundException();
+                if (error.equals(Api0p1Error.Forbidden))
+                    throw new ForbiddenException();
                 throw new ConnectionFailureException();
             }
             else if (entireResponseJson.has("response")) {
@@ -378,6 +402,8 @@ public class RemoteDB implements IDB {
                 JSONObject errorJson = entireResponseJson.getJSONObject("error");
                 ApiError error = new ApiError(errorJson.getInt("code"),
                         errorJson.getString("description"));
+                if (error.equals(Api0p1Error.NotFound))
+                    throw new NotFoundException();
                 throw new ConnectionFailureException();
             }
             else if (entireResponseJson.has("response")) {
@@ -414,6 +440,8 @@ public class RemoteDB implements IDB {
                 JSONObject errorJson = entireResponseJson.getJSONObject("error");
                 ApiError error = new ApiError(errorJson.getInt("code"),
                         errorJson.getString("description"));
+                if (error.equals(Api0p1Error.Forbidden))
+                    throw new ForbiddenException();
                 throw new ConnectionFailureException();
             }
             else if (entireResponseJson.has("response")) {
@@ -449,6 +477,12 @@ public class RemoteDB implements IDB {
                 JSONObject errorJson = entireResponseJson.getJSONObject("error");
                 ApiError error = new ApiError(errorJson.getInt("code"),
                         errorJson.getString("description"));
+                if (error.equals(Api0p1Error.NotFound))
+                    throw new NotFoundException();
+                if (error.equals(Api0p1Error.AlreadyExists))
+                    throw new AlreadyExistsException();
+                if (error.equals(Api0p1Error.Forbidden))
+                    throw new ForbiddenException();
                 throw new ConnectionFailureException();
             }
             else if (entireResponseJson.has("response")) {
@@ -488,6 +522,14 @@ public class RemoteDB implements IDB {
                 JSONObject errorJson = entireResponseJson.getJSONObject("error");
                 ApiError error = new ApiError(errorJson.getInt("code"),
                         errorJson.getString("description"));
+                if (error.equals(Api0p1Error.NotFound))
+                    throw new NotFoundException();
+                if (error.equals(Api0p1Error.PropertyDoesNotExist))
+                    throw new PropertyNotExistsException();
+                if (error.equals(Api0p1Error.AlreadyExists))
+                    throw new AlreadyExistsException();
+                if (error.equals(Api0p1Error.Forbidden))
+                    throw new ForbiddenException();
                 throw new ConnectionFailureException();
             }
             else if (entireResponseJson.has("response")) {
@@ -520,6 +562,10 @@ public class RemoteDB implements IDB {
                 JSONObject errorJson = entireResponseJson.getJSONObject("error");
                 ApiError error = new ApiError(errorJson.getInt("code"),
                         errorJson.getString("description"));
+                if (error.equals(Api0p1Error.NotFound))
+                    throw new NotFoundException();
+                if (error.equals(Api0p1Error.Forbidden))
+                    throw new ForbiddenException();
                 throw new ConnectionFailureException();
             }
             else if (entireResponseJson.has("response")) {

@@ -1,0 +1,31 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title=""/>
+    <PreferenceCategory android:title=""/>
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="preference_use_remote_db"
+        android:title="Use remote storage" />
+    <EditTextPreference
+        android:defaultValue="10.97.128.63:8080"
+        android:key="preference_server_address"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:summary="10.97.128.63:8080"
+        android:title="Server address"
+        android:dependency="preference_use_remote_db"/>
+    <EditTextPreference
+        android:defaultValue="User001"
+        android:key="preference_username"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:summary="User001"
+        android:title="Username"
+        android:dependency="preference_use_remote_db"/>
+    <EditTextPreference
+        android:defaultValue="password"
+        android:key="preference_password"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Password"
+        android:dependency="preference_use_remote_db"/>
+</PreferenceScreen>

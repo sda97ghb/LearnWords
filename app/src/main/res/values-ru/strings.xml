@@ -27,4 +27,7 @@
     <string name="undefined_language">Неизвестно</string>
     <string name="deck_edit_error_title">Ошибка :(</string>
     <string name="deck_edit_error_message">Что-то пошло не так, пожалуйста вернитесь назад и выберите колоду еще раз.</string>
+    <string name="ui_preferences">Интерфейс</string>
+    <string name="data_and_sync">Данные и синхронизация</string>
+    <string name="silent">Без звука</string>
 </resources>
