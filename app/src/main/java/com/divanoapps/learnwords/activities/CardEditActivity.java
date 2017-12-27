@@ -7,6 +7,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.divanoapps.learnwords.data.RequestError;
@@ -60,6 +61,9 @@ public class CardEditActivity extends AppCompatActivity {
         findViewById(R.id.decrease_difficulty_button)
                 .setOnClickListener(v -> onDecreaseDifficultyClicked());
 
+        findViewById(R.id.visibility_button)
+                .setOnClickListener(v -> onVisibilityClicked());
+
         // Run required mode
         // TODO: Add exception when mode is not passed
         mMode = (Mode) getIntent().getSerializableExtra(getModeExtraName());
@@ -94,6 +98,12 @@ public class CardEditActivity extends AppCompatActivity {
                 .setText(Integer.valueOf(card.getDifficulty()).toString());
         ((TextView) findViewById(R.id.difficulty_maximum_view))
                 .setText(Integer.valueOf(Card.getMaxDifficulty()).toString());
+
+        mVisibility = !card.isHidden();
+        ((ImageButton) findViewById(R.id.visibility_button))
+                .setImageResource(mVisibility ?
+                        R.drawable.ic_card_edit_visible :
+                        R.drawable.ic_card_edit_invisible);
     }
 
     private void onCardRequestError(RequestError error) {
@@ -124,7 +134,7 @@ public class CardEditActivity extends AppCompatActivity {
                 .setTranslation(((EditText) findViewById(R.id.translation_edit)).getText().toString())
                 .setTranslationComment(((EditText) findViewById(R.id.translation_comment_edit)).getText().toString())
                 .setDifficulty(mDifficulty)
-                .setHidden(mVisibility)
+                .setHidden(!mVisibility)
                 .setCropPicture(false)
                 .setPictureUrl("")
                 .build();
@@ -195,5 +205,13 @@ public class CardEditActivity extends AppCompatActivity {
             mDifficulty = Card.getMinDifficulty();
         ((TextView) findViewById(R.id.difficulty_view))
                 .setText(Integer.valueOf(mDifficulty).toString());
+    }
+
+    private void onVisibilityClicked() {
+        mVisibility = !mVisibility;
+        ((ImageButton) findViewById(R.id.visibility_button))
+                .setImageResource(mVisibility ?
+                                  R.drawable.ic_card_edit_visible :
+                                  R.drawable.ic_card_edit_invisible);
     }
 }
