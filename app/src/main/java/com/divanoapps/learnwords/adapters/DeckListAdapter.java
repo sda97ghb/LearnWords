@@ -16,6 +16,8 @@ import com.divanoapps.learnwords.entities.DeckId;
 import com.divanoapps.learnwords.entities.DeckShort;
 import com.divanoapps.learnwords.R;
 
+import org.w3c.dom.Text;
+
 import java.util.LinkedList;
 import java.util.List;
 
@@ -93,6 +95,9 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
     class ViewHolder extends RecyclerView.ViewHolder {
         private TextView mDeckNameView;
         private TextView mDeckSizeView;
+        private TextView mHiddenCardsCountView;
+        private TextView mLanguageFromView;
+        private TextView mLanguageToView;
 
         private ImageButton mAlphabetOrderButton;
         private ImageButton mFileOrderButton;
@@ -104,8 +109,11 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         ViewHolder(View itemView) {
             super(itemView);
 
-            mDeckNameView = (TextView) itemView.findViewById(R.id.deck_name_view);
-            mDeckSizeView = (TextView) itemView.findViewById(R.id.card_count_view);
+            mDeckNameView         = (TextView) itemView.findViewById(R.id.deck_name_view);
+            mDeckSizeView         = (TextView) itemView.findViewById(R.id.card_count_view);
+            mHiddenCardsCountView = (TextView) itemView.findViewById(R.id.hidden_card_count_view);
+            mLanguageFromView     = (TextView) itemView.findViewById(R.id.language_from_view);
+            mLanguageToView       = (TextView) itemView.findViewById(R.id.language_to_view);
 
             mAlphabetOrderButton = (ImageButton) itemView.findViewById(R.id.alphabet_order_button);
             mFileOrderButton     = (ImageButton) itemView.findViewById(R.id.file_order_button);
@@ -119,6 +127,9 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         void setContent(final DeckShort deck) {
             mDeckNameView.setText(deck.getName());
             mDeckSizeView.setText(Integer.valueOf(deck.getNumberOfCards()).toString());
+            mHiddenCardsCountView.setText(Integer.valueOf(deck.getNumberOfHiddenCards()).toString());
+            mLanguageFromView.setText(deck.getLanguageFrom());
+            mLanguageToView.setText(deck.getLanguageTo());
 
             itemView.setOnClickListener(v -> notifyEditDeckClicked(deck.getId()));
             mDeckNameView.setOnClickListener(v -> notifyEditDeckClicked(deck.getId()));

@@ -116,9 +116,63 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="4dp"
             android:layout_marginStart="4dp"
-            android:text="Cards"
+            android:text="@string/cards"
             app:layout_constraintBaseline_toBaselineOf="@+id/card_count_view"
             app:layout_constraintLeft_toRightOf="@+id/card_count_view" />
+
+        <TextView
+            android:id="@+id/hidden_card_count_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="14"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/card_count_view" />
+
+        <TextView
+            android:id="@+id/decorator_hidden_cards"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
+            android:text="@string/of_them_is_hidden"
+            app:layout_constraintBaseline_toBaselineOf="@+id/hidden_card_count_view"
+            app:layout_constraintLeft_toRightOf="@+id/hidden_card_count_view" />
+
+        <!---->
+
+        <TextView
+            android:id="@+id/language_from_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="English"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/hidden_card_count_view" />
+
+        <TextView
+            android:id="@+id/decorator_language_arrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
+            android:text="→"
+            app:layout_constraintBaseline_toBaselineOf="@+id/language_from_view"
+            app:layout_constraintLeft_toRightOf="@+id/language_from_view" />
+
+        <TextView
+            android:id="@+id/language_to_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
+            android:text="Russian"
+            app:layout_constraintBaseline_toBaselineOf="@+id/language_from_view"
+            app:layout_constraintLeft_toRightOf="@+id/decorator_language_arrow" />
 
         <View
             android:layout_width="1dp"
