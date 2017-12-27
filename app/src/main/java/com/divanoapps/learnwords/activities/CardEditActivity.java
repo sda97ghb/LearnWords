@@ -139,9 +139,7 @@ public class CardEditActivity extends AppCompatActivity {
     }
 
     private void showCardAlreadyExistsErrorMessage() {
-        final String message = "Card with this word and its comment already exists.\n" +
-                "Cards with same word and its comment are indistinguishable and can't be saved in one deck.\n" +
-                "Change word or its comment (or both of them) and save the card again.";
+        final String message = getString(R.string.card_with_id_already_exists);
         showErrorMessage(message);
     }
 
