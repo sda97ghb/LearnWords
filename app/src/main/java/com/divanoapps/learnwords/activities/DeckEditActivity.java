@@ -116,6 +116,7 @@ public class DeckEditActivity extends AppCompatActivity implements
         toolbar.setTitle(mDeck.getName());
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(mDeck.getName());
 
         // Set language from and language to
         ((TextView) findViewById(R.id.language_from)).setText(mDeck.getLanguageFrom());
@@ -197,8 +198,16 @@ public class DeckEditActivity extends AppCompatActivity implements
     public void onDialogPositiveClick(DialogFragment dialog) {
         if (dialog instanceof RenameDeckDialogFragment) {
             RenameDeckDialogFragment renameDeckDialog = (RenameDeckDialogFragment) dialog;
-            Snackbar.make(findViewById(R.id.coordinator_layout), "Rename deck " + mDeck.getName() +
-                    " to " + renameDeckDialog.getNewDeckName(), Snackbar.LENGTH_LONG).show();
+            final String newDeckName = renameDeckDialog.getNewDeckName();
+            DB.modifyDeck(mDeck.getId(), new HashMap<String, Object>() {{
+                put("name", newDeckName);
+            }})
+            .setOnDoneListener(() -> {
+                getIntent().putExtra(getDeckIdExtraName(), new DeckId(newDeckName));
+                requestDeck();
+            })
+            .setOnErrorListener(this::showErrorMessage)
+            .execute();
         }
     }
 

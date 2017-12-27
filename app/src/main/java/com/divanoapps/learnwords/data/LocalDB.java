@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -182,6 +183,12 @@ public class LocalDB implements IDB {
      */
     @Override
     public void updateDeck(DeckId id, Deck newDeck) throws NotFoundException, AlreadyExistsException, ForbiddenException {
+        Map<CardId, Card> newCards = new HashMap<>();
+        for (Card card : newDeck.getCardsAsList())
+            newCards.put(new CardId(newDeck.getName(), card.getWord(), card.getWordComment()),
+                    new Card.Builder(card).setDeckName(newDeck.getName()).build());
+        newDeck = new Deck.Builder(newDeck).setCards(newCards).build();
+
         if (!deckExists(id))
             throw new NotFoundException();
 
