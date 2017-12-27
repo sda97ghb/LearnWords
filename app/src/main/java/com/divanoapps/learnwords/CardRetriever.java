@@ -4,6 +4,7 @@ import com.divanoapps.learnwords.entities.Card;
 import com.divanoapps.learnwords.entities.Deck;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,16 +86,16 @@ public class CardRetriever {
                 return null;
 
             List<Integer> sums = new ArrayList<>(mCards.size() + 1);
-            sums.set(0, 0);
+            sums.add(mCards.get(0).getDifficulty());
             for (int i = 1; i < mCards.size(); ++ i)
-                sums.set(i, sums.get(i - 1) + mCards.get(i).getDifficulty());
+                sums.add(sums.get(i - 1) + mCards.get(i).getDifficulty());
 
             int sum = sums.get(sums.size() - 1);
             int randN = ThreadLocalRandom.current().nextInt(0, sum);
 
             int index = 0;
-            while (sums.get(index) < randN)
-                ++ index;
+            while (index < mCards.size() && sums.get(index) < randN)
+                ++index;
 
             return mCards.get(index);
         }
