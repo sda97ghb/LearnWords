@@ -45,6 +45,8 @@
     <string name="hardiest_30_percent">Hardiest 30%</string>
     <string name="random_order">Random order</string>
     <string name="quick_exercise_types">Quick exercise types</string>
+    <string name="delete_this_deck">Delete this deck</string>
+    <string name="are_you_shure_delete_deck_question">Are you sure? (Deck can\'t be restored)</string>
 
     <string-array name="languages">
         <item>English</item>

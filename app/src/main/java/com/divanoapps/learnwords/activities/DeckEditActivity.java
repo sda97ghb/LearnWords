@@ -24,6 +24,7 @@ import com.divanoapps.learnwords.data.DB;
 import com.divanoapps.learnwords.data.RequestError;
 import com.divanoapps.learnwords.data.requests.Request;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
+import com.divanoapps.learnwords.dialogs.YesNoMessageDialogFragment;
 import com.divanoapps.learnwords.entities.CardId;
 import com.divanoapps.learnwords.entities.Deck;
 import com.divanoapps.learnwords.entities.DeckId;
@@ -184,10 +185,12 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     private void deleteCurrentDeck() {
-        DB.deleteDeck(mDeck.getId())
-            .setOnDoneListener(() -> NavUtils.navigateUpFromSameTask(this))
-            .setOnErrorListener(error -> MessageOkDialogFragment.show(this, error.getMessage()))
-            .execute();
+        YesNoMessageDialogFragment.show(this, getString(R.string.are_you_shure_delete_deck_question), () ->
+            DB.deleteDeck(mDeck.getId())
+                .setOnDoneListener(() -> NavUtils.navigateUpFromSameTask(this))
+                .setOnErrorListener(error -> MessageOkDialogFragment.show(this, error.getMessage()))
+                .execute()
+        );
     }
 
     @Override
