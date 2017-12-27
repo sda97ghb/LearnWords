@@ -99,12 +99,24 @@ public class RemoteDB implements IDB {
 
     //Private
 
-    private static String getServerAddress() {
+    public static String getDefaultServerAddress() {
         return "10.97.128.63:8080";
+    }
+    private String mServerAddress = getDefaultServerAddress();
+    private String getServerAddress() {
+        return mServerAddress;
     }
 
     private static String getApiVersion() {
         return "0.1";
+    }
+
+    public RemoteDB() {
+        ;
+    }
+
+    public RemoteDB(String address) {
+        mServerAddress = address;
     }
 
     private List<DeckShort> parseDeckList(String json) throws JSONException {

@@ -1,7 +1,9 @@
 package com.divanoapps.learnwords.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -21,6 +23,8 @@ import android.view.MenuItem;
 
 import com.divanoapps.learnwords.CardRetriever;
 import com.divanoapps.learnwords.data.DB;
+import com.divanoapps.learnwords.data.LocalDB;
+import com.divanoapps.learnwords.data.RemoteDB;
 import com.divanoapps.learnwords.data.RequestError;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
 import com.divanoapps.learnwords.dialogs.AddDeckDialogFragment;
@@ -90,6 +94,12 @@ public class DeckListActivity extends AppCompatActivity implements
                     fab.show();
             }
         });
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (prefs.getBoolean("preference_use_remote_db", false))
+            DB.setDb(new RemoteDB(prefs.getString("preference_server_address", RemoteDB.getDefaultServerAddress())));
+        else
+            DB.setDb(new LocalDB());
 
         // Load all decks
         DB.initialize()

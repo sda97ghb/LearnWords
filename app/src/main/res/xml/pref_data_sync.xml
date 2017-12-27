@@ -4,14 +4,15 @@
     <SwitchPreference
         android:defaultValue="false"
         android:key="preference_use_remote_db"
-        android:title="Use remote storage" />
+        android:title="@string/use_remote_storage"
+        android:summary="@string/need_restart_the_application_after_change"/>
     <EditTextPreference
         android:defaultValue="10.97.128.63:8080"
         android:key="preference_server_address"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:summary="10.97.128.63:8080"
-        android:title="Server address"
+        android:title="@string/server_address"
         android:dependency="preference_use_remote_db"/>
     <EditTextPreference
         android:defaultValue="User001"
@@ -19,13 +20,13 @@
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:summary="User001"
-        android:title="Username"
+        android:title="@string/username"
         android:dependency="preference_use_remote_db"/>
     <EditTextPreference
         android:defaultValue="password"
         android:key="preference_password"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="Password"
+        android:title="@string/password"
         android:dependency="preference_use_remote_db"/>
 </PreferenceScreen>

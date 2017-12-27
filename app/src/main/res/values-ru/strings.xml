@@ -30,4 +30,15 @@
     <string name="ui_preferences">Интерфейс</string>
     <string name="data_and_sync">Данные и синхронизация</string>
     <string name="silent">Без звука</string>
+    <string name="need_restart_the_application_after_change">Требуется перезапуск после изменения</string>
+    <string name="use_remote_storage">Хранить данные на сервере</string>
+    <string name="server_address">Адрес сервера</string>
+    <string name="username">Имя пользователя</string>
+    <string name="password">Пароль</string>
+    <string name="deck_order">Порядок колоды</string>
+    <string name="alphabetic_order">Алфавитный порядок</string>
+    <string name="easiest_30_percent">Легкие 30%</string>
+    <string name="hardiest_30_percent">Сложные 30%</string>
+    <string name="random_order">Случайный порядок</string>
+    <string name="quick_exercise_types">Типы быстрого упражнения</string>
 </resources>

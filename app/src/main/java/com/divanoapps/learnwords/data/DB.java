@@ -1,5 +1,8 @@
 package com.divanoapps.learnwords.data;
 
+import android.preference.Preference;
+import android.preference.PreferenceManager;
+
 import com.divanoapps.learnwords.data.requests.DeckListRequest;
 import com.divanoapps.learnwords.data.requests.DeleteCardRequest;
 import com.divanoapps.learnwords.data.requests.DeleteDeckRequest;
@@ -48,6 +51,10 @@ public class DB {
     private IDB mDb = new RemoteDB(); // new LocalDB();
 
     // Public
+
+    public static void setDb(IDB db) {
+        getInstance().mDb = db;
+    }
 
     public static IDB getDb() {
         return getInstance().mDb;

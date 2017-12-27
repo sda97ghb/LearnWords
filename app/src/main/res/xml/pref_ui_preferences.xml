@@ -1,26 +1,26 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title=""/>
     <PreferenceCategory android:title=""/>
-    <PreferenceCategory android:title="Quick exercise types">
+    <PreferenceCategory android:title="@string/quick_exercise_types">
         <SwitchPreference
             android:defaultValue="true"
             android:key="preference_deck_order"
-            android:title="Deck order" />
+            android:title="@string/deck_order" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="preference_alphabetic_order"
-            android:title="Alphabetic order" />
+            android:title="@string/alphabetic_order" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="preference_easies_30_percent"
-            android:title="Easiest 30%" />
+            android:title="@string/easiest_30_percent" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="preference_hardiest_30_percent"
-            android:title="Hardiest 30%" />
+            android:title="@string/hardiest_30_percent" />
         <SwitchPreference
             android:defaultValue="true"
             android:key="preference_random_order"
-            android:title="Random order" />
+            android:title="@string/random_order" />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -28,7 +28,7 @@ import com.divanoapps.learnwords.auxiliary.Setter;
  * DB implementation that works with local storage.
  */
 
-class LocalDB implements IDB {
+public class LocalDB implements IDB {
     ////////////////////////////////////////////////////////////////
     // Exceptions
 
