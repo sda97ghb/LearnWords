@@ -21,16 +21,16 @@
         android:id="@+id/word_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="a banana"
         android:textAlignment="center" />
+    <!--android:text="a banana"-->
 
     <EditText
         android:id="@+id/word_comment_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="yellow long tropical fruit"
         android:textAlignment="center"
         android:textSize="16sp" />
+    <!--android:text="yellow long tropical fruit"-->
 
     <TextView
         android:layout_width="match_parent"
@@ -43,15 +43,15 @@
         android:id="@+id/translation_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="банан"
         android:textAlignment="center" />
+    <!--android:text="банан"-->
 
     <EditText
         android:id="@+id/translation_comment_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="длинный желтый тропический фрукт"
         android:textAlignment="center"
         android:textSize="16sp" />
+    <!--android:text="длинный желтый тропический фрукт"-->
 
 </LinearLayout>

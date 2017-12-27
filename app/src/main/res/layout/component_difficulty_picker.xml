@@ -41,7 +41,7 @@
                 android:id="@+id/difficulty_view"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="17"
+                android:text="10"
                 android:textColor="@android:color/white"
                 android:textSize="24sp" />
 
