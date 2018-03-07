@@ -7,6 +7,7 @@
     android:orientation="vertical">
 
     <ImageButton
+        android:id="@+id/select_picture_button"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_gravity="center_horizontal"
@@ -21,6 +22,7 @@
         android:id="@+id/word_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="@string/word"
         android:textAlignment="center" />
     <!--android:text="a banana"-->
 
@@ -28,6 +30,7 @@
         android:id="@+id/word_comment_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="@string/word_comment"
         android:textAlignment="center"
         android:textSize="16sp" />
     <!--android:text="yellow long tropical fruit"-->
@@ -43,6 +46,7 @@
         android:id="@+id/translation_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="@string/translation"
         android:textAlignment="center" />
     <!--android:text="банан"-->
 
@@ -50,6 +54,7 @@
         android:id="@+id/translation_comment_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:hint="@string/translation_comment"
         android:textAlignment="center"
         android:textSize="16sp" />
     <!--android:text="длинный желтый тропический фрукт"-->

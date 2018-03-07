@@ -1,6 +1,7 @@
 package com.divanoapps.learnwords.activities;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -63,6 +64,9 @@ public class CardEditActivity extends AppCompatActivity {
 
         findViewById(R.id.visibility_button)
                 .setOnClickListener(v -> onVisibilityClicked());
+
+        findViewById(R.id.select_picture_button)
+                .setOnClickListener(v -> onSelectPictureCicked());
 
         // Run required mode
         // TODO: Add exception when mode is not passed
@@ -213,5 +217,12 @@ public class CardEditActivity extends AppCompatActivity {
                 .setImageResource(mVisibility ?
                                   R.drawable.ic_card_edit_visible :
                                   R.drawable.ic_card_edit_invisible);
+    }
+
+    private void onSelectPictureCicked() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivity(Intent.createChooser(intent, "Select Picture"));
     }
 }

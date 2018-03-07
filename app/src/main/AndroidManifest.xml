@@ -40,7 +40,11 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.SettingsActivity"
-            android:label="@string/settings"/>
+            android:label="@string/settings" />
+        <activity
+            android:name=".activities.FastAddActivity"
+            android:label="@string/title_activity_fast_add"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

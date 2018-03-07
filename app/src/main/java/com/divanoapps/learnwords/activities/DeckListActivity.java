@@ -96,8 +96,12 @@ public class DeckListActivity extends AppCompatActivity implements
         });
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (prefs.getBoolean("preference_use_remote_db", false))
-            DB.setDb(new RemoteDB(prefs.getString("preference_server_address", RemoteDB.getDefaultServerAddress())));
+        if (prefs.getBoolean("preference_use_remote_db", false)) {
+            String serverAddress = prefs.getString("preference_server_address", RemoteDB.getDefaultServerAddress());
+            String username = prefs.getString("preference_username", RemoteDB.getDefaultServerAddress());
+            String password = prefs.getString("preference_password", RemoteDB.getDefaultServerAddress());
+            DB.setDb(new RemoteDB(serverAddress, username, password));
+        }
         else
             DB.setDb(new LocalDB());
 
@@ -106,6 +110,8 @@ public class DeckListActivity extends AppCompatActivity implements
 //            .setOnDoneListener(this::requestDeckList)
             .setOnErrorListener(this::onDbInitializationError)
             .execute();
+
+        startActivity(new Intent(this, FastAddActivity.class));
     }
 
     @Override

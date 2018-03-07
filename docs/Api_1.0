@@ -1,0 +1,201 @@
+////////////////////////////////////////////////////////////////////////////////
+// Requests
+
+POST /learnwordsapi/1.0 HTTP/1.0
+
+{
+    "accessToken": "...",
+    "entity": "decks",
+    "method": "get"
+}
+
+{
+    "accessToken": "...",
+    "entity": "deck",
+    "method": "get",
+    "id": {
+        "name": "..."
+    }
+}
+
+{
+    "accessToken": "...",
+    "entity": "deck",
+    "method": "save",
+    "deck": {
+        usual deck's properties
+    }
+}
+
+{
+    "accessToken": "...",
+    "entity": "deck",
+    "method": "update",
+    "id": {
+        "name": "..."
+    },
+    "deck": {
+        usual deck's properties
+    }
+}
+
+{
+    "accessToken": "...",
+    "entity": "deck",
+    "method": "modify",
+    "id": {
+        "name": "..."
+    },
+    "properties": [
+        {"name": "...", "value": "..."},
+        ...
+    ]
+}
+
+{
+    "accessToken": "...",
+    "entity": "deck",
+    "method": "delete",
+    "id": {
+        "name": "..."
+    }
+}
+
+{
+    "accessToken": "...",
+    "entity": "card",
+    "method": "get",
+    "id": {
+        "deck": "...",
+        "word": "...",
+        "comment": "..."
+    }
+}
+
+{
+    "accessToken": "...",
+    "entity": "card",
+    "method": "save",
+    "deck": {
+        usual card's properties
+    }
+}
+
+{
+    "accessToken": "...",
+    "entity": "card",
+    "method": "update",
+    "id": {
+        "deck": "...",
+        "word": "...",
+        "comment": "..."
+    },
+    "card": {
+        usual card's properties
+    }
+}
+
+{
+    "accessToken": "...",
+    "entity": "card",
+    "method": "modify",
+    "id": {
+        "deck": "...",
+        "word": "...",
+        "comment": "..."
+    },
+    "properties": [
+        {"name": "...", "value": "..."},
+        ...
+    ]
+}
+
+{
+    "accessToken": "...",
+    "entity": "card",
+    "method": "delete",
+    "id": {
+        "deck": "...",
+        "word": "...",
+        "comment": "..."
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Responses
+
+Error codes:
+    1 Unknown
+    2 Server is closed for maintenance
+    3 Unknown entity
+    4 Unsupported method
+    5 Forbidden
+    6 Not found
+    7 Already exists
+    8 Property does not exist
+
+HTTP/1.0 200 OK
+
+{
+    "error": {
+        "code": 1,
+        "description": "..."
+    }
+}
+
+{
+    "response": {
+        "decks": [
+            {usual deck's properties},
+            ...
+        ]
+    }
+}
+
+{
+    "response": {
+        "deck": {
+            usual deck's properties
+        }
+    }
+}
+
+{
+    "response": {}
+}
+
+{
+    "response": {}
+}
+
+{
+    "response": {}
+}
+
+{
+    "response": {}
+}
+
+{
+    "response": {
+        "card": {
+            usual card's properties
+        }
+    }
+}
+
+{
+    "response": {}
+}
+
+{
+    "response": {}
+}
+
+{
+    "response": {}
+}
+
+{
+    "response": {}
+}

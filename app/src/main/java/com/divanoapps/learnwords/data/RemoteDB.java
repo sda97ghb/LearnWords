@@ -102,21 +102,30 @@ public class RemoteDB implements IDB {
     public static String getDefaultServerAddress() {
         return "10.97.128.63:8080";
     }
-    private String mServerAddress = getDefaultServerAddress();
-    private String getServerAddress() {
-        return mServerAddress;
-    }
 
     private static String getApiVersion() {
         return "0.1";
+    }
+
+    private String mServerAddress = getDefaultServerAddress();
+    private String mUsername;
+    private String mPassword;
+    private String mAccessToken;
+
+    private boolean mIsInitialized = false;
+
+    private String getServerAddress() {
+        return mServerAddress;
     }
 
     public RemoteDB() {
         ;
     }
 
-    public RemoteDB(String address) {
+    public RemoteDB(String address, String username, String password) {
         mServerAddress = address;
+        mUsername = username;
+        mPassword = password;
     }
 
     private List<DeckShort> parseDeckList(String json) throws JSONException {
@@ -172,7 +181,47 @@ public class RemoteDB implements IDB {
         }
     }
 
+    private void authorize() throws ConnectionFailureException {
+        try {
+            JSONObject requestJson = new JSONObject() {{
+                put("entity", "user");
+                put("method", "authorization");
+                put("username", mUsername);
+                put("password", mPassword);
+            }};
+
+            String entireResponseString = request(requestJson.toString());
+            JSONObject entireResponseJson = new JSONObject(entireResponseString);
+
+            if (entireResponseJson.has("error")) {
+                JSONObject errorJson = entireResponseJson.getJSONObject("error");
+                ApiError error = new ApiError(errorJson.getInt("code"),
+                                           errorJson.getString("description"));
+                throw new ConnectionFailureException();
+            }
+            else if (entireResponseJson.has("response")) {
+                JSONObject responseJson = entireResponseJson.getJSONObject("response");
+                mAccessToken = responseJson.getString("accessToken");
+            }
+            else {
+                throw new ConnectionFailureException();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+            throw new ConnectionFailureException();
+        }
+    }
+
     // Public
+
+    public void initialize() throws ConnectionFailureException {
+        if (mIsInitialized)
+            return;
+
+        authorize();
+
+        mIsInitialized = true;
+    }
 
     @Override
     public List<DeckShort> getDecks() throws ConnectionFailureException {

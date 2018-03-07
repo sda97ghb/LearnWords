@@ -44,4 +44,8 @@
     <string name="delete_this_deck">Удалить колоду</string>
     <string name="are_you_shure_delete_deck_question">Вы уверены? (Колоду нельзя будет восстановить)</string>
     <string name="card_with_id_already_exists">Карточка с этим словом и коментарием уже существует. Карточки с одинаковой первой стороной неразличимы и не могут быть сохранены в одной колоде. Измените слово или комментарий (или оба параметра).</string>
+    <string name="word">Слово</string>
+    <string name="word_comment">Комментарий к слову</string>
+    <string name="translation">Перевод</string>
+    <string name="translation_comment">Комментарий к переводу</string>
 </resources>
