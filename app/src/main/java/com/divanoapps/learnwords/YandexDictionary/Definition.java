@@ -8,6 +8,10 @@ import com.google.gson.annotations.SerializedName;
 
 public class Definition {
 
+    @SerializedName("text")
+    @Expose
+    private String text;
+
     @SerializedName("pos")
     @Expose
     private String partOfSpeech;
@@ -15,6 +19,10 @@ public class Definition {
     @SerializedName("tr")
     @Expose
     private List<Translation> translations = null;
+
+    public String getText() {
+        return text;
+    }
 
     public String getPartOfSpeech() {
         return partOfSpeech;
