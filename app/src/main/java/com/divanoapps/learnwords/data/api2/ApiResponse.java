@@ -3,10 +3,10 @@ package com.divanoapps.learnwords.data.api2;
 import org.json.JSONObject;
 
 public class ApiResponse {
-    private JSONObject response;
+    private Object response;
     private ApiError error;
 
-    public JSONObject getResponse() {
+    public Object getResponse() {
         return response;
     }
 

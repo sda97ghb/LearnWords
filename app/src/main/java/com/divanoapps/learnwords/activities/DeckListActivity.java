@@ -27,6 +27,8 @@ import com.divanoapps.learnwords.data.LocalDB;
 import com.divanoapps.learnwords.data.RemoteDB;
 import com.divanoapps.learnwords.data.RequestError;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
+import com.divanoapps.learnwords.data.api2.Api2;
+import com.divanoapps.learnwords.data.api2.ServiceExecutor;
 import com.divanoapps.learnwords.dialogs.AddDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.entities.Deck;
@@ -105,19 +107,24 @@ public class DeckListActivity extends AppCompatActivity implements
         else
             DB.setDb(new LocalDB());
 
-        // Load all decks
-        DB.initialize()
-//            .setOnDoneListener(this::requestDeckList)
-            .setOnErrorListener(this::onDbInitializationError)
-            .execute();
-
-        startActivity(new Intent(this, FastAddActivity.class));
+//        // Load all decks
+//        DB.initialize()
+////            .setOnDoneListener(this::requestDeckList)
+//            .setOnErrorListener(this::onDbInitializationError)
+//            .execute();
+//
+//        startActivity(new Intent(this, FastAddActivity.class));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        requestDeckList();
+//        requestDeckList();
+        Api2 api = ServiceExecutor.create(Api2.class);
+        api.getUser("sda97g@gmail.com")
+            .doOnSuccess(apiUser -> this.showErrorMessage(apiUser == null ? "null" : apiUser.getPersonalDecks().toString()))
+            .doOnError(throwable -> this.showErrorMessage(throwable.getMessage()))
+            .subscribe();
     }
 
     public void requestDeckList() {
