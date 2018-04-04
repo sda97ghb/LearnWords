@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.Completable;
+import io.reactivex.CompletableEmitter;
 import io.reactivex.Single;
 import io.reactivex.SingleEmitter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -100,7 +101,35 @@ public class ServiceExecutor {
 
                 Class methodReturnClass = method.getReturnType();
                 if (methodReturnClass == Completable.class) {
-                    return Completable.fromAction(() -> {
+                    return Completable.create(e -> {
+                        final CompletableEmitter emitter = e;
+                        apiRequestService.request(request).enqueue(new Callback<ApiResponse>() {
+                            @Override
+                            public void onResponse(@NonNull Call<ApiResponse> call, @NonNull Response<ApiResponse> response) {
+                                ApiResponse apiResponse = response.body();
+
+                                if (apiResponse == null) {
+                                    emitter.onError(new Exception("Fuck! See ServiceExecutor at line 112."));
+                                    return;
+                                }
+
+                                if (apiResponse.getError() != null) {
+                                    emitter.onError(new Exception(apiResponse.getError()));
+                                    return;
+                                }
+
+                                emitter.onComplete();
+                            }
+
+                            @Override
+                            public void onFailure(@NonNull Call<ApiResponse> call, @NonNull Throwable t) {
+                                emitter.onError(t);
+                            }
+                        });
+                    })
+                        .subscribeOn(Schedulers.newThread())
+                        .observeOn(AndroidSchedulers.mainThread());
+//                    return Completable.fromAction(() -> {
 //                        Response<ApiResponse> response = apiRequestService.request(request).execute();
 //                        if (!response.isSuccessful())
 //                            throw new Exception(response.code() + response.message());
@@ -112,9 +141,9 @@ public class ServiceExecutor {
 //
 //                        if (apiResponse.getError() != null)
 //                            throw new Exception(apiResponse.getError());
-                    })
-                        .subscribeOn(Schedulers.newThread())
-                        .observeOn(AndroidSchedulers.mainThread());
+//                    })
+//                        .subscribeOn(Schedulers.newThread())
+//                        .observeOn(AndroidSchedulers.mainThread());
                 }
                 else if (methodReturnClass == Single.class) {
                     // TODO: переделать через Single.create(...);
@@ -126,7 +155,7 @@ public class ServiceExecutor {
                                 ApiResponse apiResponse = response.body();
 
                                 if (apiResponse == null) {
-                                    emitter.onError(new Exception("Fuck! See ServiceExecutor at line 124."));
+                                    emitter.onError(new Exception("Fuck! See ServiceExecutor at line 158."));
                                     return;
                                 }
 
@@ -167,7 +196,7 @@ public class ServiceExecutor {
 //                        .observeOn(AndroidSchedulers.mainThread());
                 }
                 else {
-                    throw new Exception("Fuck! See ServiceExecutor at line 136.");
+                    throw new Exception("Fuck! See ServiceExecutor at line 199.");
                 }
             }
         });
