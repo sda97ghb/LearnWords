@@ -129,21 +129,6 @@ public class ServiceExecutor {
                     })
                         .subscribeOn(Schedulers.newThread())
                         .observeOn(AndroidSchedulers.mainThread());
-//                    return Completable.fromAction(() -> {
-//                        Response<ApiResponse> response = apiRequestService.request(request).execute();
-//                        if (!response.isSuccessful())
-//                            throw new Exception(response.code() + response.message());
-//
-//                        ApiResponse apiResponse = response.body();
-//
-//                        if (apiResponse == null)
-//                            throw new Exception("Fuck! See ServiceExecutor at line 107.");
-//
-//                        if (apiResponse.getError() != null)
-//                            throw new Exception(apiResponse.getError());
-//                    })
-//                        .subscribeOn(Schedulers.newThread())
-//                        .observeOn(AndroidSchedulers.mainThread());
                 }
                 else if (methodReturnClass == Single.class) {
                     // TODO: переделать через Single.create(...);
@@ -176,24 +161,6 @@ public class ServiceExecutor {
                     })
                         .subscribeOn(Schedulers.newThread())
                         .observeOn(AndroidSchedulers.mainThread());
-//                    return Single.fromCallable(() -> {
-//                        Response<ApiResponse> response = apiRequestService.request(request).execute();java.net.ConnectException
-//                        if (!response.isSuccessful())
-//                            throw new Exception(response.code() + response.message());
-//
-//                        ApiResponse apiResponse = response.body();
-//
-//                        if (apiResponse == null)
-//                            throw new Exception("Fuck! See ServiceExecutor at line 124.");
-//
-//                        if (apiResponse.getError() != null)
-//                            throw new Exception(apiResponse.getError());
-//
-//                        Class returnType = getClassFromGenericType(method.getGenericReturnType().toString());
-//                        return gson.fromJson(apiResponse.getResponse().toString(), returnType);
-//                    })
-//                        .subscribeOn(Schedulers.newThread())
-//                        .observeOn(AndroidSchedulers.mainThread());
                 }
                 else {
                     throw new Exception("Fuck! See ServiceExecutor at line 199.");

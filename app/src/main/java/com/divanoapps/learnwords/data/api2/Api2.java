@@ -13,6 +13,9 @@ public interface Api2 {
     @ApiRequest(entity = "user", method = "get")
     Single<ApiUser> getUser(@ApiParameter("email") String email);
 
+    @ApiRequest(entity = "user", method = "getExpanded")
+    Single<ApiExpandedUser> getExpandedUser(@ApiParameter("email") String email);
+
     @ApiRequest(entity = "deck", method = "get")
     Single<ApiDeck> getDeck(@ApiParameter("email") String email, @ApiParameter("name") String deckName);
 

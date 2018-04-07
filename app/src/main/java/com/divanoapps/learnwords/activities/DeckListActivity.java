@@ -1,44 +1,43 @@
 package com.divanoapps.learnwords.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.divanoapps.learnwords.Application;
 import com.divanoapps.learnwords.CardRetriever;
-import com.divanoapps.learnwords.data.DB;
-import com.divanoapps.learnwords.data.LocalDB;
-import com.divanoapps.learnwords.data.RemoteDB;
-import com.divanoapps.learnwords.data.RequestError;
+import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
-import com.divanoapps.learnwords.data.api2.Api2;
+import com.divanoapps.learnwords.data.RequestError;
+import com.divanoapps.learnwords.data.api2.ApiDeck;
+import com.divanoapps.learnwords.data.api2.ApiDeckInfo;
 import com.divanoapps.learnwords.data.api2.ApiError;
-import com.divanoapps.learnwords.data.api2.ServiceExecutor;
+import com.divanoapps.learnwords.data.api2.ApiExpandedUser;
 import com.divanoapps.learnwords.dialogs.AddDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
-import com.divanoapps.learnwords.entities.Deck;
+import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 import com.divanoapps.learnwords.entities.DeckId;
 import com.divanoapps.learnwords.entities.DeckShort;
-import com.divanoapps.learnwords.R;
-import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 
+import java.util.LinkedList;
 import java.util.List;
+
+import butterknife.ButterKnife;
 
 public class DeckListActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
@@ -53,6 +52,7 @@ public class DeckListActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_deck_list);
+        ButterKnife.bind(this);
 
         // Action bar setup
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -98,63 +98,43 @@ public class DeckListActivity extends AppCompatActivity implements
             }
         });
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (prefs.getBoolean("preference_use_remote_db", false)) {
-            String serverAddress = prefs.getString("preference_server_address", RemoteDB.getDefaultServerAddress());
-            String username = prefs.getString("preference_username", RemoteDB.getDefaultServerAddress());
-            String password = prefs.getString("preference_password", RemoteDB.getDefaultServerAddress());
-            DB.setDb(new RemoteDB(serverAddress, username, password));
-        }
-        else
-            DB.setDb(new LocalDB());
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//        if (prefs.getBoolean("preference_use_remote_db", false)) {
+//            String serverAddress = prefs.getString("preference_server_address", RemoteDB.getDefaultServerAddress());
+//            String username = prefs.getString("preference_username", RemoteDB.getDefaultServerAddress());
+//            String password = prefs.getString("preference_password", RemoteDB.getDefaultServerAddress());
+//            DB.setDb(new RemoteDB(serverAddress, username, password));
+//        }
+//        else
+//            DB.setDb(new LocalDB());
 
-//        // Load all decks
-//        DB.initialize()
-////            .setOnDoneListener(this::requestDeckList)
-//            .setOnErrorListener(this::onDbInitializationError)
-//            .execute();
-//
-//        startActivity(new Intent(this, FastAddActivity.class));
+        startActivity(new Intent(this, FastAddActivity.class));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-//        requestDeckList();
-        Api2 api = ServiceExecutor.create(Api2.class);
-        api.getUser("sda97g@gmail.com")
-            .doOnSuccess(apiUser -> this.showErrorMessage(apiUser == null ? "null" : apiUser.getPersonalDecks().toString()))
-            .doOnError(throwable -> this.showErrorMessage(
-                (throwable instanceof ApiError ? ((ApiError)throwable).getType() : "") +
-                    throwable.getMessage()))
-            .subscribe();
-        api.addUser("test@example.com", "123456")
-            .doOnComplete(() -> this.showErrorMessage("User add!"))
-            .doOnError(throwable -> this.showErrorMessage(
-                (throwable instanceof ApiError ? ((ApiError)throwable).getType() : "") +
-                    throwable.getMessage()))
+        Application.api.getExpandedUser("sda97g@gmail.com")
+            .doOnSuccess(this::showUser)
+            .doOnError(this::showErrorMessage)
             .subscribe();
     }
 
     public void requestDeckList() {
-        DB.getDecks()
-            .setOnDoneListener(this::onGetDeckListDone)
-            .setOnErrorListener(this::onGetDeckListError)
-            .execute();
+        Application.api.getExpandedUser("sda97g@gmail.com")
+            .doOnSuccess(this::showUser)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
     }
 
-    public void onDbInitializationError(RequestError error) {
-        MessageOkDialogFragment.show(this, error.getMessage());
-    }
-
-    private void onGetDeckListDone(List<DeckShort> decks) {
+    private void showUser(ApiExpandedUser apiExpandedUser) {
+        List<DeckShort> decks = new LinkedList<>();
+        for (ApiDeckInfo info : apiExpandedUser.getPersonalDecks())
+            decks.add(new DeckShort(info.getName(), info.getNumberOfCards(), info.getNumberOfHiddenCards(),
+                info.getFromLanguage(), info.getToLanguage()));
         RecyclerView deckListView = (RecyclerView) findViewById(R.id.DeckListView);
         DeckListAdapter deckListAdapter = (DeckListAdapter) deckListView.getAdapter();
         deckListAdapter.setDecks(decks);
-    }
-
-    private void onGetDeckListError(RequestError error) {
-        MessageOkDialogFragment.show(this, "Unable to load list of decks.");
     }
 
     private void onFabClicked() {
@@ -164,15 +144,21 @@ public class DeckListActivity extends AppCompatActivity implements
     }
 
     private void addDeck(String name, String languageFrom, String languageTo) {
-        Deck deck = new Deck.Builder()
-                .setName(name)
-                .setLanguageFrom(languageFrom)
-                .setLanguageTo(languageTo)
-                .build();
-        DB.saveDeck(deck)
-            .setOnDoneListener(this::requestDeckList)
-            .setOnErrorListener(this::showErrorMessage)
-            .execute();
+        ApiDeck deck = new ApiDeck();
+        deck.setName(name);
+        deck.setFromLanguage(languageFrom);
+        deck.setToLanguage(languageTo);
+        Application.api.saveDeck("sda97g@gmail.com", deck)
+            .doOnComplete(this::requestDeckList)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
+    }
+
+    private void showErrorMessage(Throwable throwable) {
+        if (throwable instanceof ApiError)
+            showErrorMessage(((ApiError) throwable).getType() + ":" + throwable.getMessage());
+        else
+            showErrorMessage(throwable.getMessage());
     }
 
     private void showErrorMessage(String message) {
@@ -263,9 +249,9 @@ public class DeckListActivity extends AppCompatActivity implements
     }
 
     public void onDeleteDeckClicked(DeckId id) {
-        DB.deleteDeck(id)
-            .setOnDoneListener(this::requestDeckList)
-            .setOnErrorListener(this::showErrorMessage)
-            .execute();
+        Application.api.deleteDeck("sda97g@gmail.com", id.getName())
+            .doOnComplete(this::requestDeckList)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
     }
 }

@@ -1,7 +1,5 @@
 package com.divanoapps.learnwords.data.api2;
 
-import org.json.JSONObject;
-
 import java.util.Map;
 
 import retrofit2.Call;
@@ -13,6 +11,6 @@ public interface ApiRequestService {
         return "http://10.97.138.104:8081/";
     }
 
-    @POST("api/2.0")
+    @POST("api/2.1")
     Call<ApiResponse> request(@Body Map<String, Object> body);
 }
