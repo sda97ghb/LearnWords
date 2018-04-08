@@ -9,9 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.entities.Card;
 import com.divanoapps.learnwords.entities.CardId;
-import com.divanoapps.learnwords.R;
 
 import java.util.LinkedList;
 import java.util.List;

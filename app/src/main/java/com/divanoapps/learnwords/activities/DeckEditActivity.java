@@ -254,16 +254,16 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     public void onAddCardClicked() {
-        Intent intent = new Intent(this, CardEditActivity.class);
-        intent.putExtra(CardEditActivity.getModeExtraName(), CardEditActivity.Mode.ADD_CARD);
-        intent.putExtra(CardEditActivity.getDeckIdExtraName(), new DeckId(mDeck.getName()));
+        Intent intent = new Intent(this, CardAddActivity.class);
+        intent.putExtra(CardAddActivity.getDeckNameExtraName(), mDeck.getName());
         startActivity(intent);
     }
 
     public void onEditCardClicked(CardId id) {
         Intent intent = new Intent(DeckEditActivity.this, CardEditActivity.class);
-        intent.putExtra(CardEditActivity.getModeExtraName(), CardEditActivity.Mode.EDIT_CARD);
-        intent.putExtra(CardEditActivity.getCardIdExtraName(), id);
+        intent.putExtra(CardEditActivity.getDeckNameExtraName(), id.getDeckName());
+        intent.putExtra(CardEditActivity.getWordExtraName(), id.getWord());
+        intent.putExtra(CardEditActivity.getCommentExtraName(), id.getWordComment());
         startActivity(intent);
     }
 

@@ -23,7 +23,6 @@ import com.divanoapps.learnwords.Application;
 import com.divanoapps.learnwords.CardRetriever;
 import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
-import com.divanoapps.learnwords.data.RequestError;
 import com.divanoapps.learnwords.data.api2.ApiDeck;
 import com.divanoapps.learnwords.data.api2.ApiDeckInfo;
 import com.divanoapps.learnwords.data.api2.ApiError;
@@ -108,7 +107,8 @@ public class DeckListActivity extends AppCompatActivity implements
 //        else
 //            DB.setDb(new LocalDB());
 
-        startActivity(new Intent(this, FastAddActivity.class));
+//        startActivity(new Intent(this, CardAddActivity.class));
+//        startActivity(new Intent(this, FastAddActivity.class));
     }
 
     @Override
@@ -163,10 +163,6 @@ public class DeckListActivity extends AppCompatActivity implements
 
     private void showErrorMessage(String message) {
         MessageOkDialogFragment.show(this, message);
-    }
-
-    private void showErrorMessage(RequestError error) {
-        showErrorMessage(error.getMessage());
     }
 
     @Override

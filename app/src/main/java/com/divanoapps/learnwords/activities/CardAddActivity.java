@@ -1,9 +1,7 @@
 package com.divanoapps.learnwords.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,7 +10,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.divanoapps.learnwords.Application;
 import com.divanoapps.learnwords.R;
@@ -30,11 +27,10 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
-public class FastAddActivity extends AppCompatActivity
+public class CardAddActivity extends AppCompatActivity
     implements TranslationListAdapter.OnTranslationOptionSelectedListener {
 
     @BindView(R.id.toolbar)
@@ -58,34 +54,26 @@ public class FastAddActivity extends AppCompatActivity
     @BindView(R.id.translation_options_view)
     RecyclerView translationOptionsView;
 
+    public static String getDeckNameExtraName() {
+        return "DECK_NAME";
+    }
+
     private String deckName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fast_add);
+        setContentView(R.layout.activity_card_add);
         ButterKnife.bind(this);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        deckName = Application.getDefaultDeckName();
+        deckName = getIntent().getStringExtra(getDeckNameExtraName());
+        if (deckName == null)
+            deckName = Application.getDefaultDeckName();
+
         deckNameView.setText(deckName);
-
-        Intent intent = getIntent();
-        String action = intent.getAction();
-        String type = intent.getType();
-
-        if (Intent.ACTION_SEND.equals(action) && "text/plain".equals(type)) {
-            String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
-            if (sharedText != null) {
-                wordEdit.setText(sharedText);
-                requestTranslations(sharedText);
-            }
-        }
-//        else {
-//            // Handle other intents, such as being started from the home screen
-//        }
 
         wordEdit.requestFocus();
         wordEdit.clearFocus();
@@ -137,24 +125,7 @@ public class FastAddActivity extends AppCompatActivity
         Application.api.getCard(Application.FAKE_EMAIL, apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
             .doOnSuccess(unused -> showErrorMessage("Card already exists."))
             .doOnError(unused -> Application.api.saveCard(Application.FAKE_EMAIL, apiCard)
-                .doOnComplete(() -> {
-                    Toast.makeText(this, "Card saved", Toast.LENGTH_SHORT).show();
-
-//                    LayoutInflater inflater = getLayoutInflater();
-//                    View layout = inflater.inflate(R.layout.toast_card_saved,
-//                        (ViewGroup) findViewById(R.id.custom_toast_container));
-//
-//                    TextView text = (TextView) layout.findViewById(R.id.text);
-//                    text.setText("This is a custom toast");
-//
-//                    Toast toast = new Toast(getApplicationContext());
-//                    toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
-//                    toast.setDuration(Toast.LENGTH_LONG);
-//                    toast.setView(layout);
-//                    toast.show();
-
-                    finish();
-                })
+                .doOnComplete(this::finish)
                 .doOnError(this::showErrorMessage)
                 .subscribe())
             .subscribe();
@@ -208,23 +179,5 @@ public class FastAddActivity extends AppCompatActivity
         translationEdit.setText(option.getTranslation());
         translationEdit.requestFocus();
         translationEdit.setSelection(translationEdit.length());
-    }
-
-    @OnClick(R.id.select_deck_button)
-    public void onSelectDeckButtonClicked() {
-        Application.api.getUser(Application.FAKE_EMAIL)
-            .doOnSuccess(apiUser -> {
-                CharSequence[] items = new CharSequence[apiUser.getPersonalDecks().size()];
-                for (int i = 0; i < apiUser.getPersonalDecks().size(); ++ i)
-                    items[i] = apiUser.getPersonalDecks().get(i);
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Select deck")
-                    .setItems(items, (dialog, which) -> {
-                        deckName = apiUser.getPersonalDecks().get(which);
-                        deckNameView.setText(deckName);
-                    }).create().show();
-            })
-            .doOnError(this::showErrorMessage)
-            .subscribe();
     }
 }
