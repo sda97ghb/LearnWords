@@ -2,6 +2,7 @@ package com.divanoapps.learnwords.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -24,6 +25,13 @@ import com.divanoapps.learnwords.data.api2.ApiError;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.entities.Card;
 import com.divanoapps.learnwords.entities.TranslationOption;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.Task;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 
 import java.util.List;
@@ -35,7 +43,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class FastAddActivity extends AppCompatActivity
-    implements TranslationListAdapter.OnTranslationOptionSelectedListener {
+    implements TranslationListAdapter.OnTranslationOptionSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+
+    private static final int RC_SIGN_IN = 9001;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -59,6 +69,8 @@ public class FastAddActivity extends AppCompatActivity
     RecyclerView translationOptionsView;
 
     private String deckName;
+
+    private GoogleApiClient googleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +114,39 @@ public class FastAddActivity extends AppCompatActivity
             });
 
         RxTextView.textChanges(commentEdit).subscribe(charSequence -> checkExistence());
+
+        googleApiClient = Application.getGoogleSignInApiClient(this, this);
+
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                // Google Sign In was successful
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                setAccount(account);
+            } catch (ApiException e) {
+                // Google Sign In failed, update UI appropriately
+                e.printStackTrace();
+                showErrorMessageToast(getString(R.string.failed_to_sign_in, e.getLocalizedMessage()));
+                finish();
+            }
+        }
+    }
+
+    private void setAccount(GoogleSignInAccount account) {
+        Application.setGoogleSignInAccount(account);
+        Application.initializeApiFromGoogleSignInAccount(account);
+
+        Application.getApi().registerUser()
+            .doOnError(this::showErrorMessage)
+            .subscribe();
     }
 
     @Override
@@ -122,7 +167,7 @@ public class FastAddActivity extends AppCompatActivity
 
     private ApiCard getCurrentStateAsApiCard() {
         ApiCard apiCard = new ApiCard();
-        apiCard.setOwner(Application.FAKE_EMAIL);
+        apiCard.setOwner(Application.getGoogleSignInAccount().getEmail());
         apiCard.setDeck(deckName);
         apiCard.setWord(wordEdit.getText().toString());
         apiCard.setComment(commentEdit.getText().toString());
@@ -134,9 +179,9 @@ public class FastAddActivity extends AppCompatActivity
 
     private void onDoneClicked() {
         ApiCard apiCard = getCurrentStateAsApiCard();
-        Application.api.getCard(Application.FAKE_EMAIL, apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
+        Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
             .doOnSuccess(unused -> showErrorMessage("Card already exists."))
-            .doOnError(unused -> Application.api.saveCard(Application.FAKE_EMAIL, apiCard)
+            .doOnError(unused -> Application.getApi().saveCard(apiCard)
                 .doOnComplete(() -> {
                     Toast.makeText(this, "Card saved", Toast.LENGTH_SHORT).show();
 
@@ -194,7 +239,7 @@ public class FastAddActivity extends AppCompatActivity
 
     private void checkExistence() {
         ApiCard apiCard = getCurrentStateAsApiCard();
-        Application.api.getCard(Application.FAKE_EMAIL, apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
+        Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
             .doOnSuccess(unused -> commentEditWrapper.setError("Already exists"))
             .doOnError(throwable -> {
                 commentEditWrapper.setError(null);
@@ -212,7 +257,7 @@ public class FastAddActivity extends AppCompatActivity
 
     @OnClick(R.id.select_deck_button)
     public void onSelectDeckButtonClicked() {
-        Application.api.getUser(Application.FAKE_EMAIL)
+        Application.getApi().getUser()
             .doOnSuccess(apiUser -> {
                 CharSequence[] items = new CharSequence[apiUser.getPersonalDecks().size()];
                 for (int i = 0; i < apiUser.getPersonalDecks().size(); ++ i)
@@ -226,5 +271,15 @@ public class FastAddActivity extends AppCompatActivity
             })
             .doOnError(this::showErrorMessage)
             .subscribe();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        showErrorMessageToast(connectionResult.getErrorMessage());
+        finish();
+    }
+
+    private void showErrorMessageToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

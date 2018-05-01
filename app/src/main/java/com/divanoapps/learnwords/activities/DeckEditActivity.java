@@ -121,7 +121,7 @@ public class DeckEditActivity extends AppCompatActivity implements
 
     private void requestDeck() {
         DeckId deckId = (DeckId) getIntent().getExtras().getSerializable(getDeckIdExtraName());
-        Application.api.getExpandedDeck(Application.FAKE_EMAIL, deckId.getName())
+        Application.getApi().getExpandedDeck(deckId.getName())
             .doOnSuccess(this::showDeck)
             .doOnError(this::showErrorMessage)
             .subscribe();
@@ -230,7 +230,7 @@ public class DeckEditActivity extends AppCompatActivity implements
 
     private void deleteCurrentDeck() {
         YesNoMessageDialogFragment.show(this, getString(R.string.are_you_shure_delete_deck_question), () ->
-            Application.api.deleteDeck(Application.FAKE_EMAIL, mDeck.getName())
+            Application.getApi().deleteDeck(mDeck.getName())
                 .doOnComplete(() -> NavUtils.navigateUpFromSameTask(this))
                 .doOnError(this::showErrorMessage)
                 .subscribe()
@@ -243,7 +243,7 @@ public class DeckEditActivity extends AppCompatActivity implements
             final String newDeckName = ((RenameDeckDialogFragment) dialog).getNewDeckName();
             Map<String, Object> properties = new HashMap<>();
             properties.put("name", newDeckName);
-            Application.api.updateDeck(Application.FAKE_EMAIL, mDeck.getName(), properties)
+            Application.getApi().updateDeck(mDeck.getName(), properties)
                 .doOnComplete(() -> {
                     getIntent().putExtra(getDeckIdExtraName(), new DeckId(newDeckName));
                     requestDeck();
@@ -254,6 +254,18 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     public void onAddCardClicked() {
+//        Toast.makeText(this, "Clicked Fab", Toast.LENGTH_SHORT).show();
+//        Application.getApi().testRotate()
+//            .doOnSuccess(s -> {
+////                fromLanguageView.setText(s);
+//                ((TextView) findViewById(R.id.language_from_view)).setText(s);
+//                System.out.println("Complete");
+//            })
+//            .doOnError(throwable -> {
+//                throwable.printStackTrace();
+//                Toast.makeText(this, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+//            })
+//            .subscribe();
         Intent intent = new Intent(this, CardAddActivity.class);
         intent.putExtra(CardAddActivity.getDeckNameExtraName(), mDeck.getName());
         startActivity(intent);
@@ -269,11 +281,11 @@ public class DeckEditActivity extends AppCompatActivity implements
 
     public void onToggleCardEnabledClicked(final CardId id) {
         // Get the card to know its visibility
-        Application.api.getCard(Application.FAKE_EMAIL, id.getDeckName(), id.getWord(), id.getWordComment())
+        Application.getApi().getCard(id.getDeckName(), id.getWord(), id.getWordComment())
             .doOnSuccess(apiCard -> {
                 Map<String, Object> properties = new HashMap<>();
                 properties.put("hidden", !(apiCard.isHidden()));
-                Application.api.updateCard(Application.FAKE_EMAIL, id.getDeckName(), id.getWord(), id.getWordComment(), properties)
+                Application.getApi().updateCard(id.getDeckName(), id.getWord(), id.getWordComment(), properties)
                     .doOnComplete(this::requestDeck)
                     .doOnError(this::showErrorMessage)
                     .subscribe();
@@ -283,7 +295,7 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     public void onDeleteCardClicked(CardId id) {
-        Application.api.deleteCard(Application.FAKE_EMAIL, id.getDeckName(), id.getWord(), id.getWordComment())
+        Application.getApi().deleteCard(id.getDeckName(), id.getWord(), id.getWordComment())
             .doOnComplete(this::requestDeck)
             .doOnError(this::showErrorMessage)
             .subscribe();

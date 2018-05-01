@@ -110,7 +110,7 @@ public class CardAddActivity extends AppCompatActivity
 
     private ApiCard getCurrentStateAsApiCard() {
         ApiCard apiCard = new ApiCard();
-        apiCard.setOwner(Application.FAKE_EMAIL);
+        apiCard.setOwner(Application.getGoogleSignInAccount().getEmail());
         apiCard.setDeck(deckName);
         apiCard.setWord(wordEdit.getText().toString());
         apiCard.setComment(commentEdit.getText().toString());
@@ -122,9 +122,9 @@ public class CardAddActivity extends AppCompatActivity
 
     private void onDoneClicked() {
         ApiCard apiCard = getCurrentStateAsApiCard();
-        Application.api.getCard(Application.FAKE_EMAIL, apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
+        Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
             .doOnSuccess(unused -> showErrorMessage("Card already exists."))
-            .doOnError(unused -> Application.api.saveCard(Application.FAKE_EMAIL, apiCard)
+            .doOnError(unused -> Application.getApi().saveCard(apiCard)
                 .doOnComplete(this::finish)
                 .doOnError(this::showErrorMessage)
                 .subscribe())
@@ -165,7 +165,7 @@ public class CardAddActivity extends AppCompatActivity
 
     private void checkExistence() {
         ApiCard apiCard = getCurrentStateAsApiCard();
-        Application.api.getCard(Application.FAKE_EMAIL, apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
+        Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
             .doOnSuccess(unused -> commentEditWrapper.setError("Already exists"))
             .doOnError(throwable -> {
                 commentEditWrapper.setError(null);

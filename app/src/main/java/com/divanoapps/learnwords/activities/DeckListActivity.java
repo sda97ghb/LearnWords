@@ -8,7 +8,6 @@ import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -32,6 +31,8 @@ import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 import com.divanoapps.learnwords.entities.DeckId;
 import com.divanoapps.learnwords.entities.DeckShort;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -41,6 +42,8 @@ import butterknife.ButterKnife;
 public class DeckListActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         RenameDeckDialogFragment.RenameDeckDialogListener {
+
+    GoogleApiClient googleSignInApiClient;
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
@@ -97,6 +100,9 @@ public class DeckListActivity extends AppCompatActivity implements
             }
         });
 
+        googleSignInApiClient = Application.getGoogleSignInApiClient(this,
+            connectionResult -> showErrorMessage(connectionResult.getErrorMessage()));
+
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 //        if (prefs.getBoolean("preference_use_remote_db", false)) {
 //            String serverAddress = prefs.getString("preference_server_address", RemoteDB.getDefaultServerAddress());
@@ -106,22 +112,19 @@ public class DeckListActivity extends AppCompatActivity implements
 //        }
 //        else
 //            DB.setDb(new LocalDB());
-
-//        startActivity(new Intent(this, CardAddActivity.class));
-//        startActivity(new Intent(this, FastAddActivity.class));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Application.api.getExpandedUser("sda97g@gmail.com")
+        Application.getApi().getExpandedUser()
             .doOnSuccess(this::showUser)
             .doOnError(this::showErrorMessage)
             .subscribe();
     }
 
     public void requestDeckList() {
-        Application.api.getExpandedUser("sda97g@gmail.com")
+        Application.getApi().getExpandedUser()
             .doOnSuccess(this::showUser)
             .doOnError(this::showErrorMessage)
             .subscribe();
@@ -132,7 +135,7 @@ public class DeckListActivity extends AppCompatActivity implements
         for (ApiDeckInfo info : apiExpandedUser.getPersonalDecks())
             decks.add(new DeckShort(info.getName(), info.getNumberOfCards(), info.getNumberOfHiddenCards(),
                 info.getFromLanguage(), info.getToLanguage()));
-        RecyclerView deckListView = (RecyclerView) findViewById(R.id.DeckListView);
+        RecyclerView deckListView = findViewById(R.id.DeckListView);
         DeckListAdapter deckListAdapter = (DeckListAdapter) deckListView.getAdapter();
         deckListAdapter.setDecks(decks);
     }
@@ -148,7 +151,7 @@ public class DeckListActivity extends AppCompatActivity implements
         deck.setName(name);
         deck.setFromLanguage(languageFrom);
         deck.setToLanguage(languageTo);
-        Application.api.saveDeck("sda97g@gmail.com", deck)
+        Application.getApi().saveDeck(deck)
             .doOnComplete(this::requestDeckList)
             .doOnError(this::showErrorMessage)
             .subscribe();
@@ -179,7 +182,7 @@ public class DeckListActivity extends AppCompatActivity implements
         // Inflate the menu; this adds items to the action bar.
         getMenuInflater().inflate(R.menu.menu_deck_list_activity_toolbar, menu);
         MenuItem settingsMenuItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(settingsMenuItem);
+        SearchView searchView = (SearchView) settingsMenuItem.getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -189,7 +192,7 @@ public class DeckListActivity extends AppCompatActivity implements
             @Override
             public boolean onQueryTextChange(String newText) {
                 Snackbar.make(findViewById(R.id.coordinator_layout), "Search: " + newText + ".",
-                        Snackbar.LENGTH_SHORT).show();
+                    Snackbar.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -224,11 +227,21 @@ public class DeckListActivity extends AppCompatActivity implements
             case R.id.nav_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
+            case R.id.nav_sign_out:
+                signOut();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void signOut() {
+        Auth.GoogleSignInApi.signOut(googleSignInApiClient)
+            .setResultCallback(status -> {
+                startActivity(new Intent(this, LauncherActivity.class));
+                finish();
+            });
     }
 
     public void onEditDeckClicked(DeckId id) {
@@ -245,7 +258,7 @@ public class DeckListActivity extends AppCompatActivity implements
     }
 
     public void onDeleteDeckClicked(DeckId id) {
-        Application.api.deleteDeck("sda97g@gmail.com", id.getName())
+        Application.getApi().deleteDeck(id.getName())
             .doOnComplete(this::requestDeckList)
             .doOnError(this::showErrorMessage)
             .subscribe();

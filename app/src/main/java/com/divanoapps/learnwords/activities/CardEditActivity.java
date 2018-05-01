@@ -127,7 +127,7 @@ public class CardEditActivity extends AppCompatActivity
 
         RxTextView.textChanges(commentEdit).subscribe(charSequence -> checkExistence());
 
-        Application.api.getCard(Application.FAKE_EMAIL, deckName, oldWord, oldComment)
+        Application.getApi().getCard(deckName, oldWord, oldComment)
             .doOnSuccess(this::showCard)
             .doOnError(this::showErrorMessage)
             .subscribe();
@@ -156,7 +156,7 @@ public class CardEditActivity extends AppCompatActivity
 
     private void checkExistence() {
         ApiCard apiCard = getCurrentStateAsApiCard();
-        Application.api.getCard(Application.FAKE_EMAIL, apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
+        Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
             .doOnSuccess(unused -> commentEditWrapper.setError("Already exists"))
             .doOnError(throwable -> {
                 commentEditWrapper.setError(null);
@@ -203,7 +203,7 @@ public class CardEditActivity extends AppCompatActivity
         apiCard.setTranslation(translationEdit.getText().toString());
         apiCard.setDifficulty(mDifficulty);
         apiCard.setHidden(!mVisibility);
-        apiCard.setOwner(Application.FAKE_EMAIL);
+        apiCard.setOwner(Application.getGoogleSignInAccount().getEmail());
         return apiCard;
     }
 
@@ -235,7 +235,7 @@ public class CardEditActivity extends AppCompatActivity
         properties.put("translation", card.getTranslation());
         properties.put("difficulty", card.getDifficulty());
         properties.put("hidden", card.isHidden());
-        Application.api.updateCard(Application.FAKE_EMAIL, deckName, oldWord, oldComment, properties)
+        Application.getApi().updateCard(deckName, oldWord, oldComment, properties)
             .doOnComplete(this::finish)
             .doOnError(this::showErrorMessage)
             .subscribe();

@@ -5,7 +5,7 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
-    <string name="decks">Decks</string>
+    <string name="decks">My decks</string>
     <string name="settings">Settings</string>
     <string name="search">Search</string>
     <string name="title_activity_deck_edit" translatable="false">DeckEditActivity</string>
@@ -58,7 +58,7 @@
         <item>Русский</item>
     </string-array>
     <string name="title_activity_fast_add">Add card</string>
-    <string name="large_text">
+    <string name="large_text" translatable="false">
         "Material is the metaphor.\n\n"
 
         "A material metaphor is the unifying theory of a rationalized space and a system of motion."
@@ -148,4 +148,8 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="add_card">Add card</string>
+    <string name="failed_to_sign_in">Failed to sign in: %1$s</string>
+    <string name="hello_message_prefix">Hello, %1$s</string>
+    <string name="shared_decks">Shared decks</string>
+    <string name="sign_out">Sign Out</string>
 </resources>
