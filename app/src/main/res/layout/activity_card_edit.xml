@@ -1,67 +1,133 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout
+<android.support.constraint.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/coordinator_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.divanoapps.learnwords.activities.CardEditActivity">
+    tools:context=".activities.CardEditActivity">
 
-    <android.support.design.widget.AppBarLayout
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:layout_height="?attr/actionBarSize"
+        app:title="@string/title_edit_card"
+        app:layout_collapseMode="pin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:title="@string/decks"
-            app:title="@string/title_edit_card"
-            android:layout_marginTop="25dp"
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    </android.support.design.widget.AppBarLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-    <ScrollView
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="70dp">
+                <TextView
+                    android:id="@+id/deck_name_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:text="Default deck"/>
 
-        <include layout="@layout/component_card_edit_form" />
+                <EditText
+                    android:id="@+id/word_edit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:hint="@string/word"
+                    android:textSize="34sp"
+                    android:backgroundTint="@color/ninja_edit_text_background" />
 
-    </ScrollView>
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/comment_edit_wrapper"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    app:hintEnabled="false">
 
-    <android.support.constraint.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom">
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/comment_edit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="@string/word_comment"
+                        android:textSize="20sp"
+                        android:backgroundTint="@color/ninja_edit_text_background" />
 
-        <include
-            android:id="@+id/include"
-            layout="@layout/component_difficulty_picker"
-            android:layout_width="200dp"
-            android:layout_height="70dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintRight_toLeftOf="@+id/visibility_button"
-            app:layout_constraintLeft_toLeftOf="parent" />
+                </android.support.design.widget.TextInputLayout>
+                <!--<EditText-->
+                    <!--android:id="@+id/word_comment_edit"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_marginStart="8dp"-->
+                    <!--android:layout_marginEnd="8dp"-->
+                    <!--android:hint="@string/word_comment"-->
+                    <!--android:textSize="20sp"-->
+                    <!--android:backgroundTint="@color/ninja_edit_text_background" />-->
+            </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/visibility_button"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:background="@color/colorPrimary"
-            android:src="@drawable/ic_card_edit_visible"
-            android:tint="@android:color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintLeft_toRightOf="@+id/include"
-            android:foreground="?android:attr/selectableItemBackground"/>
+            <EditText
+                android:id="@+id/translation_edit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:hint="Введите перевод или выбирите из списка ниже"
+                android:backgroundTint="@color/ninja_edit_text_background"/>
 
-    </android.support.constraint.ConstraintLayout>
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/translation_options_view"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"/>
 
-</android.support.design.widget.CoordinatorLayout>
+            <android.support.constraint.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp">
+
+                <include
+                    android:id="@+id/include"
+                    layout="@layout/component_difficulty_picker"
+                    android:layout_width="200dp"
+                    android:layout_height="70dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toLeftOf="@+id/visibility_button"
+                    app:layout_constraintLeft_toLeftOf="parent" />
+
+                <ImageButton
+                    android:id="@+id/visibility_button"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:background="@color/colorPrimary"
+                    android:src="@drawable/ic_card_edit_visible"
+                    android:tint="@android:color/white"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintLeft_toRightOf="@+id/include"
+                    android:foreground="?android:attr/selectableItemBackground"/>
+
+            </android.support.constraint.ConstraintLayout>
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+
+</android.support.constraint.ConstraintLayout>

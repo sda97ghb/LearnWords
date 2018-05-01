@@ -1,45 +1,49 @@
 package com.divanoapps.learnwords.activities;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SearchView;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.divanoapps.learnwords.Application;
 import com.divanoapps.learnwords.CardRetriever;
-import com.divanoapps.learnwords.data.DB;
-import com.divanoapps.learnwords.data.LocalDB;
-import com.divanoapps.learnwords.data.RemoteDB;
-import com.divanoapps.learnwords.data.RequestError;
+import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
+import com.divanoapps.learnwords.data.api2.ApiDeck;
+import com.divanoapps.learnwords.data.api2.ApiDeckInfo;
+import com.divanoapps.learnwords.data.api2.ApiError;
+import com.divanoapps.learnwords.data.api2.ApiExpandedUser;
 import com.divanoapps.learnwords.dialogs.AddDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
-import com.divanoapps.learnwords.entities.Deck;
+import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 import com.divanoapps.learnwords.entities.DeckId;
 import com.divanoapps.learnwords.entities.DeckShort;
-import com.divanoapps.learnwords.R;
-import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.api.GoogleApiClient;
 
+import java.util.LinkedList;
 import java.util.List;
+
+import butterknife.ButterKnife;
 
 public class DeckListActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         RenameDeckDialogFragment.RenameDeckDialogListener {
+
+    GoogleApiClient googleSignInApiClient;
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
@@ -50,6 +54,7 @@ public class DeckListActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_deck_list);
+        ButterKnife.bind(this);
 
         // Action bar setup
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -95,50 +100,44 @@ public class DeckListActivity extends AppCompatActivity implements
             }
         });
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        if (prefs.getBoolean("preference_use_remote_db", false)) {
-            String serverAddress = prefs.getString("preference_server_address", RemoteDB.getDefaultServerAddress());
-            String username = prefs.getString("preference_username", RemoteDB.getDefaultServerAddress());
-            String password = prefs.getString("preference_password", RemoteDB.getDefaultServerAddress());
-            DB.setDb(new RemoteDB(serverAddress, username, password));
-        }
-        else
-            DB.setDb(new LocalDB());
+        googleSignInApiClient = Application.getGoogleSignInApiClient(this,
+            connectionResult -> showErrorMessage(connectionResult.getErrorMessage()));
 
-        // Load all decks
-        DB.initialize()
-//            .setOnDoneListener(this::requestDeckList)
-            .setOnErrorListener(this::onDbInitializationError)
-            .execute();
-
-        startActivity(new Intent(this, FastAddActivity.class));
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+//        if (prefs.getBoolean("preference_use_remote_db", false)) {
+//            String serverAddress = prefs.getString("preference_server_address", RemoteDB.getDefaultServerAddress());
+//            String username = prefs.getString("preference_username", RemoteDB.getDefaultServerAddress());
+//            String password = prefs.getString("preference_password", RemoteDB.getDefaultServerAddress());
+//            DB.setDb(new RemoteDB(serverAddress, username, password));
+//        }
+//        else
+//            DB.setDb(new LocalDB());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        requestDeckList();
+        Application.getApi().getExpandedUser()
+            .doOnSuccess(this::showUser)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
     }
 
     public void requestDeckList() {
-        DB.getDecks()
-            .setOnDoneListener(this::onGetDeckListDone)
-            .setOnErrorListener(this::onGetDeckListError)
-            .execute();
+        Application.getApi().getExpandedUser()
+            .doOnSuccess(this::showUser)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
     }
 
-    public void onDbInitializationError(RequestError error) {
-        MessageOkDialogFragment.show(this, error.getMessage());
-    }
-
-    private void onGetDeckListDone(List<DeckShort> decks) {
-        RecyclerView deckListView = (RecyclerView) findViewById(R.id.DeckListView);
+    private void showUser(ApiExpandedUser apiExpandedUser) {
+        List<DeckShort> decks = new LinkedList<>();
+        for (ApiDeckInfo info : apiExpandedUser.getPersonalDecks())
+            decks.add(new DeckShort(info.getName(), info.getNumberOfCards(), info.getNumberOfHiddenCards(),
+                info.getFromLanguage(), info.getToLanguage()));
+        RecyclerView deckListView = findViewById(R.id.DeckListView);
         DeckListAdapter deckListAdapter = (DeckListAdapter) deckListView.getAdapter();
         deckListAdapter.setDecks(decks);
-    }
-
-    private void onGetDeckListError(RequestError error) {
-        MessageOkDialogFragment.show(this, "Unable to load list of decks.");
     }
 
     private void onFabClicked() {
@@ -148,23 +147,25 @@ public class DeckListActivity extends AppCompatActivity implements
     }
 
     private void addDeck(String name, String languageFrom, String languageTo) {
-        Deck deck = new Deck.Builder()
-                .setName(name)
-                .setLanguageFrom(languageFrom)
-                .setLanguageTo(languageTo)
-                .build();
-        DB.saveDeck(deck)
-            .setOnDoneListener(this::requestDeckList)
-            .setOnErrorListener(this::showErrorMessage)
-            .execute();
+        ApiDeck deck = new ApiDeck();
+        deck.setName(name);
+        deck.setFromLanguage(languageFrom);
+        deck.setToLanguage(languageTo);
+        Application.getApi().saveDeck(deck)
+            .doOnComplete(this::requestDeckList)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
+    }
+
+    private void showErrorMessage(Throwable throwable) {
+        if (throwable instanceof ApiError)
+            showErrorMessage(((ApiError) throwable).getType() + ":" + throwable.getMessage());
+        else
+            showErrorMessage(throwable.getMessage());
     }
 
     private void showErrorMessage(String message) {
         MessageOkDialogFragment.show(this, message);
-    }
-
-    private void showErrorMessage(RequestError error) {
-        showErrorMessage(error.getMessage());
     }
 
     @Override
@@ -181,7 +182,7 @@ public class DeckListActivity extends AppCompatActivity implements
         // Inflate the menu; this adds items to the action bar.
         getMenuInflater().inflate(R.menu.menu_deck_list_activity_toolbar, menu);
         MenuItem settingsMenuItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(settingsMenuItem);
+        SearchView searchView = (SearchView) settingsMenuItem.getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -191,7 +192,7 @@ public class DeckListActivity extends AppCompatActivity implements
             @Override
             public boolean onQueryTextChange(String newText) {
                 Snackbar.make(findViewById(R.id.coordinator_layout), "Search: " + newText + ".",
-                        Snackbar.LENGTH_SHORT).show();
+                    Snackbar.LENGTH_SHORT).show();
                 return false;
             }
         });
@@ -226,11 +227,21 @@ public class DeckListActivity extends AppCompatActivity implements
             case R.id.nav_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
+            case R.id.nav_sign_out:
+                signOut();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private void signOut() {
+        Auth.GoogleSignInApi.signOut(googleSignInApiClient)
+            .setResultCallback(status -> {
+                startActivity(new Intent(this, LauncherActivity.class));
+                finish();
+            });
     }
 
     public void onEditDeckClicked(DeckId id) {
@@ -247,9 +258,9 @@ public class DeckListActivity extends AppCompatActivity implements
     }
 
     public void onDeleteDeckClicked(DeckId id) {
-        DB.deleteDeck(id)
-            .setOnDoneListener(this::requestDeckList)
-            .setOnErrorListener(this::showErrorMessage)
-            .execute();
+        Application.getApi().deleteDeck(id.getName())
+            .doOnComplete(this::requestDeckList)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
     }
 }

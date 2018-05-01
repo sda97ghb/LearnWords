@@ -12,11 +12,9 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.divanoapps.learnwords.CardRetriever;
+import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.entities.DeckId;
 import com.divanoapps.learnwords.entities.DeckShort;
-import com.divanoapps.learnwords.R;
-
-import org.w3c.dom.Text;
 
 import java.util.LinkedList;
 import java.util.List;

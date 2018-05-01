@@ -9,8 +9,6 @@ import android.widget.TextView;
 import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.entities.TranslationOption;
 
-import org.w3c.dom.Text;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,11 +21,20 @@ import butterknife.ButterKnife;
 
 public class TranslationListAdapter extends RecyclerView.Adapter<TranslationListAdapter.ViewHolder> {
 
-    List<TranslationOption> mTranslationOptions = new LinkedList<>();
+    private List<TranslationOption> mTranslationOptions = new LinkedList<>();
+
+    public interface OnTranslationOptionSelectedListener {
+        void onTranslationOptionSelected(TranslationOption option);
+    }
+    private OnTranslationOptionSelectedListener onTranslationOptionSelectedListener = translationOption -> {};
 
     public void setTranslationOptions(List<TranslationOption> translationOptions) {
         mTranslationOptions = translationOptions;
         notifyDataSetChanged();
+    }
+
+    public void setOnTranslationOptionSelectedListener(OnTranslationOptionSelectedListener listener) {
+        this.onTranslationOptionSelectedListener = listener;
     }
 
     @Override
@@ -66,6 +73,13 @@ public class TranslationListAdapter extends RecyclerView.Adapter<TranslationList
             partOfSpeechView.setText(translationOption.getPartOfSpeech());
             translationView.setText(translationOption.getTranslation());
             meansView.setText(translationOption.getMeans());
+
+            View.OnClickListener onClickListener = v ->
+                onTranslationOptionSelectedListener.onTranslationOptionSelected(translationOption);
+            itemView.setOnClickListener(onClickListener);
+            partOfSpeechView.setOnClickListener(onClickListener);
+            translationView.setOnClickListener(onClickListener);
+            meansView.setOnClickListener(onClickListener);
         }
     }
 }

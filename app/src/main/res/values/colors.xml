@@ -5,6 +5,6 @@
     <color name="colorAccent">#a6797a</color>
     <color name="transparent">#00ffffff</color>
     <color name="cardActionIcon">#ff606060</color>
-    <color name="white">#ffffffff</color>
+    <color name="white">#ffffff</color>
     <color name="lightGray">#ffeeeeee</color>
 </resources>

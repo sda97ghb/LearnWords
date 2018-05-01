@@ -4,7 +4,7 @@
     <string name="settings">Настройки</string>
     <string name="navigation_drawer_close">Закрыть панель навигации</string>
     <string name="navigation_drawer_open">Открыть панель навигации</string>
-    <string name="decks">Колоды</string>
+    <string name="decks">Мои колоды</string>
     <string name="action_settings">Настройки</string>
     <string name="search">Поиск</string>
     <string name="decorator_difficulty_is">Сложность</string>
@@ -48,4 +48,10 @@
     <string name="word_comment">Комментарий к слову</string>
     <string name="translation">Перевод</string>
     <string name="translation_comment">Комментарий к переводу</string>
+    <string name="add_card">Добавить карточку</string>
+    <string name="title_activity_fast_add">Добавить карточку</string>
+    <string name="failed_to_sign_in">Не удалось войти: %1$s</string>
+    <string name="hello_message_prefix">Здравствуйте, %1$s</string>
+    <string name="shared_decks">Общие колоды</string>
+    <string name="sign_out">Выйти</string>
 </resources>

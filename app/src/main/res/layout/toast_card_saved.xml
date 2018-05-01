@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/custom_toast_container"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp"
+    android:background="@drawable/bg_toast"
+    android:weightSum="1.0"
+    android:descendantFocusability="blocksDescendants">
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_height="wrap_content"
+        android:layout_weight=".5"
+        android:layout_width="0dip"
+        android:text="Saved"
+        android:textColor="@color/white" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_height="wrap_content"
+        android:layout_weight=".5"
+        android:layout_width="0dip"
+        android:text="LearnWords"
+        android:textSize="12sp"
+        android:textColor="@color/white"
+        android:background="@color/transparent"/>
+    <!--<TextView-->
+        <!--android:id="@+id/"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:text="LearnWords"-->
+        <!--android:textColor="@color/white" />-->
+</LinearLayout>

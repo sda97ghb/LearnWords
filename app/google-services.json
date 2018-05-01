@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "267917494384",
+    "firebase_url": "https://learnwords-ee86b.firebaseio.com",
+    "project_id": "learnwords-ee86b",
+    "storage_bucket": "learnwords-ee86b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:267917494384:android:9238ccb0600d743c",
+        "android_client_info": {
+          "package_name": "com.divanoapps.learnwords"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "267917494384-f85uijbb01v2nkf5ee1b3fnqdeqnk4a6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.divanoapps.learnwords",
+            "certificate_hash": "c75df7c2d78beca17e313d7c208df333f6c3d70a"
+          }
+        },
+        {
+          "client_id": "267917494384-oh291kv8mg1d8iov2epiojfg3apolbl8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEDFaLrJUwvcQBIyjCKVSoBKPIz-2-Cn0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "267917494384-oh291kv8mg1d8iov2epiojfg3apolbl8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
