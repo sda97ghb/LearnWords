@@ -22,8 +22,10 @@ import com.divanoapps.learnwords.YandexDictionary.YandexDictionaryService;
 import com.divanoapps.learnwords.adapters.TranslationListAdapter;
 import com.divanoapps.learnwords.data.api2.ApiCard;
 import com.divanoapps.learnwords.data.api2.ApiError;
+import com.divanoapps.learnwords.data.local.Card;
+import com.divanoapps.learnwords.data.local.RepositoryModule;
+import com.divanoapps.learnwords.data.local.TimestampFactory;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
-import com.divanoapps.learnwords.entities.Card;
 import com.divanoapps.learnwords.entities.TranslationOption;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -44,8 +46,6 @@ import io.reactivex.schedulers.Schedulers;
 
 public class FastAddActivity extends AppCompatActivity
     implements TranslationListAdapter.OnTranslationOptionSelectedListener, GoogleApiClient.OnConnectionFailedListener {
-
-    private static final int RC_SIGN_IN = 9001;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -68,9 +68,11 @@ public class FastAddActivity extends AppCompatActivity
     @BindView(R.id.translation_options_view)
     RecyclerView translationOptionsView;
 
+    TranslationListAdapter translationListAdapter;
+
     private String deckName;
 
-    private GoogleApiClient googleApiClient;
+    RepositoryModule repositoryModule;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +105,7 @@ public class FastAddActivity extends AppCompatActivity
         wordEdit.clearFocus();
 
         translationOptionsView.setLayoutManager(new LinearLayoutManager(this));
-        TranslationListAdapter translationListAdapter = new TranslationListAdapter();
+        translationListAdapter = new TranslationListAdapter();
         translationListAdapter.setOnTranslationOptionSelectedListener(this);
         translationOptionsView.setAdapter(translationListAdapter);
 
@@ -115,38 +117,7 @@ public class FastAddActivity extends AppCompatActivity
 
         RxTextView.textChanges(commentEdit).subscribe(charSequence -> checkExistence());
 
-        googleApiClient = Application.getGoogleSignInApiClient(this, this);
-
-        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
-        startActivityForResult(signInIntent, RC_SIGN_IN);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == RC_SIGN_IN) {
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            try {
-                // Google Sign In was successful
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                setAccount(account);
-            } catch (ApiException e) {
-                // Google Sign In failed, update UI appropriately
-                e.printStackTrace();
-                showErrorMessageToast(getString(R.string.failed_to_sign_in, e.getLocalizedMessage()));
-                finish();
-            }
-        }
-    }
-
-    private void setAccount(GoogleSignInAccount account) {
-        Application.setGoogleSignInAccount(account);
-        Application.initializeApiFromGoogleSignInAccount(account);
-
-        Application.getApi().registerUser()
-            .doOnError(this::showErrorMessage)
-            .subscribe();
+        repositoryModule = new RepositoryModule(getApplicationContext());
     }
 
     @Override
@@ -165,43 +136,35 @@ public class FastAddActivity extends AppCompatActivity
         }
     }
 
-    private ApiCard getCurrentStateAsApiCard() {
-        ApiCard apiCard = new ApiCard();
-        apiCard.setOwner(Application.getGoogleSignInAccount().getEmail());
-        apiCard.setDeck(deckName);
-        apiCard.setWord(wordEdit.getText().toString());
-        apiCard.setComment(commentEdit.getText().toString());
-        apiCard.setTranslation(translationEdit.getText().toString());
-        apiCard.setDifficulty(Card.getDefaultDifficulty());
-        apiCard.setHidden(false);
-        return apiCard;
+    private Card getCurrentStateAsCard() {
+        Card card = new Card();
+        card.setTimestamp(TimestampFactory.getTimestamp());
+        card.setDeckName(deckName);
+        card.setWord(wordEdit.getText().toString());
+        card.setComment(commentEdit.getText().toString());
+        card.setTranslation(translationEdit.getText().toString());
+        card.setDifficulty(Card.getDefaultDifficulty());
+        card.setHidden(false);
+        return card;
     }
 
     private void onDoneClicked() {
-        ApiCard apiCard = getCurrentStateAsApiCard();
-        Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
+        Card card = getCurrentStateAsCard();
+        repositoryModule.getCardRepository().find(card.getDeckName(), card.getWord(), card.getComment())
             .doOnSuccess(unused -> showErrorMessage("Card already exists."))
-            .doOnError(unused -> Application.getApi().saveCard(apiCard)
-                .doOnComplete(() -> {
-                    Toast.makeText(this, "Card saved", Toast.LENGTH_SHORT).show();
-
-//                    LayoutInflater inflater = getLayoutInflater();
-//                    View layout = inflater.inflate(R.layout.toast_card_saved,
-//                        (ViewGroup) findViewById(R.id.custom_toast_container));
-//
-//                    TextView text = (TextView) layout.findViewById(R.id.text);
-//                    text.setText("This is a custom toast");
-//
-//                    Toast toast = new Toast(getApplicationContext());
-//                    toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
-//                    toast.setDuration(Toast.LENGTH_LONG);
-//                    toast.setView(layout);
-//                    toast.show();
-
-                    finish();
-                })
-                .doOnError(this::showErrorMessage)
-                .subscribe())
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnError(unused ->
+                repositoryModule.getCardRepository().insert(card)
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnComplete(() -> {
+                        Toast.makeText(this, "Card saved", Toast.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .doOnError(this::showErrorMessage)
+                    .subscribe()
+            )
             .subscribe();
     }
 
@@ -219,11 +182,8 @@ public class FastAddActivity extends AppCompatActivity
     }
 
     private void viewDictionaryResult(DictionaryResult dictionaryResult) {
-        if (translationOptionsView.getAdapter() == null)
-            return;
         List<TranslationOption> translationOptions = YandexDictionaryService.convert(dictionaryResult);
-        TranslationListAdapter adapter = (TranslationListAdapter) translationOptionsView.getAdapter();
-        adapter.setTranslationOptions(translationOptions);
+        translationListAdapter.setTranslationOptions(translationOptions);
     }
 
     private void showErrorMessage(String message) {
@@ -238,8 +198,10 @@ public class FastAddActivity extends AppCompatActivity
     }
 
     private void checkExistence() {
-        ApiCard apiCard = getCurrentStateAsApiCard();
-        Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
+        Card card = getCurrentStateAsCard();
+        repositoryModule.getCardRepository().find(card.getDeckName(), card.getWord(), card.getComment())
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess(unused -> commentEditWrapper.setError("Already exists"))
             .doOnError(throwable -> {
                 commentEditWrapper.setError(null);
@@ -257,15 +219,17 @@ public class FastAddActivity extends AppCompatActivity
 
     @OnClick(R.id.select_deck_button)
     public void onSelectDeckButtonClicked() {
-        Application.getApi().getUser()
-            .doOnSuccess(apiUser -> {
-                CharSequence[] items = new CharSequence[apiUser.getPersonalDecks().size()];
-                for (int i = 0; i < apiUser.getPersonalDecks().size(); ++ i)
-                    items[i] = apiUser.getPersonalDecks().get(i);
+        repositoryModule.getDeckRepository().getNames()
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnSuccess(names -> {
+                CharSequence[] items = new CharSequence[names.size()];
+                for (int i = 0; i < names.size(); ++ i)
+                items[i] = names.get(i);
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Select deck")
                     .setItems(items, (dialog, which) -> {
-                        deckName = apiUser.getPersonalDecks().get(which);
+                        deckName = names.get(which);
                         deckNameView.setText(deckName);
                     }).create().show();
             })

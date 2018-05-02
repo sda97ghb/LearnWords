@@ -24,12 +24,12 @@ import com.divanoapps.learnwords.auxiliary.RussianNumberConjugation;
 import com.divanoapps.learnwords.data.api2.ApiCard;
 import com.divanoapps.learnwords.data.api2.ApiError;
 import com.divanoapps.learnwords.data.api2.ApiExpandedDeck;
+import com.divanoapps.learnwords.data.local.Card;
+import com.divanoapps.learnwords.data.local.Deck;
+import com.divanoapps.learnwords.data.local.RepositoryModule;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.YesNoMessageDialogFragment;
-import com.divanoapps.learnwords.entities.Card;
-import com.divanoapps.learnwords.entities.CardId;
-import com.divanoapps.learnwords.entities.DeckId;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,15 +39,16 @@ import java.util.Map;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class DeckEditActivity extends AppCompatActivity implements
         RenameDeckDialogFragment.RenameDeckDialogListener {
 
-    public static String getDeckIdExtraName() {
+    public static String getDeckNameExtraName() {
         return "DECK_NAME";
     }
-
-    private ApiExpandedDeck mDeck = null;
 
     @BindView(R.id.fab)
     FloatingActionButton fab;
@@ -79,14 +80,18 @@ public class DeckEditActivity extends AppCompatActivity implements
     @BindView(R.id.decorator_number_of_hidden_card)
     TextView numberOfHiddenCardsDecorator;
 
+    CardListAdapter cardListAdapter;
+
+    RepositoryModule repositoryModule;
+
+    private Deck deck = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_deck_edit);
-        ButterKnife.bind(this);
 
-        // Setup "Add card" FAB
-        fab.setOnClickListener(view -> onAddCardClicked());
+        ButterKnife.bind(this);
 
         // Expand activity to make transparent notification bar
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -95,7 +100,7 @@ public class DeckEditActivity extends AppCompatActivity implements
         // Setup card list
         cardListView.setLayoutManager(new LinearLayoutManager(this));
 
-        CardListAdapter cardListAdapter = new CardListAdapter(this);
+        cardListAdapter = new CardListAdapter(getLayoutInflater());
         cardListAdapter.setEditCardClickedListener(this::onEditCardClicked);
         cardListAdapter.setToggleCardEnabledClickedListener(this::onToggleCardEnabledClicked);
         cardListAdapter.setDeleteCardClickedListener(this::onDeleteCardClicked);
@@ -111,6 +116,8 @@ public class DeckEditActivity extends AppCompatActivity implements
                     fab.show();
             }
         });
+
+        repositoryModule = new RepositoryModule(this);
     }
 
     @Override
@@ -120,67 +127,54 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     private void requestDeck() {
-        DeckId deckId = (DeckId) getIntent().getExtras().getSerializable(getDeckIdExtraName());
-        Application.getApi().getExpandedDeck(deckId.getName())
+        String deckName = getIntent().getStringExtra(getDeckNameExtraName());
+        repositoryModule.getDeckRepository().getByName(deckName)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess(this::showDeck)
             .doOnError(this::showErrorMessage)
             .subscribe();
     }
 
-    private void showDeck(ApiExpandedDeck deck) {
-        mDeck = deck;
+    private void showDeck(Deck deck) {
+        this.deck = deck;
         updateUi();
     }
 
     @SuppressLint("SetTextI18n")
     private void updateUi() {
-        toolbar.setTitle(mDeck.getName());
+        toolbar.setTitle(deck.getName());
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(mDeck.getName());
+        getSupportActionBar().setTitle(deck.getName());
 
         // Set language from and language to
-        fromLanguageView.setText(mDeck.getFromLanguage());
-        toLanguageView.setText(mDeck.getToLanguage());
+        fromLanguageView.setText(deck.getFromLanguage());
+        toLanguageView.setText(deck.getToLanguage());
 
-        if (mDeck.getCards() != null) {
-            int numberOfCards = mDeck.getCards().size();
-            int numberOfHiddenCards = 0;
-            for (ApiCard card: mDeck.getCards())
+        List<Card> cards = deck.getCards();
+
+        int numberOfCards = 0;
+        int numberOfHiddenCards = 0;
+
+        if (cards != null) {
+            numberOfCards = cards.size();
+            numberOfHiddenCards = 0;
+            for (Card card: cards)
                 if (card.isHidden())
                     ++ numberOfHiddenCards;
-
-            // Set number of cards and number of hidden cards views
-            numberOfCardsView.setText(Integer.valueOf(numberOfCards).toString());
-            numberOfHiddenCardsView.setText(Integer.valueOf(numberOfHiddenCards).toString());
-
-            if (versionLanguageCode.equals("ru")) {
-                numberOfCardsDecorator.setText(RussianNumberConjugation.getCards(numberOfCards));
-                numberOfHiddenCardsDecorator.setText("из них " + RussianNumberConjugation.getHidden(numberOfHiddenCards));
-            }
-
-            List<Card> cards = new ArrayList<>(mDeck.getCards().size());
-            for (ApiCard card: mDeck.getCards())
-                cards.add(new Card.Builder()
-                    .setDeckName(card.getDeck())
-                    .setWord(card.getWord())
-                    .setWordComment(card.getComment())
-                    .setTranslation(card.getTranslation())
-                    .setDifficulty(card.getDifficulty())
-                    .setHidden(card.isHidden())
-                    .build());
-            ((CardListAdapter) cardListView.getAdapter()).setCards(cards);
         }
-        else {
-            // Set number of cards and number of hidden cards views
-            numberOfCardsView.setText("0");
-            numberOfHiddenCardsView.setText("0");
 
-            if (versionLanguageCode.equals("ru")) {
-                numberOfCardsDecorator.setText(RussianNumberConjugation.getCards(0));
-                numberOfHiddenCardsDecorator.setText("из них " + RussianNumberConjugation.getHidden(0));
-            }
+        // Set number of cards and number of hidden cards views
+        numberOfCardsView.setText(Integer.valueOf(numberOfCards).toString());
+        numberOfHiddenCardsView.setText(Integer.valueOf(numberOfHiddenCards).toString());
+
+        if (versionLanguageCode.equals("ru")) {
+            numberOfCardsDecorator.setText(RussianNumberConjugation.getCards(numberOfCards));
+            numberOfHiddenCardsDecorator.setText("из них " + RussianNumberConjugation.getHidden(numberOfHiddenCards));
         }
+
+        cardListAdapter.setCards(cards);
     }
 
     @Override
@@ -190,7 +184,7 @@ public class DeckEditActivity extends AppCompatActivity implements
 
         // Add search
         MenuItem settingsMenuItem = menu.findItem(R.id.action_search);
-        SearchView searchView = (SearchView) MenuItemCompat.getActionView(settingsMenuItem);
+        SearchView searchView = (SearchView) settingsMenuItem.getActionView();
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -199,7 +193,6 @@ public class DeckEditActivity extends AppCompatActivity implements
 
             @Override
             public boolean onQueryTextChange(String newText) {
-
                 return false;
             }
         });
@@ -223,14 +216,16 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     private void renameCurrentDeck() {
-        String uniqueDialogTag = "com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment." + mDeck.getName();
-        RenameDeckDialogFragment.newInstance(mDeck.getName())
+        String uniqueDialogTag = "com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment." + deck.getName();
+        RenameDeckDialogFragment.newInstance(deck.getName())
                 .show(getSupportFragmentManager(), uniqueDialogTag);
     }
 
     private void deleteCurrentDeck() {
         YesNoMessageDialogFragment.show(this, getString(R.string.are_you_shure_delete_deck_question), () ->
-            Application.getApi().deleteDeck(mDeck.getName())
+            repositoryModule.getDeckRepository().delete(deck.getName())
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
                 .doOnComplete(() -> NavUtils.navigateUpFromSameTask(this))
                 .doOnError(this::showErrorMessage)
                 .subscribe()
@@ -240,12 +235,16 @@ public class DeckEditActivity extends AppCompatActivity implements
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         if (dialog instanceof RenameDeckDialogFragment) {
-            final String newDeckName = ((RenameDeckDialogFragment) dialog).getNewDeckName();
-            Map<String, Object> properties = new HashMap<>();
-            properties.put("name", newDeckName);
-            Application.getApi().updateDeck(mDeck.getName(), properties)
+            String oldDeckName = deck.getName();
+            String newDeckName = ((RenameDeckDialogFragment) dialog).getNewDeckName();
+
+            deck.setName(newDeckName);
+
+            repositoryModule.getDeckRepository().replace(oldDeckName, deck)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
                 .doOnComplete(() -> {
-                    getIntent().putExtra(getDeckIdExtraName(), new DeckId(newDeckName));
+                    getIntent().putExtra(getDeckNameExtraName(), newDeckName);
                     requestDeck();
                 })
                 .doOnError(this::showErrorMessage)
@@ -253,39 +252,31 @@ public class DeckEditActivity extends AppCompatActivity implements
         }
     }
 
+    @OnClick(R.id.fab)
     public void onAddCardClicked() {
-//        Toast.makeText(this, "Clicked Fab", Toast.LENGTH_SHORT).show();
-//        Application.getApi().testRotate()
-//            .doOnSuccess(s -> {
-////                fromLanguageView.setText(s);
-//                ((TextView) findViewById(R.id.language_from_view)).setText(s);
-//                System.out.println("Complete");
-//            })
-//            .doOnError(throwable -> {
-//                throwable.printStackTrace();
-//                Toast.makeText(this, throwable.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-//            })
-//            .subscribe();
         Intent intent = new Intent(this, CardAddActivity.class);
-        intent.putExtra(CardAddActivity.getDeckNameExtraName(), mDeck.getName());
+        intent.putExtra(CardAddActivity.getDeckNameExtraName(), deck.getName());
         startActivity(intent);
     }
 
-    public void onEditCardClicked(CardId id) {
+    public void onEditCardClicked(String deckName, String word, String comment) {
         Intent intent = new Intent(DeckEditActivity.this, CardEditActivity.class);
-        intent.putExtra(CardEditActivity.getDeckNameExtraName(), id.getDeckName());
-        intent.putExtra(CardEditActivity.getWordExtraName(), id.getWord());
-        intent.putExtra(CardEditActivity.getCommentExtraName(), id.getWordComment());
+        intent.putExtra(CardEditActivity.getDeckNameExtraName(), deckName);
+        intent.putExtra(CardEditActivity.getWordExtraName(), word);
+        intent.putExtra(CardEditActivity.getCommentExtraName(), comment);
         startActivity(intent);
     }
 
-    public void onToggleCardEnabledClicked(final CardId id) {
+    public void onToggleCardEnabledClicked(String deckName, String word, String comment) {
         // Get the card to know its visibility
-        Application.getApi().getCard(id.getDeckName(), id.getWord(), id.getWordComment())
-            .doOnSuccess(apiCard -> {
-                Map<String, Object> properties = new HashMap<>();
-                properties.put("hidden", !(apiCard.isHidden()));
-                Application.getApi().updateCard(id.getDeckName(), id.getWord(), id.getWordComment(), properties)
+        repositoryModule.getCardRepository().find(deckName, word, comment)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnSuccess(card -> {
+                card.setHidden(!card.isHidden());
+                repositoryModule.getCardRepository().replace(deckName, word, comment, card)
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
                     .doOnComplete(this::requestDeck)
                     .doOnError(this::showErrorMessage)
                     .subscribe();
@@ -294,8 +285,10 @@ public class DeckEditActivity extends AppCompatActivity implements
             .subscribe();
     }
 
-    public void onDeleteCardClicked(CardId id) {
-        Application.getApi().deleteCard(id.getDeckName(), id.getWord(), id.getWordComment())
+    public void onDeleteCardClicked(String deckName, String word, String comment) {
+        repositoryModule.getCardRepository().delete(deckName, word, comment)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnComplete(this::requestDeck)
             .doOnError(this::showErrorMessage)
             .subscribe();

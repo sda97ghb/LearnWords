@@ -1,10 +1,9 @@
 package com.divanoapps.learnwords;
 
-import com.divanoapps.learnwords.entities.Card;
-import com.divanoapps.learnwords.entities.Deck;
+import com.divanoapps.learnwords.data.local.Card;
+import com.divanoapps.learnwords.data.local.Deck;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +27,7 @@ public class CardRetriever {
     private RetrieveOrder mRetrieveOrder;
 
     public CardRetriever(Order order, Deck deck) {
-        mCards = deck.getCardsAsList();
+        mCards = deck.getCards();
 
         switch (order) {
             case alphabetical: mRetrieveOrder = new AlphabeticalRetrieveOrder(); break;

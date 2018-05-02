@@ -9,9 +9,9 @@ import android.widget.TextView;
 
 import com.divanoapps.learnwords.CardRetriever;
 import com.divanoapps.learnwords.R;
+import com.divanoapps.learnwords.data.local.Card;
+import com.divanoapps.learnwords.data.local.Deck;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
-import com.divanoapps.learnwords.entities.Card;
-import com.divanoapps.learnwords.entities.Deck;
 
 public class ExerciseActivity extends AppCompatActivity {
 
@@ -39,8 +39,8 @@ public class ExerciseActivity extends AppCompatActivity {
     Card mCurrentCard;
     Side mCurrentSide;
 
-    public static String getDeckIdExtraName() {
-        return "DECK_ID_EXTRA";
+    public static String getDeckNameExtraName() {
+        return "DECK_NAME_EXTRA";
     }
 
     public static String getOrderExtraName() {
@@ -56,7 +56,7 @@ public class ExerciseActivity extends AppCompatActivity {
         setOnClickListeners();
 
         Intent intent = getIntent();
-        if (!intent.hasExtra(getDeckIdExtraName()) ||
+        if (!intent.hasExtra(getDeckNameExtraName()) ||
             !intent.hasExtra(getOrderExtraName()))
             finish();
         mOrder = (CardRetriever.Order) intent.getSerializableExtra(getOrderExtraName());
@@ -85,9 +85,8 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void setTextFromCurrentCard() {
         mWordView.setText(mCurrentCard.getWord());
-        mWordCommentView.setText(mCurrentCard.getWordComment());
+        mWordCommentView.setText(mCurrentCard.getComment());
         mTranslationView.setText(mCurrentCard.getTranslation());
-        mTranslationCommentView.setText(mCurrentCard.getTranslationComment());
     }
 
     private void hideSecondSide() {
@@ -151,12 +150,12 @@ public class ExerciseActivity extends AppCompatActivity {
     }
 
     private void onHideClicked() {
-        if (mCurrentCard == null)
-            return;
-
-        Card newCard = new Card.Builder(mCurrentCard)
-                .setHidden(!mCurrentCard.isHidden())
-                .build();
+//        if (mCurrentCard == null)
+//            return;
+//
+//        Card newCard = new Card.Builder(mCurrentCard)
+//                .setHidden(!mCurrentCard.isHidden())
+//                .build();
 //        DB.saveCard(newCard)
 //                .setOnDoneListener(this::showNextCard)
 //                .setOnErrorListener(this::showErrorMessage)

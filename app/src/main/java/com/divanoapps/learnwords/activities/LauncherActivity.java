@@ -64,12 +64,12 @@ public class LauncherActivity extends AppCompatActivity implements GoogleApiClie
 //        @Override
 //        protected Void doInBackground(Context... contexts) {
 //            StorageUserRepository storageUserRepository = new StorageUserRepository(contexts[0]);
-//            StorageDeckRepository storageDeckRepository = new StorageDeckRepository(contexts[0]);
-//            StorageCardRepository storageCardRepository = new StorageCardRepository(contexts[0]);
+//            DeckRepository storageDeckRepository = new DeckRepository(contexts[0]);
+//            CardRepository storageCardRepository = new CardRepository(contexts[0]);
 //
 //            List<StorageUser> allUsers = storageUserRepository.getAllUsers();
-//            List<StorageDeck> allDecks = storageDeckRepository.getAllDecks();
-//            List<StorageCard> allCards = storageCardRepository.getAllCards();
+//            List<Deck> allDecks = storageDeckRepository.getAllDecks();
+//            List<Card> allCards = storageCardRepository.getAllCards();
 //            System.out.println(allUsers);
 //            System.out.println(allDecks);
 //            System.out.println(allCards);
@@ -82,7 +82,7 @@ public class LauncherActivity extends AppCompatActivity implements GoogleApiClie
 //            storageUser = storageUserRepository.getByEmail("test1@example.com");
 //            System.out.println(storageUser.getId());
 //
-//            StorageDeck storageDeck = new StorageDeck();
+//            Deck storageDeck = new Deck();
 //            storageDeck.setOwner(storageUser.getId());
 //            storageDeck.setName("Deck 1");
 //            storageUser.setTimestamp(TimestampFactory.getTimestamp());
@@ -150,9 +150,9 @@ public class LauncherActivity extends AppCompatActivity implements GoogleApiClie
         Application.setGoogleSignInAccount(account);
         Application.initializeApiFromGoogleSignInAccount(account);
 
-        Application.getApi().registerUser()
-            .doOnError(this::showErrorMessage)
-            .subscribe();
+//        Application.getApi().registerUser()
+//            .doOnError(this::showErrorMessage)
+//            .subscribe();
 
         startActivity(new Intent(this, DeckListActivity.class));
         finish();

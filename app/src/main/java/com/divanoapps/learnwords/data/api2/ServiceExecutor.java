@@ -27,6 +27,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ServiceExecutor<T> {
     static {
+//        RxJavaPlugins.setErrorHandler(throwable -> {
+//            throwable.printStackTrace();
+//        });
         RxJavaPlugins.setErrorHandler(Throwable::printStackTrace);
     }
 

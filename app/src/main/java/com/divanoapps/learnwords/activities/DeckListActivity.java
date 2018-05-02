@@ -26,43 +26,54 @@ import com.divanoapps.learnwords.data.api2.ApiDeck;
 import com.divanoapps.learnwords.data.api2.ApiDeckInfo;
 import com.divanoapps.learnwords.data.api2.ApiError;
 import com.divanoapps.learnwords.data.api2.ApiExpandedUser;
+import com.divanoapps.learnwords.data.local.Deck;
+import com.divanoapps.learnwords.data.local.RepositoryModule;
+import com.divanoapps.learnwords.data.local.TimestampFactory;
 import com.divanoapps.learnwords.dialogs.AddDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
-import com.divanoapps.learnwords.entities.DeckId;
-import com.divanoapps.learnwords.entities.DeckShort;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class DeckListActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         RenameDeckDialogFragment.RenameDeckDialogListener {
 
+    RepositoryModule repositoryModule;
+
     GoogleApiClient googleSignInApiClient;
+
+    @BindView(R.id.fab)
+    FloatingActionButton floatingActionButton;
+
+    @BindView(R.id.DeckListView)
+    RecyclerView deckListView;
+
+    DeckListAdapter deckListAdapter;
 
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
-        ;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_deck_list);
+
         ButterKnife.bind(this);
 
         // Action bar setup
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        // Fab setup
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(view -> onFabClicked());
 
         // Setup navigation drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -79,14 +90,11 @@ public class DeckListActivity extends AppCompatActivity implements
 //                             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         // Setup deck list
-        final RecyclerView deckListView = (RecyclerView) findViewById(R.id.DeckListView);
         deckListView.setLayoutManager(new LinearLayoutManager(this));
 
-        final DeckListAdapter deckListAdapter = new DeckListAdapter(this);
+        deckListAdapter = new DeckListAdapter(getLayoutInflater());
         deckListAdapter.setEditDeckClickedListener(this::onEditDeckClicked);
         deckListAdapter.setStartExerciseClickedListener(this::onStartExerciseClicked);
-        deckListAdapter.setDeleteDeckClickedListener(this::onDeleteDeckClicked);
-
         deckListView.setAdapter(deckListAdapter);
 
         deckListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -94,9 +102,9 @@ public class DeckListActivity extends AppCompatActivity implements
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
                 if (dy > 0)
-                    fab.hide();
+                    floatingActionButton.hide();
                 else
-                    fab.show();
+                    floatingActionButton.show();
             }
         });
 
@@ -112,60 +120,44 @@ public class DeckListActivity extends AppCompatActivity implements
 //        }
 //        else
 //            DB.setDb(new LocalDB());
+
+        repositoryModule = new RepositoryModule(getApplicationContext());
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Application.getApi().getExpandedUser()
-            .doOnSuccess(this::showUser)
-            .doOnError(this::showErrorMessage)
-            .subscribe();
+        requestDeckList();
     }
 
-    public void requestDeckList() {
-        Application.getApi().getExpandedUser()
-            .doOnSuccess(this::showUser)
-            .doOnError(this::showErrorMessage)
-            .subscribe();
-    }
-
-    private void showUser(ApiExpandedUser apiExpandedUser) {
-        List<DeckShort> decks = new LinkedList<>();
-        for (ApiDeckInfo info : apiExpandedUser.getPersonalDecks())
-            decks.add(new DeckShort(info.getName(), info.getNumberOfCards(), info.getNumberOfHiddenCards(),
-                info.getFromLanguage(), info.getToLanguage()));
-        RecyclerView deckListView = findViewById(R.id.DeckListView);
-        DeckListAdapter deckListAdapter = (DeckListAdapter) deckListView.getAdapter();
+    private void showDecks(List<Deck> decks) {
         deckListAdapter.setDecks(decks);
     }
 
-    private void onFabClicked() {
+    public void requestDeckList() {
+        repositoryModule.getDeckRepository().getAllDecks()
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnSuccess(this::showDecks)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
+    }
+
+    @OnClick(R.id.fab)
+    public void addDeckButtonClicked() {
         AddDeckDialogFragment dialog = new AddDeckDialogFragment();
         dialog.setOnOkClickedListener(this::addDeck);
         dialog.show(getFragmentManager(), AddDeckDialogFragment.getUniqueTag());
     }
 
     private void addDeck(String name, String languageFrom, String languageTo) {
-        ApiDeck deck = new ApiDeck();
-        deck.setName(name);
-        deck.setFromLanguage(languageFrom);
-        deck.setToLanguage(languageTo);
-        Application.getApi().saveDeck(deck)
+        Deck deck = new Deck(TimestampFactory.getTimestamp(), name, languageFrom, languageTo);
+        repositoryModule.getDeckRepository().insert(deck)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnComplete(this::requestDeckList)
             .doOnError(this::showErrorMessage)
             .subscribe();
-    }
-
-    private void showErrorMessage(Throwable throwable) {
-        if (throwable instanceof ApiError)
-            showErrorMessage(((ApiError) throwable).getType() + ":" + throwable.getMessage());
-        else
-            showErrorMessage(throwable.getMessage());
-    }
-
-    private void showErrorMessage(String message) {
-        MessageOkDialogFragment.show(this, message);
     }
 
     @Override
@@ -229,6 +221,7 @@ public class DeckListActivity extends AppCompatActivity implements
                 break;
             case R.id.nav_sign_out:
                 signOut();
+                break;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -244,23 +237,29 @@ public class DeckListActivity extends AppCompatActivity implements
             });
     }
 
-    public void onEditDeckClicked(DeckId id) {
+    public void onEditDeckClicked(String deckName) {
         Intent intent = new Intent(this, DeckEditActivity.class);
-        intent.putExtra(DeckEditActivity.getDeckIdExtraName(), id);
+        intent.putExtra(DeckEditActivity.getDeckNameExtraName(), deckName);
         startActivity(intent);
     }
 
-    public void onStartExerciseClicked(DeckId id, CardRetriever.Order order) {
+    public void onStartExerciseClicked(String deckName, CardRetriever.Order order) {
         Intent intent = new Intent(this, ExerciseActivity.class);
-        intent.putExtra(ExerciseActivity.getDeckIdExtraName(), id);
+        intent.putExtra(ExerciseActivity.getDeckNameExtraName(), deckName);
         intent.putExtra(ExerciseActivity.getOrderExtraName(), order);
         startActivity(intent);
     }
 
-    public void onDeleteDeckClicked(DeckId id) {
-        Application.getApi().deleteDeck(id.getName())
-            .doOnComplete(this::requestDeckList)
-            .doOnError(this::showErrorMessage)
-            .subscribe();
+    private void showErrorMessage(Throwable throwable) {
+        if (throwable instanceof ApiError) {
+            ApiError apiError = (ApiError) throwable;
+            showErrorMessage(apiError.getType() + " " + apiError.getCode() + ": " + apiError.getMessage());
+        }
+        else
+            showErrorMessage(throwable.getMessage());
+    }
+
+    private void showErrorMessage(String message) {
+        MessageOkDialogFragment.show(this, message);
     }
 }

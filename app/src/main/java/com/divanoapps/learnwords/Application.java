@@ -42,9 +42,9 @@ public class Application {
         apiServiceExecutor = new ServiceExecutor<>(Api.class, googleSignInAccount.getIdToken());
     }
 
-    public static Api getApi() {
-        return apiServiceExecutor.getService();
-    }
+//    public static Api getApi() {
+//        return apiServiceExecutor.getService();
+//    }
 
     // Google Sign In
 

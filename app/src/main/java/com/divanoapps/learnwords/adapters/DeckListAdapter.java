@@ -2,40 +2,37 @@ package com.divanoapps.learnwords.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.divanoapps.learnwords.CardRetriever;
 import com.divanoapps.learnwords.R;
-import com.divanoapps.learnwords.entities.DeckId;
-import com.divanoapps.learnwords.entities.DeckShort;
+import com.divanoapps.learnwords.data.local.Card;
+import com.divanoapps.learnwords.data.local.Deck;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHolder> {
 
     public interface EditDeckClickedListener {
-        void onEditDeckClicked(DeckId id);
+        void onEditDeckClicked(String deckName);
     }
 
     public interface StartExerciseClickedListener {
-        void onStartExerciseClicked(DeckId id, CardRetriever.Order order);
-    }
-
-    public interface DeleteDeckClickedListener {
-        void onDeleteDeckClicked(DeckId id);
+        void onStartExerciseClicked(String deckName, CardRetriever.Order order);
     }
 
     private EditDeckClickedListener mEditDeckClickedListener = id -> {};
     private StartExerciseClickedListener mStartExerciseClickedListener = (id, order) -> {};
-    private DeleteDeckClickedListener mDeleteDeckClickedListener = id -> {};
 
     public void setEditDeckClickedListener(EditDeckClickedListener listener) {
         mEditDeckClickedListener = listener;
@@ -45,115 +42,114 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         mStartExerciseClickedListener = listener;
     }
 
-    public void setDeleteDeckClickedListener(DeleteDeckClickedListener listener) {
-        mDeleteDeckClickedListener = listener;
+    private void notifyEditDeckClicked(String deckName) {
+        mEditDeckClickedListener.onEditDeckClicked(deckName);
     }
 
-    private void notifyEditDeckClicked(DeckId id) {
-        mEditDeckClickedListener.onEditDeckClicked(id);
+    private void notifyStartExerciseClicked(String deckName, CardRetriever.Order order) {
+        mStartExerciseClickedListener.onStartExerciseClicked(deckName, order);
     }
 
-    private void notifyStartExerciseClicked(DeckId id, CardRetriever.Order order) {
-        mStartExerciseClickedListener.onStartExerciseClicked(id, order);
-    }
+    private LayoutInflater layoutInflater;
 
-    private void notifyDeleteDeckClicked(DeckId id) {
-        mDeleteDeckClickedListener.onDeleteDeckClicked(id);
-    }
+    private List<Deck> decks = new LinkedList<>();
 
-    private Context mContext = null; // as DeckListActivity
-
-    private List<DeckShort> mDecks = new LinkedList<>();
-
-    public void setDecks(List<DeckShort> decks) {
-        mDecks = decks == null ? new LinkedList<>() : decks;
+    public void setDecks(List<Deck> decks) {
+        this.decks = decks == null ? new LinkedList<>() : decks;
         notifyDataSetChanged();
     }
 
-    public DeckListAdapter(Context context) {
-        mContext = context;
+    public DeckListAdapter(LayoutInflater layoutInflater) {
+        this.layoutInflater = layoutInflater;
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(this.mContext).inflate(R.layout.item_deck, parent, false);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = layoutInflater.inflate(R.layout.item_deck, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, final int position) {
-        holder.setContent(mDecks.get(position));
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        holder.setContent(decks.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return mDecks.size();
+        return decks.size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView mDeckNameView;
-        private TextView mDeckSizeView;
-        private TextView mHiddenCardsCountView;
-        private TextView mLanguageFromView;
-        private TextView mLanguageToView;
+        @BindView(R.id.deck_name_view)
+        TextView deckNameView;
 
-        private ImageButton mAlphabetOrderButton;
-        private ImageButton mFileOrderButton;
-        private ImageButton mRandomOrderButton;
-        private ImageButton mHigher30Button;
-        private ImageButton mLower30Button;
-        private ImageButton mMoreButton;
+        @BindView(R.id.card_count_view)
+        TextView deckSizeView;
+
+        @BindView(R.id.hidden_card_count_view)
+        TextView hiddenCardsCountView;
+
+        @BindView(R.id.language_from_view)
+        TextView languageFromView;
+
+        @BindView(R.id.language_to_view)
+        TextView languageToView;
+
+        @BindView(R.id.alphabet_order_button)
+        ImageButton alphabetOrderButton;
+
+        @BindView(R.id.file_order_button)
+        ImageButton fileOrderButton;
+
+        @BindView(R.id.random_order_button)
+        ImageButton randomOrderButton;
 
         ViewHolder(View itemView) {
             super(itemView);
 
-            mDeckNameView         = (TextView) itemView.findViewById(R.id.deck_name_view);
-            mDeckSizeView         = (TextView) itemView.findViewById(R.id.card_count_view);
-            mHiddenCardsCountView = (TextView) itemView.findViewById(R.id.hidden_card_count_view);
-            mLanguageFromView     = (TextView) itemView.findViewById(R.id.language_from_view);
-            mLanguageToView       = (TextView) itemView.findViewById(R.id.language_to_view);
-
-            mAlphabetOrderButton = (ImageButton) itemView.findViewById(R.id.alphabet_order_button);
-            mFileOrderButton     = (ImageButton) itemView.findViewById(R.id.file_order_button);
-            mRandomOrderButton   = (ImageButton) itemView.findViewById(R.id.random_order_button);
-            mHigher30Button      = (ImageButton) itemView.findViewById(R.id.higher_30_button);
-            mLower30Button       = (ImageButton) itemView.findViewById(R.id.lower_30_button);
-            mMoreButton          = (ImageButton) itemView.findViewById(R.id.more_button);
+            ButterKnife.bind(this, itemView);
         }
 
         @SuppressLint("SetTextI18n")
-        void setContent(final DeckShort deck) {
-            mDeckNameView.setText(deck.getName());
-            mDeckSizeView.setText(Integer.valueOf(deck.getNumberOfCards()).toString());
-            mHiddenCardsCountView.setText(Integer.valueOf(deck.getNumberOfHiddenCards()).toString());
-            mLanguageFromView.setText(deck.getLanguageFrom());
-            mLanguageToView.setText(deck.getLanguageTo());
+        void setContent(Deck deck) {
+            String name = deck.getName();
 
-            itemView.setOnClickListener(v -> notifyEditDeckClicked(deck.getId()));
-            mDeckNameView.setOnClickListener(v -> notifyEditDeckClicked(deck.getId()));
-            mDeckSizeView.setOnClickListener(v -> notifyEditDeckClicked(deck.getId()));
+            int numberOfCards = deck.getCards().size();
+            int numberOfHiddenCards = 0;
+            for (Card card : deck.getCards())
+                if (card.isHidden())
+                    ++ numberOfHiddenCards;
 
-            mAlphabetOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.alphabetical));
-            mFileOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.file));
-            mRandomOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.random));
-            mHigher30Button.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.higher30));
-            mLower30Button.setOnClickListener(v -> notifyStartExerciseClicked(deck.getId(), CardRetriever.Order.lower30));
+            deckNameView.setText(deck.getName());
+            deckSizeView.setText(Integer.valueOf(numberOfCards).toString());
+            hiddenCardsCountView.setText(Integer.valueOf(numberOfHiddenCards).toString());
+            languageFromView.setText(deck.getFromLanguage());
+            languageToView.setText(deck.getToLanguage());
 
-            mMoreButton.setOnClickListener(view -> {
-                PopupMenu popupMenu = new PopupMenu(mContext, view);
-                MenuInflater menuInflater = popupMenu.getMenuInflater();
-                menuInflater.inflate(R.menu.menu_deck_item, popupMenu.getMenu());
-                popupMenu.setOnMenuItemClickListener(item -> {
-                    if (item.getItemId() == R.id.action_delete) {
-                        notifyDeleteDeckClicked(deck.getId());
-                        return true;
-                    }
-                    else {
-                        return false;
-                    }
-                });
-                popupMenu.show();
-            });
+            itemView.setOnClickListener(v -> notifyEditDeckClicked(name));
+            deckNameView.setOnClickListener(v -> notifyEditDeckClicked(name));
+            deckSizeView.setOnClickListener(v -> notifyEditDeckClicked(name));
+
+            alphabetOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(name, CardRetriever.Order.alphabetical));
+            fileOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(name, CardRetriever.Order.file));
+            randomOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(name, CardRetriever.Order.random));
+
+//            mMoreButton.setOnClickListener(view -> {
+//                PopupMenu popupMenu = new PopupMenu(mContext, view);
+//                MenuInflater menuInflater = popupMenu.getMenuInflater();
+//                menuInflater.inflate(R.menu.menu_deck_item, popupMenu.getMenu());
+//                popupMenu.setOnMenuItemClickListener(item -> {
+//                    if (item.getItemId() == R.id.action_delete) {
+//                        notifyDeleteDeckClicked(deck.getId());
+//                        return true;
+//                    }
+//                    else {
+//                        return false;
+//                    }
+//                });
+//                popupMenu.show();
+//            });
         }
     }
 }

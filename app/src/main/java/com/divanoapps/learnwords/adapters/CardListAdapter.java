@@ -1,7 +1,7 @@
 package com.divanoapps.learnwords.adapters;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,29 +10,31 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.divanoapps.learnwords.R;
-import com.divanoapps.learnwords.entities.Card;
-import com.divanoapps.learnwords.entities.CardId;
+import com.divanoapps.learnwords.data.local.Card;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
 
     public interface EditCardClickedListener {
-        void onEditCardClicked(CardId id);
+        void onEditCardClicked(String deckName, String word, String comment);
     }
 
     public interface ToggleCardEnabledClickedListener {
-        void onToggleCardEnabledClicked(CardId id);
+        void onToggleCardEnabledClicked(String deckName, String word, String comment);
     }
 
     public interface DeleteCardClickedListener {
-        void onDeleteCardClicked(CardId id);
+        void onDeleteCardClicked(String deckName, String word, String comment);
     }
 
-    private EditCardClickedListener mEditCardClickedListener = id -> {};
-    private ToggleCardEnabledClickedListener mToggleCardEnabledClickedListener = id -> {};
-    private DeleteCardClickedListener mDeleteCardClickedListener = id -> {};
+    private EditCardClickedListener mEditCardClickedListener = (deckName, word, comment) -> {};
+    private ToggleCardEnabledClickedListener mToggleCardEnabledClickedListener = (deckName, word, comment) -> {};
+    private DeleteCardClickedListener mDeleteCardClickedListener = (deckName, word, comment) -> {};
 
     public void setEditCardClickedListener(EditCardClickedListener  listener) {
         mEditCardClickedListener = listener;
@@ -46,106 +48,102 @@ public class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHo
         mDeleteCardClickedListener = listener;
     }
 
-    private void notifyEditCardClicked(CardId id) {
-        mEditCardClickedListener.onEditCardClicked(id);
+    private void notifyEditCardClicked(String deckName, String word, String comment) {
+        mEditCardClickedListener.onEditCardClicked(deckName, word, comment);
     }
 
-    private void notifyToggleCardEnabledClicked(CardId id) {
-        mToggleCardEnabledClickedListener.onToggleCardEnabledClicked(id);
+    private void notifyToggleCardEnabledClicked(String deckName, String word, String comment) {
+        mToggleCardEnabledClickedListener.onToggleCardEnabledClicked(deckName, word, comment);
     }
 
-    private void notifyDeleteCardClicked(CardId id) {
-        mDeleteCardClickedListener.onDeleteCardClicked(id);
+    private void notifyDeleteCardClicked(String deckName, String word, String comment) {
+        mDeleteCardClickedListener.onDeleteCardClicked(deckName, word, comment);
     }
 
-    private Context mContext; // as CardListActivity
-    private List<Card> mCards = new LinkedList<>();
+    private LayoutInflater layoutInflater;
 
-    public CardListAdapter(Context context) {
-        mContext = context;
+    private List<Card> cards = new LinkedList<>();
+
+    public CardListAdapter(LayoutInflater layoutInflater) {
+        this.layoutInflater = layoutInflater;
     }
 
     public void setCards(List<Card> cards) {
-        mCards = cards == null ? new LinkedList<>() : cards;
+        this.cards = cards == null ? new LinkedList<>() : cards;
         notifyDataSetChanged();
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(mContext).inflate(R.layout.item_card, parent, false);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = layoutInflater.inflate(R.layout.item_card, parent, false);
         return new ViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.setFromCard(mCards.get(position));
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        holder.setFromCard(cards.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return mCards.size();
+        return cards.size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        View mItemView;
+        @BindView(R.id.word_view)
+        TextView wordView;
 
-        TextView mWordView;
-        TextView mWordCommentView;
-        TextView mTranslationView;
-        TextView mTranslationCommentView;
+        @BindView(R.id.word_comment_view)
+        TextView commentView;
 
-        TextView mDifficultyView;
-        TextView mDifficultyMaximumView;
+        @BindView(R.id.translation_view)
+        TextView translationView;
 
-        ImageButton mToggleCardEnableButton;
-        ImageButton mDeleteButton;
+        @BindView(R.id.difficulty_view)
+        TextView difficultyView;
+
+        @BindView(R.id.difficulty_maximum_view)
+        TextView difficultyMaximumView;
+
+        @BindView(R.id.switch_enable_button)
+        ImageButton toggleCardEnableButton;
+
+        @BindView(R.id.delete_button)
+        ImageButton deleteButton;
 
         ViewHolder(View itemView) {
             super(itemView);
 
-            mItemView = itemView;
-
-            mWordView = (TextView) itemView.findViewById(R.id.word_view);
-            mWordCommentView = (TextView) itemView.findViewById(R.id.word_comment_view);
-            mTranslationView = (TextView) itemView.findViewById(R.id.translation_view);
-            mTranslationCommentView = (TextView) itemView.findViewById(R.id.translation_comment_view);
-
-            mDifficultyView = (TextView) itemView.findViewById(R.id.difficulty_view);
-            mDifficultyMaximumView = (TextView) itemView.findViewById(R.id.difficulty_maximum_view);
-
-            mDeleteButton = (ImageButton) itemView.findViewById(R.id.delete_button);
-            mToggleCardEnableButton = (ImageButton) itemView.findViewById(R.id.switch_enable_button);
+            ButterKnife.bind(this, itemView);
         }
 
         @SuppressLint("SetTextI18n")
         void setFromCard(final Card card) {
-            mWordView.setText(card.getWord());
-            mWordCommentView.setText(card.getWordComment());
-            mTranslationView.setText(card.getTranslation());
-            mTranslationCommentView.setText(card.getTranslationComment());
+            wordView.setText(card.getWord());
+            commentView.setText(card.getComment());
+            translationView.setText(card.getTranslation());
 
-            mWordCommentView.setVisibility(card.getWordComment().isEmpty() ? View.GONE : View.VISIBLE);
-            mTranslationCommentView.setVisibility(card.getTranslationComment().isEmpty() ? View.GONE : View.VISIBLE);
+            commentView.setVisibility(card.getComment().trim().isEmpty() ? View.GONE : View.VISIBLE);
 
-            mDifficultyView.setText(Integer.valueOf(card.getDifficulty()).toString());
-            mDifficultyMaximumView.setText(Integer.valueOf(Card.getMaxDifficulty()).toString());
+            difficultyView.setText(card.getDifficulty().toString());
+            difficultyMaximumView.setText(Card.getMaxDifficulty().toString());
 
-            mToggleCardEnableButton.setImageResource(card.isHidden() ?
+            toggleCardEnableButton.setImageResource(card.isHidden() ?
                                                      R.drawable.ic_card_item_invisible :
                                                      R.drawable.ic_card_item_visible);
 
-            View.OnClickListener editCardClickListener = v -> notifyEditCardClicked(card.getId());
-            mItemView.setOnClickListener(editCardClickListener);
-            mWordView.setOnClickListener(editCardClickListener);
-            mWordCommentView.setOnClickListener(editCardClickListener);
-            mTranslationView.setOnClickListener(editCardClickListener);
-            mTranslationCommentView.setOnClickListener(editCardClickListener);
-            mDifficultyView.setOnClickListener(editCardClickListener);
-            mDifficultyMaximumView.setOnClickListener(editCardClickListener);
+            View.OnClickListener editCardClickListener = v -> notifyEditCardClicked(card.getDeckName(), card.getWord(), card.getComment());
+            itemView.setOnClickListener(editCardClickListener);
+            wordView.setOnClickListener(editCardClickListener);
+            commentView.setOnClickListener(editCardClickListener);
+            translationView.setOnClickListener(editCardClickListener);
+            difficultyView.setOnClickListener(editCardClickListener);
+            difficultyMaximumView.setOnClickListener(editCardClickListener);
 
-            mToggleCardEnableButton.setOnClickListener(v -> notifyToggleCardEnabledClicked(card.getId()));
+            toggleCardEnableButton.setOnClickListener(v -> notifyToggleCardEnabledClicked(card.getDeckName(), card.getWord(), card.getComment()));
 
-            mDeleteButton.setOnClickListener(v -> notifyDeleteCardClicked(card.getId()));
+            deleteButton.setOnClickListener(v -> notifyDeleteCardClicked(card.getDeckName(), card.getWord(), card.getComment()));
         }
     }
 }

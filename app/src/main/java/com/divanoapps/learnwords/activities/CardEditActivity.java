@@ -19,16 +19,15 @@ import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.YandexDictionary.DictionaryResult;
 import com.divanoapps.learnwords.YandexDictionary.YandexDictionaryService;
 import com.divanoapps.learnwords.adapters.TranslationListAdapter;
-import com.divanoapps.learnwords.data.api2.ApiCard;
 import com.divanoapps.learnwords.data.api2.ApiError;
+import com.divanoapps.learnwords.data.local.Card;
+import com.divanoapps.learnwords.data.local.RepositoryModule;
+import com.divanoapps.learnwords.data.local.TimestampFactory;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
-import com.divanoapps.learnwords.entities.Card;
 import com.divanoapps.learnwords.entities.TranslationOption;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindDrawable;
 import butterknife.BindView;
@@ -39,6 +38,18 @@ import io.reactivex.schedulers.Schedulers;
 
 public class CardEditActivity extends AppCompatActivity
     implements TranslationListAdapter.OnTranslationOptionSelectedListener {
+
+    public static String getDeckNameExtraName() {
+        return "DECK_NAME_EXTRA";
+    }
+
+    public static String getWordExtraName() {
+        return "WORD_EXTRA";
+    }
+
+    public static String getCommentExtraName() {
+        return "COMMENT_EXTRA";
+    }
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -80,18 +91,12 @@ public class CardEditActivity extends AppCompatActivity
     private String oldWord;
     private String oldComment;
 
-    private int mDifficulty = Card.getDefaultDifficulty();
-    private boolean mVisibility = true;
+    private int difficulty = Card.getDefaultDifficulty();
+    private boolean visibility = true;
 
-    public static String getDeckNameExtraName() {
-        return "DECK_NAME_EXTRA";
-    }
-    public static String getWordExtraName() {
-        return "WORD_EXTRA";
-    }
-    public static String getCommentExtraName() {
-        return "COMMENT_EXTRA";
-    }
+    TranslationListAdapter translationListAdapter;
+
+    RepositoryModule repositoryModule;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +120,7 @@ public class CardEditActivity extends AppCompatActivity
         wordEdit.clearFocus();
 
         translationOptionsView.setLayoutManager(new LinearLayoutManager(this));
-        TranslationListAdapter translationListAdapter = new TranslationListAdapter();
+        translationListAdapter = new TranslationListAdapter();
         translationListAdapter.setOnTranslationOptionSelectedListener(this);
         translationOptionsView.setAdapter(translationListAdapter);
 
@@ -127,7 +132,11 @@ public class CardEditActivity extends AppCompatActivity
 
         RxTextView.textChanges(commentEdit).subscribe(charSequence -> checkExistence());
 
-        Application.getApi().getCard(deckName, oldWord, oldComment)
+        repositoryModule = new RepositoryModule(getApplicationContext());
+
+        repositoryModule.getCardRepository().find(deckName, oldWord, oldComment)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess(this::showCard)
             .doOnError(this::showErrorMessage)
             .subscribe();
@@ -150,13 +159,14 @@ public class CardEditActivity extends AppCompatActivity
         if (translationOptionsView.getAdapter() == null)
             return;
         List<TranslationOption> translationOptions = YandexDictionaryService.convert(dictionaryResult);
-        TranslationListAdapter adapter = (TranslationListAdapter) translationOptionsView.getAdapter();
-        adapter.setTranslationOptions(translationOptions);
+        translationListAdapter.setTranslationOptions(translationOptions);
     }
 
     private void checkExistence() {
-        ApiCard apiCard = getCurrentStateAsApiCard();
-        Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
+        Card card = getCurrentStateAsCard();
+        repositoryModule.getCardRepository().find(card.getDeckName(), card.getWord(), card.getComment())
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess(unused -> commentEditWrapper.setError("Already exists"))
             .doOnError(throwable -> {
                 commentEditWrapper.setError(null);
@@ -166,16 +176,16 @@ public class CardEditActivity extends AppCompatActivity
     }
 
     @SuppressLint("SetTextI18n")
-    private void showCard(ApiCard card) {
+    private void showCard(Card card) {
         wordEdit.setText(card.getWord());
         commentEdit.setText(card.getComment());
         translationEdit.setText(card.getTranslation());
 
-        mDifficulty = card.getDifficulty();
-        difficultyView.setText(Integer.valueOf(card.getDifficulty()).toString());
-        difficultyMaximumView.setText(Integer.valueOf(Card.getMaxDifficulty()).toString());
+        difficulty = card.getDifficulty();
+        difficultyView.setText(card.getDifficulty().toString());
+        difficultyMaximumView.setText(Card.getMaxDifficulty().toString());
 
-        mVisibility = !card.isHidden();
+        visibility = !card.isHidden();
         visibilityButton.setImageDrawable(card.isHidden() ? invisibleIcon : visibleIcon);
     }
 
@@ -195,16 +205,16 @@ public class CardEditActivity extends AppCompatActivity
         }
     }
 
-    private ApiCard getCurrentStateAsApiCard() {
-        ApiCard apiCard = new ApiCard();
-        apiCard.setDeck(deckName);
-        apiCard.setWord(wordEdit.getText().toString());
-        apiCard.setComment(commentEdit.getText().toString());
-        apiCard.setTranslation(translationEdit.getText().toString());
-        apiCard.setDifficulty(mDifficulty);
-        apiCard.setHidden(!mVisibility);
-        apiCard.setOwner(Application.getGoogleSignInAccount().getEmail());
-        return apiCard;
+    private Card getCurrentStateAsCard() {
+        Card card = new Card();
+        card.setTimestamp(TimestampFactory.getTimestamp());
+        card.setDeckName(deckName);
+        card.setWord(wordEdit.getText().toString());
+        card.setComment(commentEdit.getText().toString());
+        card.setTranslation(translationEdit.getText().toString());
+        card.setDifficulty(difficulty);
+        card.setHidden(!visibility);
+        return card;
     }
 
     private void showErrorMessage(String message) {
@@ -228,14 +238,10 @@ public class CardEditActivity extends AppCompatActivity
     }
 
     private void editCard() {
-        final ApiCard card = getCurrentStateAsApiCard();
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("word", card.getWord());
-        properties.put("comment", card.getComment());
-        properties.put("translation", card.getTranslation());
-        properties.put("difficulty", card.getDifficulty());
-        properties.put("hidden", card.isHidden());
-        Application.getApi().updateCard(deckName, oldWord, oldComment, properties)
+        Card card = getCurrentStateAsCard();
+        repositoryModule.getCardRepository().replace(deckName, oldWord, oldComment, card)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
             .doOnComplete(this::finish)
             .doOnError(this::showErrorMessage)
             .subscribe();
@@ -244,25 +250,25 @@ public class CardEditActivity extends AppCompatActivity
     @OnClick(R.id.increase_difficulty_button)
     @SuppressLint("SetTextI18n")
     public void onIncreaseDifficultyClicked() {
-        ++ mDifficulty;
-        if (mDifficulty > Card.getMaxDifficulty())
-            mDifficulty = Card.getMaxDifficulty();
-        difficultyView.setText(Integer.valueOf(mDifficulty).toString());
+        ++difficulty;
+        if (difficulty > Card.getMaxDifficulty())
+            difficulty = Card.getMaxDifficulty();
+        difficultyView.setText(Integer.valueOf(difficulty).toString());
     }
 
     @OnClick(R.id.decrease_difficulty_button)
     @SuppressLint("SetTextI18n")
     public void onDecreaseDifficultyClicked() {
-        -- mDifficulty;
-        if (mDifficulty < Card.getMinDifficulty())
-            mDifficulty = Card.getMinDifficulty();
-        difficultyView.setText(Integer.valueOf(mDifficulty).toString());
+        --difficulty;
+        if (difficulty < Card.getMinDifficulty())
+            difficulty = Card.getMinDifficulty();
+        difficultyView.setText(Integer.valueOf(difficulty).toString());
     }
 
     @OnClick(R.id.visibility_button)
     public void onToggleVisibilityClicked() {
-        mVisibility = !mVisibility;
-        visibilityButton.setImageDrawable(mVisibility ? visibleIcon : invisibleIcon);
+        visibility = !visibility;
+        visibilityButton.setImageDrawable(visibility ? visibleIcon : invisibleIcon);
     }
 
 //    private void onSelectPictureClicked() {
