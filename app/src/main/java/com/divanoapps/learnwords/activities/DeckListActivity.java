@@ -3,6 +3,7 @@ package com.divanoapps.learnwords.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -17,15 +18,13 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.divanoapps.learnwords.Application;
 import com.divanoapps.learnwords.CardRetriever;
 import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
-import com.divanoapps.learnwords.data.api2.ApiDeck;
-import com.divanoapps.learnwords.data.api2.ApiDeckInfo;
 import com.divanoapps.learnwords.data.api2.ApiError;
-import com.divanoapps.learnwords.data.api2.ApiExpandedUser;
 import com.divanoapps.learnwords.data.local.Deck;
 import com.divanoapps.learnwords.data.local.RepositoryModule;
 import com.divanoapps.learnwords.data.local.TimestampFactory;
@@ -35,7 +34,6 @@ import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -57,6 +55,9 @@ public class DeckListActivity extends AppCompatActivity implements
 
     @BindView(R.id.DeckListView)
     RecyclerView deckListView;
+
+    @BindView(R.id.app_bar_layout)
+    AppBarLayout appBarLayout;
 
     DeckListAdapter deckListAdapter;
 
@@ -95,6 +96,9 @@ public class DeckListActivity extends AppCompatActivity implements
         deckListAdapter = new DeckListAdapter(getLayoutInflater());
         deckListAdapter.setEditDeckClickedListener(this::onEditDeckClicked);
         deckListAdapter.setStartExerciseClickedListener(this::onStartExerciseClicked);
+        deckListAdapter.setDeleteDecksClickedListener(this::deleteDecks);
+//        deckListAdapter.setSelectionModeStartedListener(() -> getSupportActionBar().hide());
+//        deckListAdapter.setSelectionModeFinishedListener(() -> getSupportActionBar().show());
         deckListView.setAdapter(deckListAdapter);
 
         deckListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -122,6 +126,15 @@ public class DeckListActivity extends AppCompatActivity implements
 //            DB.setDb(new LocalDB());
 
         repositoryModule = new RepositoryModule(getApplicationContext());
+    }
+
+    private void deleteDecks(List<Deck> decks) {
+        repositoryModule.getDeckRepository().delete(decks.toArray(new Deck[decks.size()]))
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnComplete(this::requestDeckList)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
     }
 
     @Override

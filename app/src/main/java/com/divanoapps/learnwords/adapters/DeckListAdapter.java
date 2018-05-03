@@ -1,10 +1,15 @@
 package com.divanoapps.learnwords.adapters;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -23,32 +28,84 @@ import butterknife.ButterKnife;
 
 public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHolder> {
 
-    public interface EditDeckClickedListener {
-        void onEditDeckClicked(String deckName);
+    public interface EditDeckClicked {
+        void emit(String deckName);
+    }
+    private EditDeckClicked editDeckClicked = unused -> {};
+    public void setEditDeckClickedListener(EditDeckClicked listener) {
+        editDeckClicked = listener;
     }
 
-    public interface StartExerciseClickedListener {
-        void onStartExerciseClicked(String deckName, CardRetriever.Order order);
+    public interface StartExerciseClicked {
+        void emit(String deckName, CardRetriever.Order order);
+    }
+    private StartExerciseClicked startExerciseClicked = (unused1, unused2) -> {};
+    public void setStartExerciseClickedListener(StartExerciseClicked listener) {
+        startExerciseClicked = listener;
     }
 
-    private EditDeckClickedListener mEditDeckClickedListener = id -> {};
-    private StartExerciseClickedListener mStartExerciseClickedListener = (id, order) -> {};
-
-    public void setEditDeckClickedListener(EditDeckClickedListener listener) {
-        mEditDeckClickedListener = listener;
+    public interface DeleteDecksClicked {
+        void emit(List<Deck> decks);
+    }
+    private DeleteDecksClicked deleteDecksClicked = (unused) -> {};
+    public void setDeleteDecksClickedListener(DeleteDecksClicked listener) {
+        deleteDecksClicked = listener;
     }
 
-    public void setStartExerciseClickedListener(StartExerciseClickedListener listener) {
-        mStartExerciseClickedListener = listener;
+    public interface SelectionModeStarted {
+        void emit();
+    }
+    private SelectionModeStarted selectionModeStarted = () -> {};
+    public void setSelectionModeStartedListener(SelectionModeStarted listener) {
+        selectionModeStarted = listener;
     }
 
-    private void notifyEditDeckClicked(String deckName) {
-        mEditDeckClickedListener.onEditDeckClicked(deckName);
+    public interface SelectionModeFinished {
+        void emit();
+    }
+    private SelectionModeFinished selectionModeFinished = () -> {};
+    public void setSelectionModeFinishedListener(SelectionModeFinished listener) {
+        selectionModeFinished = listener;
     }
 
-    private void notifyStartExerciseClicked(String deckName, CardRetriever.Order order) {
-        mStartExerciseClickedListener.onStartExerciseClicked(deckName, order);
-    }
+    private ActionMode selectionActionMode;
+    private ActionMode.Callback selectionActionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.menu_deck_list_selection, menu);
+            mode.setTitle("Select decks");
+            selectedDecks.clear();
+            DeckListAdapter.this.notifyDataSetChanged();
+            selectionModeStarted.emit();
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.action_delete:
+                    deleteDecksClicked.emit(selectedDecks);
+                    mode.finish();
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            selectionActionMode = null;
+            DeckListAdapter.this.notifyDataSetChanged();
+            selectionModeFinished.emit();
+        }
+    };
+
+    private List<Deck> selectedDecks = new LinkedList<>();
 
     private LayoutInflater layoutInflater;
 
@@ -72,7 +129,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.setContent(decks.get(position));
+        holder.setContent(position, decks.get(position));
     }
 
     @Override
@@ -105,6 +162,15 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         @BindView(R.id.random_order_button)
         ImageButton randomOrderButton;
 
+        @BindView(R.id.action_buttons_bar_layout)
+        ConstraintLayout actionButtonsBarLayout;
+
+        @BindView(R.id.selection_buttons_bar_layout)
+        ConstraintLayout selectionButtonsBarLayout;
+
+        @BindView(R.id.toggle_selection_button)
+        ImageButton toggleSelectionButton;
+
         ViewHolder(View itemView) {
             super(itemView);
 
@@ -112,7 +178,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         }
 
         @SuppressLint("SetTextI18n")
-        void setContent(Deck deck) {
+        void setContent(int position, Deck deck) {
             String name = deck.getName();
 
             int numberOfCards = deck.getCards().size();
@@ -121,19 +187,87 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
                 if (card.isHidden())
                     ++ numberOfHiddenCards;
 
-            deckNameView.setText(deck.getName());
+            // Appearance
+            deckNameView.setText(name);
             deckSizeView.setText(Integer.valueOf(numberOfCards).toString());
             hiddenCardsCountView.setText(Integer.valueOf(numberOfHiddenCards).toString());
             languageFromView.setText(deck.getFromLanguage());
             languageToView.setText(deck.getToLanguage());
+            toggleSelectionButton.setImageResource(selectedDecks.contains(deck)
+                ? R.drawable.ic_item_deck_selection_selected
+                : R.drawable.ic_item_deck_selection_not_selected);
+            actionButtonsBarLayout.setVisibility(selectionActionMode == null ? View.VISIBLE : View.GONE);
+            selectionButtonsBarLayout.setVisibility(selectionActionMode == null ? View.GONE : View.VISIBLE);
 
-            itemView.setOnClickListener(v -> notifyEditDeckClicked(name));
-            deckNameView.setOnClickListener(v -> notifyEditDeckClicked(name));
-            deckSizeView.setOnClickListener(v -> notifyEditDeckClicked(name));
+            // Behavior
+            if (selectionActionMode == null) {
+                itemView.setOnClickListener(v -> editDeckClicked.emit(name));
 
-            alphabetOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(name, CardRetriever.Order.alphabetical));
-            fileOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(name, CardRetriever.Order.file));
-            randomOrderButton.setOnClickListener(v -> notifyStartExerciseClicked(name, CardRetriever.Order.random));
+                alphabetOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.alphabetical));
+                fileOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.file));
+                randomOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.random));
+
+                itemView.setOnLongClickListener(v -> {
+                    selectionActionMode = ((AppCompatActivity) v.getContext()).startSupportActionMode(selectionActionModeCallback);
+                    selectedDecks.add(deck);
+                    return true;
+                });
+//                actionButtonsBarLayout.setVisibility(View.VISIBLE);
+//                selectionButtonsBarLayout.setVisibility(View.GONE);
+            }
+            else {
+                View.OnClickListener toggleSelection = v -> {
+                    if (selectedDecks.contains(deck))
+                        selectedDecks.remove(deck);
+                    else
+                        selectedDecks.add(deck);
+                    notifyItemChanged(position);
+                };
+                itemView.setOnClickListener(toggleSelection);
+                toggleSelectionButton.setOnClickListener(toggleSelection);
+
+                itemView.setOnLongClickListener(v -> false);
+//                actionButtonsBarLayout.setVisibility(View.GONE);
+//                selectionButtonsBarLayout.setVisibility(View.VISIBLE);
+            }
+
+//            View.OnClickListener onClick = v -> {
+//                if (selectionActionMode == null) {
+//                    editDeckClicked.emit(name);
+//                }
+//                else {
+//                    if (selectedDecks.contains(deck))
+//                        selectedDecks.remove(deck);
+//                    else
+//                        selectedDecks.add(deck);
+//                    notifyItemChanged(position);
+//                }
+//            };
+//            itemView.setOnClickListener(onClick);
+//
+//            alphabetOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.alphabetical));
+//            fileOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.file));
+//            randomOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.random));
+//
+//            View.OnLongClickListener onLongClickListener = v -> {
+//                if (selectionActionMode != null)
+//                    return false;
+//
+//                selectionActionMode = ((AppCompatActivity) v.getContext()).startSupportActionMode(selectionActionModeCallback);
+//                selectedDecks.add(deck);
+//
+//                return true;
+//            };
+//            itemView.setOnLongClickListener(onLongClickListener);
+//
+//            if (selectionActionMode == null) {
+//                actionButtonsBarLayout.setVisibility(View.VISIBLE);
+//                selectionButtonsBarLayout.setVisibility(View.GONE);
+//            }
+//            else {
+//                actionButtonsBarLayout.setVisibility(View.GONE);
+//                selectionButtonsBarLayout.setVisibility(View.VISIBLE);
+//            }
 
 //            mMoreButton.setOnClickListener(view -> {
 //                PopupMenu popupMenu = new PopupMenu(mContext, view);

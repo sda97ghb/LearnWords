@@ -34,4 +34,7 @@ public interface DeckDao {
 
     @Delete
     int delete(Deck deck);
+
+    @Delete
+    int delete(Deck... decks);
 }

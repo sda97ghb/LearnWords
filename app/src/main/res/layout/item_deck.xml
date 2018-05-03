@@ -1,187 +1,188 @@
 <android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginLeft="8dp"
     android:layout_marginRight="8dp"
     android:layout_marginTop="8dp"
     android:foreground="?android:attr/selectableItemBackground"
-    android:clickable="true">
+    android:clickable="true"
+    android:focusable="true">
 
     <android.support.constraint.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_height="120dp"
+        android:background="@color/white">
 
-        <TextView
-            android:id="@+id/deck_name_view"
+        <android.support.constraint.ConstraintLayout
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginEnd="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:ellipsize="end"
-            android:maxLines="3"
-            android:text="Phrasal verbs"
-            android:textSize="18sp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toLeftOf="@+id/file_order_button"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <ImageButton
-            android:id="@+id/file_order_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:layout_constraintRight_toLeftOf="@+id/alphabet_order_button"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_deck_item_file_order"
-            android:tint="@color/cardActionIcon"/>
+            android:layout_marginEnd="48dp">
 
-        <ImageButton
-            android:id="@+id/alphabet_order_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginRight="5dp"
-            android:layout_marginTop="0dp"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_deck_item_alphabetical_order"
-            android:tint="@color/cardActionIcon"/>
+            <TextView
+                android:id="@+id/deck_name_view"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:text="Lorem ipsum dollor sit amet, consectetur adipiscing elit"
+                android:textColor="@color/colorPrimary"
+                android:textSize="18sp"
+                app:layout_constraintBottom_toTopOf="@+id/card_count_view"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageButton
-            android:id="@+id/lower_30_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:layout_constraintRight_toLeftOf="@+id/higher_30_button"
-            app:layout_constraintTop_toBottomOf="@+id/file_order_button"
-            app:srcCompat="@drawable/ic_deck_item_lower_thirty"
-            android:tint="@color/cardActionIcon"/>
+            <TextView
+                android:id="@+id/card_count_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="8dp"
+                android:text="28"
+                app:layout_constraintBottom_toTopOf="@+id/language_from_view"
+                app:layout_constraintStart_toStartOf="parent" />
 
-        <ImageButton
-            android:id="@+id/higher_30_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginRight="4dp"
-            android:layout_marginTop="0dp"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/alphabet_order_button"
-            app:srcCompat="@drawable/ic_deck_item_higher_thirty"
-            android:tint="@color/cardActionIcon"/>
+            <TextView
+                android:id="@+id/decorator_cards"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/cards"
+                app:layout_constraintBaseline_toBaselineOf="@+id/card_count_view"
+                app:layout_constraintStart_toEndOf="@+id/card_count_view" />
 
-        <ImageButton
-            android:id="@+id/random_order_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:layout_constraintLeft_toLeftOf="@+id/lower_30_button"
-            app:layout_constraintTop_toBottomOf="@+id/lower_30_button"
-            app:srcCompat="@drawable/ic_deck_item_random_order"
-            android:tint="@color/cardActionIcon"/>
+            <TextView
+                android:id="@+id/hidden_card_count_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="14"
+                app:layout_constraintBaseline_toBaselineOf="@+id/decorator_cards"
+                app:layout_constraintStart_toEndOf="@+id/decorator_cards" />
 
-        <ImageButton
-            android:id="@+id/more_button"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginRight="4dp"
-            android:layout_marginTop="0dp"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/higher_30_button"
-            app:srcCompat="@drawable/ic_deck_item_more"
-            android:tint="@color/cardActionIcon"/>
+            <TextView
+                android:id="@+id/decorator_hidden_cards"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/of_them_is_hidden"
+                app:layout_constraintBaseline_toBaselineOf="@+id/hidden_card_count_view"
+                app:layout_constraintStart_toEndOf="@+id/hidden_card_count_view" />
 
-        <TextView
-            android:id="@+id/card_count_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:text="28"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/deck_name_view" />
+            <TextView
+                android:id="@+id/language_from_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="8dp"
+                android:text="English"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
-        <TextView
-            android:id="@+id/decorator_cards"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_marginStart="4dp"
-            android:text="@string/cards"
-            app:layout_constraintBaseline_toBaselineOf="@+id/card_count_view"
-            app:layout_constraintLeft_toRightOf="@+id/card_count_view" />
+            <TextView
+                android:id="@+id/decorator_language_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="→"
+                app:layout_constraintBaseline_toBaselineOf="@+id/language_from_view"
+                app:layout_constraintStart_toEndOf="@+id/language_from_view" />
 
-        <TextView
-            android:id="@+id/hidden_card_count_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:text="14"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/card_count_view" />
+            <TextView
+                android:id="@+id/language_to_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Russian"
+                app:layout_constraintBaseline_toBaselineOf="@+id/decorator_language_arrow"
+                app:layout_constraintStart_toEndOf="@+id/decorator_language_arrow" />
 
-        <TextView
-            android:id="@+id/decorator_hidden_cards"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_marginStart="4dp"
-            android:text="@string/of_them_is_hidden"
-            app:layout_constraintBaseline_toBaselineOf="@+id/hidden_card_count_view"
-            app:layout_constraintLeft_toRightOf="@+id/hidden_card_count_view" />
-
-        <!---->
-
-        <TextView
-            android:id="@+id/language_from_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:text="English"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/hidden_card_count_view" />
-
-        <TextView
-            android:id="@+id/decorator_language_arrow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_marginStart="4dp"
-            android:text="→"
-            app:layout_constraintBaseline_toBaselineOf="@+id/language_from_view"
-            app:layout_constraintLeft_toRightOf="@+id/language_from_view" />
-
-        <TextView
-            android:id="@+id/language_to_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_marginStart="4dp"
-            android:text="Russian"
-            app:layout_constraintBaseline_toBaselineOf="@+id/language_from_view"
-            app:layout_constraintLeft_toRightOf="@+id/decorator_language_arrow" />
+        </android.support.constraint.ConstraintLayout>
 
         <View
+            android:id="@+id/view"
             android:layout_width="1dp"
             android:layout_height="0dp"
-            android:background="#FFDDDDDD"
+            android:background="@color/gray"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintRight_toLeftOf="@+id/file_order_button"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginRight="5dp"/>
+            android:layout_marginEnd="48dp"/>
 
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/action_buttons_bar_layout"
+            android:layout_width="48dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageButton
+                android:id="@+id/alphabet_order_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="48dp"
+                android:layout_height="40dp"
+                android:tint="@color/colorPrimary"
+                app:layout_constraintBottom_toTopOf="@+id/file_order_button"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_deck_item_alphabetical_order" />
+
+            <ImageButton
+                android:id="@+id/file_order_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="48dp"
+                android:layout_height="40dp"
+                android:tint="@color/colorPrimary"
+                app:layout_constraintBottom_toTopOf="@+id/random_order_button"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/alphabet_order_button"
+                app:srcCompat="@drawable/ic_deck_item_file_order" />
+
+            <ImageButton
+                android:id="@+id/random_order_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="48dp"
+                android:layout_height="40dp"
+                android:tint="@color/colorPrimary"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/file_order_button"
+                app:srcCompat="@drawable/ic_deck_item_random_order" />
+        </android.support.constraint.ConstraintLayout>
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/selection_buttons_bar_layout"
+            android:layout_width="48dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:visibility="gone">
+
+            <ImageButton
+                android:id="@+id/toggle_selection_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="48dp"
+                android:layout_height="120dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_item_deck_selection_not_selected" />
+
+        </android.support.constraint.ConstraintLayout>
     </android.support.constraint.ConstraintLayout>
+
 </android.support.v7.widget.CardView>

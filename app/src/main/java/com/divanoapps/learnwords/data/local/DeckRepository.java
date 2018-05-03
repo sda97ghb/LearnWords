@@ -64,4 +64,8 @@ public class DeckRepository {
     public Completable delete(String name) {
         return Completable.fromAction(() -> deckDao.delete(name));
     }
+
+    public Completable delete(Deck... decks) {
+        return Completable.fromAction(() -> deckDao.delete(decks));
+    }
 }
