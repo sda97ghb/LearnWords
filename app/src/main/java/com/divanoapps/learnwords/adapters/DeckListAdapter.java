@@ -6,7 +6,6 @@ import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +27,7 @@ import butterknife.ButterKnife;
 
 public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHolder> {
 
+    // EditDeckClicked
     public interface EditDeckClicked {
         void emit(String deckName);
     }
@@ -36,6 +36,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         editDeckClicked = listener;
     }
 
+    // StartExerciseClicked
     public interface StartExerciseClicked {
         void emit(String deckName, CardRetriever.Order order);
     }
@@ -44,6 +45,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         startExerciseClicked = listener;
     }
 
+    // DeleteDecksClicked
     public interface DeleteDecksClicked {
         void emit(List<Deck> decks);
     }
@@ -52,6 +54,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         deleteDecksClicked = listener;
     }
 
+    // SelectionModeStarted
     public interface SelectionModeStarted {
         void emit();
     }
@@ -60,6 +63,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
         selectionModeStarted = listener;
     }
 
+    // SelectionModeFinished
     public interface SelectionModeFinished {
         void emit();
     }
@@ -212,8 +216,6 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
                     selectedDecks.add(deck);
                     return true;
                 });
-//                actionButtonsBarLayout.setVisibility(View.VISIBLE);
-//                selectionButtonsBarLayout.setVisibility(View.GONE);
             }
             else {
                 View.OnClickListener toggleSelection = v -> {
@@ -227,47 +229,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
                 toggleSelectionButton.setOnClickListener(toggleSelection);
 
                 itemView.setOnLongClickListener(v -> false);
-//                actionButtonsBarLayout.setVisibility(View.GONE);
-//                selectionButtonsBarLayout.setVisibility(View.VISIBLE);
             }
-
-//            View.OnClickListener onClick = v -> {
-//                if (selectionActionMode == null) {
-//                    editDeckClicked.emit(name);
-//                }
-//                else {
-//                    if (selectedDecks.contains(deck))
-//                        selectedDecks.remove(deck);
-//                    else
-//                        selectedDecks.add(deck);
-//                    notifyItemChanged(position);
-//                }
-//            };
-//            itemView.setOnClickListener(onClick);
-//
-//            alphabetOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.alphabetical));
-//            fileOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.file));
-//            randomOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.random));
-//
-//            View.OnLongClickListener onLongClickListener = v -> {
-//                if (selectionActionMode != null)
-//                    return false;
-//
-//                selectionActionMode = ((AppCompatActivity) v.getContext()).startSupportActionMode(selectionActionModeCallback);
-//                selectedDecks.add(deck);
-//
-//                return true;
-//            };
-//            itemView.setOnLongClickListener(onLongClickListener);
-//
-//            if (selectionActionMode == null) {
-//                actionButtonsBarLayout.setVisibility(View.VISIBLE);
-//                selectionButtonsBarLayout.setVisibility(View.GONE);
-//            }
-//            else {
-//                actionButtonsBarLayout.setVisibility(View.GONE);
-//                selectionButtonsBarLayout.setVisibility(View.VISIBLE);
-//            }
 
 //            mMoreButton.setOnClickListener(view -> {
 //                PopupMenu popupMenu = new PopupMenu(mContext, view);

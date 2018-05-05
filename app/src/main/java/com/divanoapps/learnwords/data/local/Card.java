@@ -2,6 +2,7 @@ package com.divanoapps.learnwords.data.local;
 
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
+import android.arch.persistence.room.Ignore;
 import android.support.annotation.NonNull;
 
 /**
@@ -29,22 +30,23 @@ public class Card {
     private Long timestamp;
 
     @NonNull
-    private String deckName;
+    private String deckName = "";
 
     @NonNull
-    private String word;
+    private String word = "";
 
     @NonNull
-    private String comment;
+    private String comment = "";
 
     private String translation;
     private Integer difficulty;
     private Boolean hidden;
 
+    @Ignore
     public Card() {
     }
 
-    public Card(Long timestamp, String deckName, String word, String comment,
+    public Card(Long timestamp, @NonNull String deckName, @NonNull String word, @NonNull String comment,
                 String translation, Integer difficulty, Boolean hidden) {
         this.timestamp = timestamp;
         this.deckName = deckName;
@@ -63,27 +65,30 @@ public class Card {
         this.timestamp = timestamp;
     }
 
+    @NonNull
     public String getDeckName() {
         return deckName;
     }
 
-    public void setDeckName(String deckName) {
+    public void setDeckName(@NonNull String deckName) {
         this.deckName = deckName;
     }
 
+    @NonNull
     public String getWord() {
         return word;
     }
 
-    public void setWord(String word) {
+    public void setWord(@NonNull String word) {
         this.word = word;
     }
 
+    @NonNull
     public String getComment() {
         return comment;
     }
 
-    public void setComment(String comment) {
+    public void setComment(@NonNull String comment) {
         this.comment = comment;
     }
 

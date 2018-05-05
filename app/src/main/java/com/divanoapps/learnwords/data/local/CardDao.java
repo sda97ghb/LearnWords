@@ -37,4 +37,7 @@ public interface CardDao {
 
     @Delete
     int delete(Card card);
+
+    @Delete
+    int delete(Card... card);
 }

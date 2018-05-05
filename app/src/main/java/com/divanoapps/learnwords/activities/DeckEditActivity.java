@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.NavUtils;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,16 +13,12 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.divanoapps.learnwords.Application;
 import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.adapters.CardListAdapter;
 import com.divanoapps.learnwords.auxiliary.RussianNumberConjugation;
-import com.divanoapps.learnwords.data.api2.ApiCard;
 import com.divanoapps.learnwords.data.api2.ApiError;
-import com.divanoapps.learnwords.data.api2.ApiExpandedDeck;
 import com.divanoapps.learnwords.data.local.Card;
 import com.divanoapps.learnwords.data.local.Deck;
 import com.divanoapps.learnwords.data.local.RepositoryModule;
@@ -31,10 +26,7 @@ import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.YesNoMessageDialogFragment;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindString;
 import butterknife.BindView;
@@ -94,16 +86,16 @@ public class DeckEditActivity extends AppCompatActivity implements
         ButterKnife.bind(this);
 
         // Expand activity to make transparent notification bar
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+//                             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
         // Setup card list
         cardListView.setLayoutManager(new LinearLayoutManager(this));
 
         cardListAdapter = new CardListAdapter(getLayoutInflater());
         cardListAdapter.setEditCardClickedListener(this::onEditCardClicked);
-        cardListAdapter.setToggleCardEnabledClickedListener(this::onToggleCardEnabledClicked);
-        cardListAdapter.setDeleteCardClickedListener(this::onDeleteCardClicked);
+        cardListAdapter.setToggleCardHiddenClickedListener(this::onToggleCardEnabledClicked);
+        cardListAdapter.setDeleteCardsClickedListener(this::deleteCards);
         cardListView.setAdapter(cardListAdapter);
 
         cardListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -118,6 +110,15 @@ public class DeckEditActivity extends AppCompatActivity implements
         });
 
         repositoryModule = new RepositoryModule(this);
+    }
+
+    private void deleteCards(List<Card> cards) {
+        repositoryModule.getCardRepository().delete(cards)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnComplete(this::requestDeck)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
     }
 
     @Override

@@ -40,4 +40,8 @@ public class CardRepository {
     public Completable delete(String deckName, String word, String comment) {
         return Completable.fromAction(() -> cardDao.delete(deckName, word, comment));
     }
+
+    public Completable delete(List<Card> cards) {
+        return Completable.fromAction(() -> cardDao.delete(cards.toArray(new Card[cards.size()])));
+    }
 }
