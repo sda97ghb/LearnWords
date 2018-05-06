@@ -39,11 +39,11 @@
     <string name="server_address">Server address</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
-    <string name="deck_order">Deck order</string>
-    <string name="alphabetic_order">Alphabetic order</string>
+    <string name="deck_order">Deck dispenser</string>
+    <string name="alphabetic_order">Alphabetic dispenser</string>
     <string name="easiest_30_percent">Easiest 30%</string>
     <string name="hardiest_30_percent">Hardiest 30%</string>
-    <string name="random_order">Random order</string>
+    <string name="random_order">Random dispenser</string>
     <string name="quick_exercise_types">Quick exercise types</string>
     <string name="delete_this_deck">Delete this deck</string>
     <string name="are_you_shure_delete_deck_question">Are you sure? (Deck can\'t be restored)</string>

@@ -20,7 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.divanoapps.learnwords.Application;
-import com.divanoapps.learnwords.CardRetriever;
+import com.divanoapps.learnwords.exercise.CardDispenserFactory;
 import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
 import com.divanoapps.learnwords.data.api2.ApiError;
@@ -255,7 +255,7 @@ public class DeckListActivity extends AppCompatActivity implements
         startActivity(intent);
     }
 
-    public void onStartExerciseClicked(String deckName, CardRetriever.Order order) {
+    public void onStartExerciseClicked(String deckName, CardDispenserFactory.Order order) {
         Intent intent = new Intent(this, ExerciseActivity.class);
         intent.putExtra(ExerciseActivity.getDeckNameExtraName(), deckName);
         intent.putExtra(ExerciseActivity.getOrderExtraName(), order);

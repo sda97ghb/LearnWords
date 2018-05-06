@@ -1,44 +1,29 @@
 package com.divanoapps.learnwords.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.Group;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.divanoapps.learnwords.CardRetriever;
 import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.data.local.Card;
 import com.divanoapps.learnwords.data.local.Deck;
-import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
+import com.divanoapps.learnwords.data.local.RepositoryModule;
+import com.divanoapps.learnwords.exercise.CardDispenser;
+import com.divanoapps.learnwords.exercise.CardDispenserFactory;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class ExerciseActivity extends AppCompatActivity {
-
-    private enum Side {
-        First,
-        Second
-    }
-
-    TextView mWordView;
-    TextView mWordCommentView;
-    TextView mTranslationView;
-    TextView mTranslationCommentView;
-
-    View mCardPartsSeparator;
-
-    Button mEasyButton;
-    Button mHardButton;
-    Button mHideButton;
-
-    View mRootView;
-
-    CardRetriever.Order mOrder;
-    Deck mDeck;
-    CardRetriever mCardRetriever;
-    Card mCurrentCard;
-    Side mCurrentSide;
-
     public static String getDeckNameExtraName() {
         return "DECK_NAME_EXTRA";
     }
@@ -47,169 +32,166 @@ public class ExerciseActivity extends AppCompatActivity {
         return "ORDER_EXTRA";
     }
 
+    @BindView(R.id.root_layout)
+    ConstraintLayout rootLayout;
+
+    @BindView(R.id.word_view)
+    TextView wordView;
+
+    @BindView(R.id.comment_view)
+    TextView commentView;
+
+    @BindView(R.id.translation_view)
+    TextView translationView;
+
+    @BindView(R.id.hide_button)
+    Button hideButton;
+
+    @BindView(R.id.decrease_difficulty_button)
+    ImageButton decreaseDifficultyButton;
+
+    @BindView(R.id.increase_difficulty_button)
+    ImageButton increaseDifficultyButton;
+
+    @BindView(R.id.difficulty_view)
+    TextView difficultyView;
+
+    @BindView(R.id.difficulty_maximum_view)
+    TextView difficultyMaximumView;
+
+    @BindView(R.id.bottom_panel_group)
+    Group bottomPanelGroup;
+
+    @BindView(R.id.second_side_group)
+    Group secondSideGroup;
+
+    Deck deck;
+    Card currentCard;
+    boolean isFirstSide;
+
+    CardDispenser dispenser;
+
+    RepositoryModule repositoryModule;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_excercise);
 
-        findUi();
-        setOnClickListeners();
+        ButterKnife.bind(this);
 
-        Intent intent = getIntent();
-        if (!intent.hasExtra(getDeckNameExtraName()) ||
-            !intent.hasExtra(getOrderExtraName()))
-            finish();
-        mOrder = (CardRetriever.Order) intent.getSerializableExtra(getOrderExtraName());
-//        DB.getDeck((DeckId) intent.getSerializableExtra(getDeckIdExtraName()))
-//            .setOnDoneListener(this::startExerciseForDeck)
-//            .setOnErrorListener(this::finish)
-//            .execute();
+        repositoryModule = new RepositoryModule(this);
+        repositoryModule.getDeckRepository().getByName(getDeckName())
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnSuccess(this::startExerciseForDeck)
+            .doOnError(this::showErrorMessageAndFinish)
+            .subscribe();
+    }
+
+    private String getDeckName() {
+        return getIntent().getStringExtra(getDeckNameExtraName());
+    }
+
+    private CardDispenserFactory.Order getOrder() {
+        return (CardDispenserFactory.Order) getIntent().getSerializableExtra(getOrderExtraName());
+    }
+
+    private void showErrorMessageAndFinish(Throwable throwable) {
+        Toast.makeText(this, throwable.getMessage(), Toast.LENGTH_LONG).show();
+        finish();
     }
 
     private void startExerciseForDeck(Deck deck) {
-        mDeck = deck;
-        mCardRetriever = new CardRetriever(mOrder, mDeck);
-        showNextCard();
-    }
-
-    private void showNextCard() {
-        hideSecondSide();
-        mCurrentSide = Side.First;
-
-        mCurrentCard = mCardRetriever.getNext();
-        if (mCurrentCard == null)
-            finishExercise();
-        else
-            setTextFromCurrentCard();
-    }
-
-    private void setTextFromCurrentCard() {
-        mWordView.setText(mCurrentCard.getWord());
-        mWordCommentView.setText(mCurrentCard.getComment());
-        mTranslationView.setText(mCurrentCard.getTranslation());
-    }
-
-    private void hideSecondSide() {
-        mCardPartsSeparator.setVisibility(View.GONE);
-        mTranslationView.setVisibility(View.GONE);
-        mTranslationCommentView.setVisibility(View.GONE);
-    }
-
-    private void showSecondSide() {
-        mCardPartsSeparator.setVisibility(View.VISIBLE);
-        mTranslationView.setVisibility(View.VISIBLE);
-        mTranslationCommentView.setVisibility(View.VISIBLE);
-    }
-
-    private void findUi() {
-        mWordView               = (TextView) findViewById(R.id.word_view);
-        mWordCommentView        = (TextView) findViewById(R.id.word_comment_view);
-        mTranslationView        = (TextView) findViewById(R.id.translation_view);
-        mTranslationCommentView = (TextView) findViewById(R.id.translation_comment_view);
-
-        mCardPartsSeparator     =            findViewById(R.id.card_parts_separator);
-
-        mEasyButton             = (Button)   findViewById(R.id.easy_button);
-        mHardButton             = (Button)   findViewById(R.id.hard_button);
-        mHideButton             = (Button)   findViewById(R.id.hide_button);
-
-        mRootView               =            findViewById(R.id.root_layout);
-    }
-
-    private void setOnClickListeners() {
-        mEasyButton.setOnClickListener(v -> onEasyClicked());
-        mHardButton.setOnClickListener(v -> onHardClicked());
-        mHideButton.setOnClickListener(v -> onHideClicked());
-
-        mRootView.setOnClickListener(v -> onNextClicked());
-        mCardPartsSeparator.setOnClickListener(v -> onNextClicked());
-        mWordView.setOnClickListener(v -> onNextClicked());
-        mWordCommentView.setOnClickListener(v -> onNextClicked());
-        mTranslationView.setOnClickListener(v -> onNextClicked());
-        mTranslationCommentView.setOnClickListener(v -> onNextClicked());
-    }
-
-    private void onEasyClicked() {
-        if (mCurrentCard == null)
-            return;
-
-        switch (mCurrentSide) {
-            case First:  onNextClicked();      break;
-            case Second: decreaseDifficulty(); break;
-        }
-    }
-
-    private void onHardClicked() {
-        if (mCurrentCard == null)
-            return;
-
-        switch (mCurrentSide) {
-            case First:  onNextClicked();      break;
-            case Second: increaseDifficulty(); break;
-        }
-    }
-
-    private void onHideClicked() {
-//        if (mCurrentCard == null)
-//            return;
-//
-//        Card newCard = new Card.Builder(mCurrentCard)
-//                .setHidden(!mCurrentCard.isHidden())
-//                .build();
-//        DB.saveCard(newCard)
-//                .setOnDoneListener(this::showNextCard)
-//                .setOnErrorListener(this::showErrorMessage)
-//                .execute();
-    }
-
-    private void onNextClicked() {
-        if (mCurrentCard == null)
-            return;
-
-        switch (mCurrentSide) {
-            case First:
-                showSecondSide();
-                mCurrentSide = Side.Second;
-                break;
-            case Second:
-                showNextCard();
-                break;
-        }
+        this.deck = deck;
+        dispenser = CardDispenserFactory.create(deck.getCards(), getOrder());
+        takeNextCard();
     }
 
     private void finishExercise() {
-        mWordView.setText("Finished.");
-        mWordCommentView.setText("");
-        hideSecondSide();
+        currentCard = new Card(0L, "", "Finished", "", "", 0, false);
+        showFirstSide();
     }
 
-    private void increaseDifficulty() {
-//        int difficulty = mCurrentCard.getDifficulty() + 1;
-//        if (difficulty > Card.getMaxDifficulty())
-//            difficulty = Card.getMinDifficulty();
-//        Card newCard = new Card.Builder(mCurrentCard)
-//                .setDifficulty(difficulty)
-//                .build();
-//        DB.saveCard(newCard)
-//                .setOnDoneListener(this::showNextCard)
-//                .setOnErrorListener(this::showErrorMessage)
-//                .execute();
+    private void takeNextCard() {
+        if (!dispenser.hasNext()) {
+            finishExercise();
+        }
+        else {
+            currentCard = dispenser.getNext();
+            showFirstSide();
+        }
     }
 
-    private void decreaseDifficulty() {
-//        int difficulty = mCurrentCard.getDifficulty() - 1;
-//        if (difficulty < Card.getMinDifficulty())
-//            difficulty = Card.getMinDifficulty();
-//        Card newCard = new Card.Builder(mCurrentCard)
-//                .setDifficulty(difficulty)
-//                .build();
-//        DB.saveCard(newCard)
-//                .setOnDoneListener(this::showNextCard)
-//                .setOnErrorListener(this::showErrorMessage)
-//                .execute();
+    private void showFirstSide() {
+        isFirstSide = true;
+
+        secondSideGroup.setVisibility(View.INVISIBLE);
+        bottomPanelGroup.setVisibility(View.GONE);
+
+        wordView.setText(currentCard.getWord());
+        commentView.setText(currentCard.getComment());
     }
 
-    private void showErrorMessage(String message) {
-        MessageOkDialogFragment.show(this, message);
+    private void showSecondSide() {
+        isFirstSide = false;
+
+        secondSideGroup.setVisibility(View.VISIBLE);
+        bottomPanelGroup.setVisibility(View.VISIBLE);
+
+        wordView.setText(currentCard.getWord());
+        commentView.setText(currentCard.getComment());
+        translationView.setText(currentCard.getTranslation());
+        difficultyView.setText(currentCard.getDifficulty().toString());
+    }
+
+    @OnClick(R.id.root_layout)
+    public void onNextClicked() {
+        if (isFirstSide)
+            showSecondSide();
+        else
+            takeNextCard();
+    }
+
+    @OnClick(R.id.hide_button)
+    public void onHideClicked() {
+        currentCard.setHidden(true);
+        repositoryModule.getCardRepository()
+            .replace(currentCard.getDeckName(), currentCard.getWord(), currentCard.getComment(), currentCard)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnComplete(this::takeNextCard)
+            .doOnError(this::showErrorMessageAndFinish)
+            .subscribe();
+    }
+
+    @OnClick(R.id.decrease_difficulty_button)
+    public void onDecreaseDifficultyClicked() {
+        int difficulty = currentCard.getDifficulty() - 1;
+        if (difficulty < Card.getMinDifficulty())
+            difficulty = Card.getMinDifficulty();
+        currentCard.setDifficulty(difficulty);
+        repositoryModule.getCardRepository()
+            .replace(currentCard.getDeckName(), currentCard.getWord(), currentCard.getComment(), currentCard)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnComplete(this::takeNextCard)
+            .doOnError(this::showErrorMessageAndFinish)
+            .subscribe();
+    }
+
+    @OnClick(R.id.increase_difficulty_button)
+    public void onIncreaseDifficultyClicked() {
+        int difficulty = currentCard.getDifficulty() + 1;
+        if (difficulty > Card.getMaxDifficulty())
+            difficulty = Card.getMaxDifficulty();
+        currentCard.setDifficulty(difficulty);
+        repositoryModule.getCardRepository()
+            .replace(currentCard.getDeckName(), currentCard.getWord(), currentCard.getComment(), currentCard)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnComplete(this::takeNextCard)
+            .doOnError(this::showErrorMessageAndFinish)
+            .subscribe();
     }
 }

@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import com.divanoapps.learnwords.CardRetriever;
+import com.divanoapps.learnwords.exercise.CardDispenserFactory;
 import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.data.local.Card;
 import com.divanoapps.learnwords.data.local.Deck;
@@ -38,7 +38,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
 
     // StartExerciseClicked
     public interface StartExerciseClicked {
-        void emit(String deckName, CardRetriever.Order order);
+        void emit(String deckName, CardDispenserFactory.Order order);
     }
     private StartExerciseClicked startExerciseClicked = (unused1, unused2) -> {};
     public void setStartExerciseClickedListener(StartExerciseClicked listener) {
@@ -207,9 +207,9 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
             if (selectionActionMode == null) {
                 itemView.setOnClickListener(v -> editDeckClicked.emit(name));
 
-                alphabetOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.alphabetical));
-                fileOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.file));
-                randomOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardRetriever.Order.random));
+                alphabetOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardDispenserFactory.Order.alphabetical));
+                fileOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardDispenserFactory.Order.timestamp));
+                randomOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardDispenserFactory.Order.random));
 
                 itemView.setOnLongClickListener(v -> {
                     selectionActionMode = ((AppCompatActivity) v.getContext()).startSupportActionMode(selectionActionModeCallback);
