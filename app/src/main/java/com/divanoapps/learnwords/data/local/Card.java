@@ -27,6 +27,8 @@ public class Card {
         return 10;
     }
 
+    private Integer sync;
+
     private Long timestamp;
 
     @NonNull
@@ -46,8 +48,9 @@ public class Card {
     public Card() {
     }
 
-    public Card(Long timestamp, @NonNull String deckName, @NonNull String word, @NonNull String comment,
-                String translation, Integer difficulty, Boolean hidden) {
+    public Card(Integer sync, Long timestamp, @NonNull String deckName, @NonNull String word,
+                @NonNull String comment, String translation, Integer difficulty, Boolean hidden) {
+        this.sync = sync;
         this.timestamp = timestamp;
         this.deckName = deckName;
         this.word = word;
@@ -55,6 +58,14 @@ public class Card {
         this.translation = translation;
         this.difficulty = difficulty;
         this.hidden = hidden;
+    }
+
+    public Integer getSync() {
+        return sync;
+    }
+
+    public void setSync(Integer sync) {
+        this.sync = sync;
     }
 
     public Long getTimestamp() {

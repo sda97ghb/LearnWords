@@ -4,6 +4,7 @@ import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Update;
 
 import java.util.List;
 
@@ -17,24 +18,48 @@ import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
 @Dao
 public interface DeckDao {
+    @Query("SELECT * FROM Deck WHERE sync = :addSyncFlag")
+    List<Deck> blockingSelectAdded(Integer addSyncFlag);
+
+    @Query("SELECT * FROM Deck WHERE sync = :deleteSyncFlag")
+    List<Deck> blockingSelectDeleted(Integer deleteSyncFlag);
+
+    @Query("SELECT * FROM Deck WHERE sync != :deleteSyncFlag")
+    List<Deck> blockingSelectNotDeleted(Integer deleteSyncFlag);
+
+    @Query("SELECT * FROM Deck WHERE sync != :deleteSyncFlag")
+    Single<List<Deck>> selectNotDeleted(Integer deleteSyncFlag);
+
+    @Query("SELECT name FROM Deck WHERE sync != :deleteSyncFlag")
+    Single<List<String>> getNamesOfNotDeleted(Integer deleteSyncFlag);
+
     @Query("SELECT name FROM Deck")
-    Single<List<String>> getNames();
+    List<String> blockingGetNames();
 
     @Query("SELECT * FROM Deck")
     Single<List<Deck>> getAll();
 
+    @Query("SELECT * FROM Deck")
+    List<Deck> blockingGetAll();
+
     @Query("SELECT * FROM Deck WHERE name = :name")
     Single<Deck> find(String name);
 
+    @Query("SELECT * FROM Deck WHERE name = :name")
+    Deck blockingFind(String name);
+
     @Insert(onConflict = REPLACE)
-    long insert(Deck deck);
+    long blockingInsert(Deck deck);
+
+    @Update
+    int blockingUpdate(Deck deck);
 
     @Query("DELETE FROM Deck WHERE name = :name")
-    int delete(String name);
+    int blockingDelete(String name);
 
     @Delete
-    int delete(Deck deck);
+    int blockingDelete(Deck deck);
 
     @Delete
-    int delete(Deck... decks);
+    int blockingDelete(Deck... decks);
 }

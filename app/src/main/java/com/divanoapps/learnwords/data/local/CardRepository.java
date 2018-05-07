@@ -17,7 +17,7 @@ public class CardRepository {
     }
 
     public Single<List<Card>> getAllCards() {
-        return cardDao.getAll();
+        return cardDao.selectNotDeleted(Sync.DELETE);
     }
 
     public Single<Card> find(String deckName, String word, String comment) {
@@ -26,22 +26,45 @@ public class CardRepository {
 
     public Completable insert(Card card) {
         card.setTimestamp(TimestampFactory.getTimestamp());
-        return Completable.fromAction(() -> cardDao.insert(card));
+        card.setSync(Sync.ADD);
+        return Completable.fromAction(() -> cardDao.blockingInsert(card));
     }
 
     public Completable replace(String deckName, String word, String comment, Card card) {
         card.setTimestamp(TimestampFactory.getTimestamp());
-        return Completable.fromAction(() -> {
-            cardDao.delete(deckName, word, comment);
-            cardDao.insert(card);
-        });
+        if (card.getDeckName().equals(deckName) &&
+            card.getWord().equals(word) &&
+            card.getComment().equals(comment))
+        {
+            return Completable.fromAction(() -> cardDao.blockingUpdate(card));
+        }
+        else
+        {
+            return Completable.fromAction(() -> {
+                Card oldCard = cardDao.blockingFind(deckName, word, comment);
+                oldCard.setSync(Sync.DELETE);
+                cardDao.blockingUpdate(oldCard);
+
+                card.setSync(Sync.ADD);
+                cardDao.blockingInsert(card);
+            });
+        }
     }
 
     public Completable delete(String deckName, String word, String comment) {
-        return Completable.fromAction(() -> cardDao.delete(deckName, word, comment));
+        return Completable.fromAction(() -> {
+            Card card = cardDao.blockingFind(deckName, word, comment);
+            card.setSync(Sync.DELETE);
+            cardDao.blockingUpdate(card);
+        });
     }
 
     public Completable delete(List<Card> cards) {
-        return Completable.fromAction(() -> cardDao.delete(cards.toArray(new Card[cards.size()])));
+        return Completable.fromAction(() -> {
+            for (Card card : cards) {
+                card.setSync(Sync.DELETE);
+                cardDao.blockingUpdate(card);
+            }
+        });
     }
 }

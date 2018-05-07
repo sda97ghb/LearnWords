@@ -13,6 +13,8 @@ import java.util.List;
 
 @Entity()
 public class Deck {
+    private Integer sync;
+
     private Long timestamp;
 
     @PrimaryKey
@@ -29,7 +31,8 @@ public class Deck {
     public Deck() {
     }
 
-    public Deck(Long timestamp, String name, String fromLanguage, String toLanguage) {
+    public Deck(Integer sync, Long timestamp, @NonNull String name, String fromLanguage, String toLanguage) {
+        this.sync = sync;
         this.timestamp = timestamp;
         this.name = name;
         this.fromLanguage = fromLanguage;
@@ -37,12 +40,21 @@ public class Deck {
     }
 
     @Ignore
-    public Deck(Long timestamp, String name, String fromLanguage, String toLanguage, List<Card> cards) {
+    public Deck(Integer sync, Long timestamp, @NonNull String name, String fromLanguage, String toLanguage, List<Card> cards) {
+        this.sync = sync;
         this.timestamp = timestamp;
         this.name = name;
         this.fromLanguage = fromLanguage;
         this.toLanguage = toLanguage;
         this.cards = cards;
+    }
+
+    public Integer getSync() {
+        return sync;
+    }
+
+    public void setSync(Integer sync) {
+        this.sync = sync;
     }
 
     public Long getTimestamp() {
