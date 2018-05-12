@@ -3,6 +3,12 @@ package com.divanoapps.learnwords.data.local;
 import android.arch.persistence.room.Room;
 import android.content.Context;
 
+import com.divanoapps.learnwords.auxiliary.Lazy;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.function.Supplier;
+
 /**
  * Created by dmitry on 29.04.18.
  */

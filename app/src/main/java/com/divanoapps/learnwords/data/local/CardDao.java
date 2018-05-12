@@ -17,49 +17,49 @@ import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
  */
 
 @Dao
-public interface CardDao {
-    @Query("SELECT * FROM Card")
-    Single<List<Card>> getAll();
-
-    @Query("SELECT * FROM Card")
-    List<Card> blockingGetAll();
-
-    @Query("SELECT * FROM Card WHERE sync = :addSyncFlag")
-    List<Card> blockingSelectAdded(Integer addSyncFlag);
-
-    @Query("SELECT * FROM Card WHERE sync = :deleteSyncFlag")
-    List<Card> blockingSelectDeleted(Integer deleteSyncFlag);
-
-    @Query("SELECT * FROM Card WHERE sync != :deleteSyncFlag")
-    List<Card> blockingSelectNotDeleted(Integer deleteSyncFlag);
-
-    @Query("SELECT * FROM Card WHERE sync != :deleteSyncFlag")
-    Single<List<Card>> selectNotDeleted(Integer deleteSyncFlag);
-
-    @Query("SELECT * FROM Card WHERE deckName = :deckName AND word = :word AND comment = :comment")
-    Single<Card> find(String deckName, String word, String comment);
-
-    @Query("SELECT * FROM Card WHERE deckName = :deckName AND word = :word AND comment = :comment")
-    Card blockingFind(String deckName, String word, String comment);
-
-    @Query("SELECT * FROM Card WHERE deckName=:deckName")
-    Single<List<Card>> findAllCardsFromDeckWithName(String deckName);
-
-    @Query("SELECT * FROM Card WHERE deckName=:deckName")
-    List<Card> blockingFindAllCardsFromDeckWithName(String deckName);
-
-    @Insert(onConflict = REPLACE)
-    long blockingInsert(Card card);
-
-    @Update
-    int blockingUpdate(Card card);
-
-    @Query("DELETE FROM Card WHERE deckName = :deckName AND word = :word AND comment = :comment")
-    int blockingDelete(String deckName, String word, String comment);
-
-    @Delete
-    int blockingDelete(Card card);
-
-    @Delete
-    int blockingDelete(Card... card);
+public interface CardDao extends BaseDao<Card> {
+//    @Query("SELECT * FROM Card")
+//    Single<List<Card>> getAll();
+//
+//    @Query("SELECT * FROM Card")
+//    List<Card> blockingGetAll();
+//
+//    @Query("SELECT * FROM Card WHERE sync = :addSyncFlag")
+//    List<Card> blockingSelectAdded(Integer addSyncFlag);
+//
+//    @Query("SELECT * FROM Card WHERE sync = :deleteSyncFlag")
+//    List<Card> blockingSelectDeleted(Integer deleteSyncFlag);
+//
+//    @Query("SELECT * FROM Card WHERE sync != :deleteSyncFlag")
+//    List<Card> blockingSelectNotDeleted(Integer deleteSyncFlag);
+//
+//    @Query("SELECT * FROM Card WHERE sync != :deleteSyncFlag")
+//    Single<List<Card>> selectNotDeleted(Integer deleteSyncFlag);
+//
+//    @Query("SELECT * FROM Card WHERE deckName = :deckName AND word = :word AND comment = :comment")
+//    Single<Card> find(String deckName, String word, String comment);
+//
+//    @Query("SELECT * FROM Card WHERE deckName = :deckName AND word = :word AND comment = :comment")
+//    Card blockingFind(String deckName, String word, String comment);
+//
+//    @Query("SELECT * FROM Card WHERE deckName=:deckName")
+//    Single<List<Card>> findAllCardsFromDeckWithName(String deckName);
+//
+//    @Query("SELECT * FROM Card WHERE deckName=:deckName")
+//    List<Card> blockingFindAllCardsFromDeckWithName(String deckName);
+//
+//    @Insert(onConflict = REPLACE)
+//    long blockingInsert(Card card);
+//
+//    @Update
+//    int blockingUpdate(Card card);
+//
+//    @Query("DELETE FROM Card WHERE deckName = :deckName AND word = :word AND comment = :comment")
+//    int blockingDelete(String deckName, String word, String comment);
+//
+//    @Delete
+//    int blockingDelete(Card card);
+//
+//    @Delete
+//    int blockingDelete(Card... card);
 }

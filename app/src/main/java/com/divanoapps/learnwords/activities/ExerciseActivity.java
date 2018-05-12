@@ -24,8 +24,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class ExerciseActivity extends AppCompatActivity {
-    public static String getDeckNameExtraName() {
-        return "DECK_NAME_EXTRA";
+    public static String getDeckExtraName() {
+        return "DECK_EXTRA";
     }
 
     public static String getOrderExtraName() {
@@ -81,16 +81,8 @@ public class ExerciseActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         repositoryModule = new RepositoryModule(this);
-        repositoryModule.getDeckRepository().getByName(getDeckName())
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSuccess(this::startExerciseForDeck)
-            .doOnError(this::showErrorMessageAndFinish)
-            .subscribe();
-    }
 
-    private String getDeckName() {
-        return getIntent().getStringExtra(getDeckNameExtraName());
+        startExerciseForDeck(getIntent().getParcelableExtra(getDeckExtraName()));
     }
 
     private CardDispenserFactory.Order getOrder() {
@@ -156,8 +148,8 @@ public class ExerciseActivity extends AppCompatActivity {
     @OnClick(R.id.hide_button)
     public void onHideClicked() {
         currentCard.setHidden(true);
-        repositoryModule.getCardRepository()
-            .replace(currentCard.getDeckName(), currentCard.getWord(), currentCard.getComment(), currentCard)
+        repositoryModule.getCardRxRepository()
+            .update(currentCard)
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnComplete(this::takeNextCard)
@@ -171,8 +163,8 @@ public class ExerciseActivity extends AppCompatActivity {
         if (difficulty < Card.getMinDifficulty())
             difficulty = Card.getMinDifficulty();
         currentCard.setDifficulty(difficulty);
-        repositoryModule.getCardRepository()
-            .replace(currentCard.getDeckName(), currentCard.getWord(), currentCard.getComment(), currentCard)
+        repositoryModule.getCardRxRepository()
+            .update(currentCard)
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnComplete(this::takeNextCard)
@@ -186,8 +178,8 @@ public class ExerciseActivity extends AppCompatActivity {
         if (difficulty > Card.getMaxDifficulty())
             difficulty = Card.getMaxDifficulty();
         currentCard.setDifficulty(difficulty);
-        repositoryModule.getCardRepository()
-            .replace(currentCard.getDeckName(), currentCard.getWord(), currentCard.getComment(), currentCard)
+        repositoryModule.getCardRxRepository()
+            .update(currentCard)
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnComplete(this::takeNextCard)

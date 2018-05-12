@@ -3,6 +3,8 @@ package com.divanoapps.learnwords.data.local;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.ForeignKey;
 import android.arch.persistence.room.Ignore;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 /**
@@ -14,15 +16,14 @@ import android.support.annotation.NonNull;
                                   parentColumns = "name",
                                   childColumns = "deckName",
                                   onDelete = ForeignKey.CASCADE))
-public class Card {
+public class Card implements Parcelable {
+
     public static Integer getMaxDifficulty() {
         return 30;
     }
-
     public static Integer getMinDifficulty() {
         return 0;
     }
-
     public static Integer getDefaultDifficulty() {
         return 10;
     }
@@ -48,6 +49,18 @@ public class Card {
     public Card() {
     }
 
+    @Ignore
+    public Card(Long timestamp, @NonNull String deckName, @NonNull String word, @NonNull String comment, String translation, Integer difficulty, Boolean hidden) {
+        this.sync = Sync.ADD;
+        this.timestamp = timestamp;
+        this.deckName = deckName;
+        this.word = word;
+        this.comment = comment;
+        this.translation = translation;
+        this.difficulty = difficulty;
+        this.hidden = hidden;
+    }
+
     public Card(Integer sync, Long timestamp, @NonNull String deckName, @NonNull String word,
                 @NonNull String comment, String translation, Integer difficulty, Boolean hidden) {
         this.sync = sync;
@@ -59,6 +72,43 @@ public class Card {
         this.difficulty = difficulty;
         this.hidden = hidden;
     }
+
+    @Ignore
+    protected Card(Parcel in) {
+        if (in.readByte() == 0) {
+            sync = null;
+        } else {
+            sync = in.readInt();
+        }
+        if (in.readByte() == 0) {
+            timestamp = null;
+        } else {
+            timestamp = in.readLong();
+        }
+        deckName = in.readString();
+        word = in.readString();
+        comment = in.readString();
+        translation = in.readString();
+        if (in.readByte() == 0) {
+            difficulty = null;
+        } else {
+            difficulty = in.readInt();
+        }
+        byte tmpHidden = in.readByte();
+        hidden = tmpHidden == 0 ? null : tmpHidden == 1;
+    }
+
+    public static final Creator<Card> CREATOR = new Creator<Card>() {
+        @Override
+        public Card createFromParcel(Parcel in) {
+            return new Card(in);
+        }
+
+        @Override
+        public Card[] newArray(int size) {
+            return new Card[size];
+        }
+    };
 
     public Integer getSync() {
         return sync;
@@ -125,5 +175,37 @@ public class Card {
 
     public void setHidden(Boolean hidden) {
         this.hidden = hidden;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        if (sync == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(sync);
+        }
+        if (timestamp == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(timestamp);
+        }
+        dest.writeString(deckName);
+        dest.writeString(word);
+        dest.writeString(comment);
+        dest.writeString(translation);
+        if (difficulty == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(difficulty);
+        }
+        dest.writeByte((byte) (hidden == null ? 0 : hidden ? 1 : 2));
     }
 }

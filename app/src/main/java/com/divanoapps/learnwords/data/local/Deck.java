@@ -3,6 +3,8 @@ package com.divanoapps.learnwords.data.local;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 import java.util.List;
@@ -12,7 +14,7 @@ import java.util.List;
  */
 
 @Entity()
-public class Deck {
+public class Deck implements Parcelable {
     private Integer sync;
 
     private Long timestamp;
@@ -29,6 +31,15 @@ public class Deck {
 
     @Ignore
     public Deck() {
+    }
+
+    @Ignore
+    public Deck(Long timestamp, @NonNull String name, String fromLanguage, String toLanguage) {
+        this.sync = Sync.ADD;
+        this.timestamp = timestamp;
+        this.name = name;
+        this.fromLanguage = fromLanguage;
+        this.toLanguage = toLanguage;
     }
 
     public Deck(Integer sync, Long timestamp, @NonNull String name, String fromLanguage, String toLanguage) {
@@ -48,6 +59,35 @@ public class Deck {
         this.toLanguage = toLanguage;
         this.cards = cards;
     }
+
+    protected Deck(Parcel in) {
+        if (in.readByte() == 0) {
+            sync = null;
+        } else {
+            sync = in.readInt();
+        }
+        if (in.readByte() == 0) {
+            timestamp = null;
+        } else {
+            timestamp = in.readLong();
+        }
+        name = in.readString();
+        fromLanguage = in.readString();
+        toLanguage = in.readString();
+        cards = in.createTypedArrayList(Card.CREATOR);
+    }
+
+    public static final Creator<Deck> CREATOR = new Creator<Deck>() {
+        @Override
+        public Deck createFromParcel(Parcel in) {
+            return new Deck(in);
+        }
+
+        @Override
+        public Deck[] newArray(int size) {
+            return new Deck[size];
+        }
+    };
 
     public Integer getSync() {
         return sync;
@@ -95,5 +135,30 @@ public class Deck {
 
     public void setCards(List<Card> cards) {
         this.cards = cards;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        if (sync == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(sync);
+        }
+        if (timestamp == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeLong(timestamp);
+        }
+        dest.writeString(name);
+        dest.writeString(fromLanguage);
+        dest.writeString(toLanguage);
+        dest.writeTypedList(cards);
     }
 }

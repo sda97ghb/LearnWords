@@ -2,6 +2,8 @@ package com.divanoapps.learnwords.data.local;
 
 import android.content.Context;
 
+import com.divanoapps.learnwords.data.RxRepository;
+
 /**
  * Created by dmitry on 01.05.18.
  */
@@ -22,5 +24,13 @@ public class RepositoryModule {
 
     public DeckRepository getDeckRepository() {
         return new DeckRepository(deckDao, cardDao);
+    }
+
+    public RxRepository<Card> getCardRxRepository() {
+        return new RxRepository<>(new CardRepository(cardDao));
+    }
+
+    public RxRepository<Deck> getDeckRxRepository() {
+        return new RxRepository<>(new DeckRepository(deckDao, cardDao));
     }
 }

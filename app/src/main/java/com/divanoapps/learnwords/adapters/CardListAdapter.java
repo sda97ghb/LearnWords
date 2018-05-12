@@ -27,17 +27,17 @@ import butterknife.ButterKnife;
 public class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHolder> {
 
     public interface EditCardClicked {
-        void emit(String deckName, String word, String comment);
+        void emit(Card card);
     }
-    private EditCardClicked editCardClicked = (deckName, word, comment) -> {};
+    private EditCardClicked editCardClicked = (unused) -> {};
     public void setEditCardClickedListener(EditCardClicked listener) {
         editCardClicked = listener;
     }
 
     public interface ToggleCardEnabledClicked {
-        void emit(String deckName, String word, String comment);
+        void emit(Card card);
     }
-    private ToggleCardEnabledClicked toggleCardHiddenClicked = (deckName, word, comment) -> {};
+    private ToggleCardEnabledClicked toggleCardHiddenClicked = (unused) -> {};
     public void setToggleCardHiddenClickedListener(ToggleCardEnabledClicked listener) {
         toggleCardHiddenClicked = listener;
     }
@@ -196,7 +196,7 @@ public class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHo
             // Behavior
             if (selectionActionMode == null) {
                 itemView.setOnClickListener(v ->
-                    editCardClicked.emit(card.getDeckName(), card.getWord(), card.getComment()));
+                    editCardClicked.emit(card));
 
                 itemView.setOnLongClickListener(v -> {
                     selectionActionMode = ((AppCompatActivity) v.getContext()).startSupportActionMode(selectionActionModeCallback);
@@ -218,8 +218,7 @@ public class CardListAdapter extends RecyclerView.Adapter<CardListAdapter.ViewHo
                 itemView.setOnLongClickListener(v -> false);
             }
 
-            toggleCardHiddenButton.setOnClickListener(v ->
-                toggleCardHiddenClicked.emit(card.getDeckName(), card.getWord(), card.getComment()));
+            toggleCardHiddenButton.setOnClickListener(v -> toggleCardHiddenClicked.emit(card));
         }
     }
 }

@@ -29,7 +29,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
 
     // EditDeckClicked
     public interface EditDeckClicked {
-        void emit(String deckName);
+        void emit(Deck deck);
     }
     private EditDeckClicked editDeckClicked = unused -> {};
     public void setEditDeckClickedListener(EditDeckClicked listener) {
@@ -38,7 +38,7 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
 
     // StartExerciseClicked
     public interface StartExerciseClicked {
-        void emit(String deckName, CardDispenserFactory.Order order);
+        void emit(Deck deck, CardDispenserFactory.Order order);
     }
     private StartExerciseClicked startExerciseClicked = (unused1, unused2) -> {};
     public void setStartExerciseClickedListener(StartExerciseClicked listener) {
@@ -205,11 +205,11 @@ public class DeckListAdapter extends RecyclerView.Adapter<DeckListAdapter.ViewHo
 
             // Behavior
             if (selectionActionMode == null) {
-                itemView.setOnClickListener(v -> editDeckClicked.emit(name));
+                itemView.setOnClickListener(v -> editDeckClicked.emit(deck));
 
-                alphabetOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardDispenserFactory.Order.alphabetical));
-                fileOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardDispenserFactory.Order.timestamp));
-                randomOrderButton.setOnClickListener(v -> startExerciseClicked.emit(name, CardDispenserFactory.Order.random));
+                alphabetOrderButton.setOnClickListener(v -> startExerciseClicked.emit(deck, CardDispenserFactory.Order.alphabetical));
+                fileOrderButton.setOnClickListener(v -> startExerciseClicked.emit(deck, CardDispenserFactory.Order.timestamp));
+                randomOrderButton.setOnClickListener(v -> startExerciseClicked.emit(deck, CardDispenserFactory.Order.random));
 
                 itemView.setOnLongClickListener(v -> {
                     selectionActionMode = ((AppCompatActivity) v.getContext()).startSupportActionMode(selectionActionModeCallback);

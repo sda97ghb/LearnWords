@@ -21,10 +21,12 @@ import com.divanoapps.learnwords.auxiliary.RussianNumberConjugation;
 import com.divanoapps.learnwords.data.api2.ApiError;
 import com.divanoapps.learnwords.data.local.Card;
 import com.divanoapps.learnwords.data.local.Deck;
+import com.divanoapps.learnwords.data.local.DeckSpecificationsFactory;
 import com.divanoapps.learnwords.data.local.RepositoryModule;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.YesNoMessageDialogFragment;
+import com.divanoapps.learnwords.use_case.RenameDeck;
 
 import java.util.List;
 
@@ -32,14 +34,15 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class DeckEditActivity extends AppCompatActivity implements
         RenameDeckDialogFragment.RenameDeckDialogListener {
 
-    public static String getDeckNameExtraName() {
-        return "DECK_NAME";
+    public static String getDeckExtraName() {
+        return "DECK_EXTRA";
     }
 
     @BindView(R.id.fab)
@@ -72,11 +75,11 @@ public class DeckEditActivity extends AppCompatActivity implements
     @BindView(R.id.decorator_number_of_hidden_card)
     TextView numberOfHiddenCardsDecorator;
 
-    CardListAdapter cardListAdapter;
+    private CardListAdapter cardListAdapter;
 
-    RepositoryModule repositoryModule;
+    private RepositoryModule repositoryModule;
 
-    private Deck deck = null;
+    private Deck deck;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +91,8 @@ public class DeckEditActivity extends AppCompatActivity implements
         // Expand activity to make transparent notification bar
 //        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
 //                             WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
+        deck = getIntent().getParcelableExtra(getDeckExtraName());
 
         // Setup card list
         cardListView.setLayoutManager(new LinearLayoutManager(this));
@@ -112,33 +117,24 @@ public class DeckEditActivity extends AppCompatActivity implements
         repositoryModule = new RepositoryModule(this);
     }
 
-    private void deleteCards(List<Card> cards) {
-        repositoryModule.getCardRepository().delete(cards)
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnComplete(this::requestDeck)
-            .doOnError(this::showErrorMessage)
-            .subscribe();
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        requestDeck();
+        updateUi();
     }
 
-    private void requestDeck() {
-        String deckName = getIntent().getStringExtra(getDeckNameExtraName());
-        repositoryModule.getDeckRepository().getByName(deckName)
+    private void requestDeckqweqweqweqweqweqweqweqwe() {
+        repositoryModule.getDeckRxRepository()
+            .query(DeckSpecificationsFactory.byName(deck.getName()))
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSuccess(this::showDeck)
+            .doOnSuccess(this::setDeckAndUpdateUi)
             .doOnError(this::showErrorMessage)
             .subscribe();
     }
 
-    private void showDeck(Deck deck) {
-        this.deck = deck;
+    private void setDeckAndUpdateUi(List<Deck> decks) {
+        this.deck = decks.get(0);
         updateUi();
     }
 
@@ -208,7 +204,7 @@ public class DeckEditActivity extends AppCompatActivity implements
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_rename: renameCurrentDeck(); return true;
-            case R.id.action_search: /* Nothing to do */ return true;
+            case R.id.action_search: /* Nothing to do */  return true;
             case R.id.action_delete: deleteCurrentDeck(); return true;
             case android.R.id.home: NavUtils.navigateUpFromSameTask(this); return true;
 
@@ -224,7 +220,8 @@ public class DeckEditActivity extends AppCompatActivity implements
 
     private void deleteCurrentDeck() {
         YesNoMessageDialogFragment.show(this, getString(R.string.are_you_shure_delete_deck_question), () ->
-            repositoryModule.getDeckRepository().delete(deck.getName())
+            repositoryModule.getDeckRxRepository()
+                .delete(deck)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnComplete(() -> NavUtils.navigateUpFromSameTask(this))
@@ -236,18 +233,16 @@ public class DeckEditActivity extends AppCompatActivity implements
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         if (dialog instanceof RenameDeckDialogFragment) {
-            String oldDeckName = deck.getName();
             String newDeckName = ((RenameDeckDialogFragment) dialog).getNewDeckName();
 
-            deck.setName(newDeckName);
-
-            repositoryModule.getDeckRepository().replace(oldDeckName, deck)
+            Completable.fromAction(() -> {
+                RenameDeck.execute(deck, newDeckName, repositoryModule.getDeckRepository(), repositoryModule.getCardRepository());
+                deck = repositoryModule.getDeckRepository().query(DeckSpecificationsFactory.byName(newDeckName)).get(0);
+                getIntent().putExtra(getDeckExtraName(), deck);
+            })
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnComplete(() -> {
-                    getIntent().putExtra(getDeckNameExtraName(), newDeckName);
-                    requestDeck();
-                })
+                .doOnComplete(this::updateUi)
                 .doOnError(this::showErrorMessage)
                 .subscribe();
         }
@@ -256,41 +251,35 @@ public class DeckEditActivity extends AppCompatActivity implements
     @OnClick(R.id.fab)
     public void onAddCardClicked() {
         Intent intent = new Intent(this, CardAddActivity.class);
-        intent.putExtra(CardAddActivity.getDeckNameExtraName(), deck.getName());
+        intent.putExtra(CardAddActivity.getDeckExtraName(), deck);
         startActivity(intent);
     }
 
-    public void onEditCardClicked(String deckName, String word, String comment) {
+    public void onEditCardClicked(Card card) {
         Intent intent = new Intent(DeckEditActivity.this, CardEditActivity.class);
-        intent.putExtra(CardEditActivity.getDeckNameExtraName(), deckName);
-        intent.putExtra(CardEditActivity.getWordExtraName(), word);
-        intent.putExtra(CardEditActivity.getCommentExtraName(), comment);
+        intent.putExtra(CardEditActivity.getDeckExtraName(), deck);
+        intent.putExtra(CardEditActivity.getCardExtraName(), card);
         startActivity(intent);
     }
 
-    public void onToggleCardEnabledClicked(String deckName, String word, String comment) {
+    public void onToggleCardEnabledClicked(Card card) {
         // Get the card to know its visibility
-        repositoryModule.getCardRepository().find(deckName, word, comment)
+        card.setHidden(!card.isHidden());
+        repositoryModule.getCardRxRepository()
+            .update(card)
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSuccess(card -> {
-                card.setHidden(!card.isHidden());
-                repositoryModule.getCardRepository().replace(deckName, word, comment, card)
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doOnComplete(this::requestDeck)
-                    .doOnError(this::showErrorMessage)
-                    .subscribe();
-            })
+            .doOnComplete(this::updateUi)
             .doOnError(this::showErrorMessage)
             .subscribe();
     }
 
-    public void onDeleteCardClicked(String deckName, String word, String comment) {
-        repositoryModule.getCardRepository().delete(deckName, word, comment)
+    private void deleteCards(List<Card> cards) {
+        repositoryModule.getCardRxRepository()
+            .delete(cards.toArray(new Card[cards.size()]))
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnComplete(this::requestDeck)
+            .doOnComplete(this::updateUi)
             .doOnError(this::showErrorMessage)
             .subscribe();
     }

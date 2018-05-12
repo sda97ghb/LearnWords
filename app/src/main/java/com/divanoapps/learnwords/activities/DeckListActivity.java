@@ -20,7 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.divanoapps.learnwords.Application;
-import com.divanoapps.learnwords.exercise.CardDispenserFactory;
+import com.divanoapps.learnwords.data.local.DeckSpecificationsFactory;
 import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
 import com.divanoapps.learnwords.data.api2.ApiError;
@@ -30,6 +30,7 @@ import com.divanoapps.learnwords.data.local.TimestampFactory;
 import com.divanoapps.learnwords.dialogs.AddDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
+import com.divanoapps.learnwords.exercise.CardDispenserFactory;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
 
@@ -114,21 +115,11 @@ public class DeckListActivity extends AppCompatActivity implements
         googleSignInApiClient = Application.getGoogleSignInApiClient(this,
             connectionResult -> showErrorMessage(connectionResult.getErrorMessage()));
 
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//        if (prefs.getBoolean("preference_use_remote_db", false)) {
-//            String serverAddress = prefs.getString("preference_server_address", RemoteDB.getDefaultServerAddress());
-//            String username = prefs.getString("preference_username", RemoteDB.getDefaultServerAddress());
-//            String password = prefs.getString("preference_password", RemoteDB.getDefaultServerAddress());
-//            DB.setDb(new RemoteDB(serverAddress, username, password));
-//        }
-//        else
-//            DB.setDb(new LocalDB());
-
         repositoryModule = new RepositoryModule(getApplicationContext());
     }
 
     private void deleteDecks(List<Deck> decks) {
-        repositoryModule.getDeckRepository().delete(decks.toArray(new Deck[decks.size()]))
+        repositoryModule.getDeckRxRepository().delete(decks.toArray(new Deck[decks.size()]))
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnComplete(this::requestDeckList)
@@ -147,7 +138,8 @@ public class DeckListActivity extends AppCompatActivity implements
     }
 
     public void requestDeckList() {
-        repositoryModule.getDeckRepository().getAllDecks()
+        repositoryModule.getDeckRxRepository()
+            .query(DeckSpecificationsFactory.allDecks())
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess(this::showDecks)
@@ -164,7 +156,8 @@ public class DeckListActivity extends AppCompatActivity implements
 
     private void addDeck(String name, String languageFrom, String languageTo) {
         Deck deck = new Deck(TimestampFactory.getTimestamp(), name, languageFrom, languageTo);
-        repositoryModule.getDeckRepository().insert(deck)
+        repositoryModule.getDeckRxRepository()
+            .insert(deck)
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnComplete(this::requestDeckList)
@@ -249,15 +242,15 @@ public class DeckListActivity extends AppCompatActivity implements
             });
     }
 
-    public void onEditDeckClicked(String deckName) {
+    public void onEditDeckClicked(Deck deck) {
         Intent intent = new Intent(this, DeckEditActivity.class);
-        intent.putExtra(DeckEditActivity.getDeckNameExtraName(), deckName);
+        intent.putExtra(DeckEditActivity.getDeckExtraName(), deck);
         startActivity(intent);
     }
 
-    public void onStartExerciseClicked(String deckName, CardDispenserFactory.Order order) {
+    public void onStartExerciseClicked(Deck deck, CardDispenserFactory.Order order) {
         Intent intent = new Intent(this, ExerciseActivity.class);
-        intent.putExtra(ExerciseActivity.getDeckNameExtraName(), deckName);
+        intent.putExtra(ExerciseActivity.getDeckExtraName(), deck);
         intent.putExtra(ExerciseActivity.getOrderExtraName(), order);
         startActivity(intent);
     }

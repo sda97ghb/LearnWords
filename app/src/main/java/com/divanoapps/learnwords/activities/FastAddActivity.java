@@ -20,20 +20,16 @@ import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.YandexDictionary.DictionaryResult;
 import com.divanoapps.learnwords.YandexDictionary.YandexDictionaryService;
 import com.divanoapps.learnwords.adapters.TranslationListAdapter;
-import com.divanoapps.learnwords.data.api2.ApiCard;
 import com.divanoapps.learnwords.data.api2.ApiError;
 import com.divanoapps.learnwords.data.local.Card;
+import com.divanoapps.learnwords.data.local.CardSpecificationsFactory;
+import com.divanoapps.learnwords.data.local.DeckSpecificationsFactory;
 import com.divanoapps.learnwords.data.local.RepositoryModule;
 import com.divanoapps.learnwords.data.local.TimestampFactory;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.entities.TranslationOption;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.Task;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 
 import java.util.List;
@@ -41,6 +37,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -150,21 +147,21 @@ public class FastAddActivity extends AppCompatActivity
 
     private void onDoneClicked() {
         Card card = getCurrentStateAsCard();
-        repositoryModule.getCardRepository().find(card.getDeckName(), card.getWord(), card.getComment())
-            .doOnSuccess(unused -> showErrorMessage("Card already exists."))
+        Completable.fromAction(() -> {
+            List<Card> cards = repositoryModule.getCardRepository()
+                .query(CardSpecificationsFactory.byDeckNameAndWordAndComment(card.getDeckName(), card.getWord(), card.getComment()));
+            if (cards.isEmpty())
+                repositoryModule.getCardRxRepository().insert(card);
+            else
+                showErrorMessage("Card already exists.");
+        })
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnError(unused ->
-                repositoryModule.getCardRepository().insert(card)
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doOnComplete(() -> {
-                        Toast.makeText(this, "Card saved", Toast.LENGTH_SHORT).show();
-                        finish();
-                    })
-                    .doOnError(this::showErrorMessage)
-                    .subscribe()
-            )
+            .doOnComplete(() -> {
+                Toast.makeText(this, "Card saved", Toast.LENGTH_SHORT).show();
+                finish();
+            })
+            .doOnError(this::showErrorMessage)
             .subscribe();
     }
 
@@ -199,7 +196,8 @@ public class FastAddActivity extends AppCompatActivity
 
     private void checkExistence() {
         Card card = getCurrentStateAsCard();
-        repositoryModule.getCardRepository().find(card.getDeckName(), card.getWord(), card.getComment())
+        repositoryModule.getCardRxRepository()
+            .query(CardSpecificationsFactory.byDeckNameAndWordAndComment(card.getDeckName(), card.getWord(), card.getComment()))
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess(unused -> commentEditWrapper.setError("Already exists"))
@@ -219,17 +217,18 @@ public class FastAddActivity extends AppCompatActivity
 
     @OnClick(R.id.select_deck_button)
     public void onSelectDeckButtonClicked() {
-        repositoryModule.getDeckRepository().getNames()
+        repositoryModule.getDeckRxRepository()
+            .query(DeckSpecificationsFactory.allDecks())
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSuccess(names -> {
-                CharSequence[] items = new CharSequence[names.size()];
-                for (int i = 0; i < names.size(); ++ i)
-                items[i] = names.get(i);
+            .doOnSuccess(decks -> {
+                CharSequence[] items = new CharSequence[decks.size()];
+                for (int i = 0; i < decks.size(); ++ i)
+                items[i] = decks.get(i).getName();
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Select deck")
                     .setItems(items, (dialog, which) -> {
-                        deckName = names.get(which);
+                        deckName = decks.get(which).getName();
                         deckNameView.setText(deckName);
                     }).create().show();
             })

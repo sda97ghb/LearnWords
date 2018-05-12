@@ -16,9 +16,10 @@ import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.YandexDictionary.DictionaryResult;
 import com.divanoapps.learnwords.YandexDictionary.YandexDictionaryService;
 import com.divanoapps.learnwords.adapters.TranslationListAdapter;
-import com.divanoapps.learnwords.data.api2.ApiCard;
 import com.divanoapps.learnwords.data.api2.ApiError;
 import com.divanoapps.learnwords.data.local.Card;
+import com.divanoapps.learnwords.data.local.CardSpecificationsFactory;
+import com.divanoapps.learnwords.data.local.Deck;
 import com.divanoapps.learnwords.data.local.RepositoryModule;
 import com.divanoapps.learnwords.data.local.TimestampFactory;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
@@ -29,14 +30,15 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class CardAddActivity extends AppCompatActivity
     implements TranslationListAdapter.OnTranslationOptionSelectedListener {
 
-    public static String getDeckNameExtraName() {
-        return "DECK_NAME";
+    public static String getDeckExtraName() {
+        return "DECK_EXTRA";
     }
 
     @BindView(R.id.toolbar)
@@ -62,7 +64,7 @@ public class CardAddActivity extends AppCompatActivity
 
     TranslationListAdapter translationListAdapter;
 
-    private String deckName;
+    private Deck deck;
 
     RepositoryModule repositoryModule;
 
@@ -75,11 +77,9 @@ public class CardAddActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        deckName = getIntent().getStringExtra(getDeckNameExtraName());
-        if (deckName == null)
-            deckName = Application.getDefaultDeckName();
+        deck = getIntent().getParcelableExtra(getDeckExtraName());
 
-        deckNameView.setText(deckName);
+        deckNameView.setText(deck.getName());
 
         wordEdit.requestFocus();
         wordEdit.clearFocus();
@@ -119,7 +119,7 @@ public class CardAddActivity extends AppCompatActivity
     private Card getCurrentStateAsCard() {
         Card card = new Card();
         card.setTimestamp(TimestampFactory.getTimestamp());
-        card.setDeckName(deckName);
+        card.setDeckName(deck.getName());
         card.setWord(wordEdit.getText().toString());
         card.setComment(commentEdit.getText().toString());
         card.setTranslation(translationEdit.getText().toString());
@@ -130,19 +130,50 @@ public class CardAddActivity extends AppCompatActivity
 
     private void onDoneClicked() {
         Card card = getCurrentStateAsCard();
-        repositoryModule.getCardRepository().find(card.getDeckName(), card.getWord(), card.getComment())
+        Completable.fromAction(() -> {
+            List<Card> cards = repositoryModule.getCardRepository()
+                .query(CardSpecificationsFactory.byDeckNameAndWordAndComment(card.getDeckName(), card.getWord(), card.getComment()));
+            if (cards.isEmpty())
+                repositoryModule.getCardRepository().insert(card);
+            else
+                throw new Exception("Card already exists.");
+//                showErrorMessage("Card already exists.");
+        })
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSuccess(unused -> showErrorMessage("Card already exists."))
-            .doOnError(unused ->
-                repositoryModule.getCardRepository().insert(card)
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .doOnComplete(this::finish)
-                    .doOnError(this::showErrorMessage)
-                    .subscribe()
-            )
+            .doOnComplete(this::finish)
+            .doOnError(this::showErrorMessage)
             .subscribe();
+//        repositoryModule.getCardRxRepository()
+//            .query(CardSpecificationsFactory.byDeckNameAndWordAndComment(card.getDeckName(), card.getWord(), card.getComment()))
+//            .subscribeOn(Schedulers.newThread())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .doOnSuccess(cards -> {
+//                if (cards.isEmpty()) {
+//                    repositoryModule.getCardRxRepository()
+//                        .insert(card)
+//                        .subscribeOn(Schedulers.newThread())
+//                        .observeOn(AndroidSchedulers.mainThread())
+//                        .doOnComplete(this::finish)
+//                        .doOnError(this::showErrorMessage)
+//                        .subscribe();
+//                }
+//                else {
+//                    showErrorMessage("Card already exists.");
+//                }
+//            })
+//            .doOnError(this::showErrorMessage)
+////            .doOnSuccess(unused -> showErrorMessage("Card already exists."))
+////            .doOnError(unused ->
+////                repositoryModule.getCardRxRepository()
+////                    .insert(card)
+////                    .subscribeOn(Schedulers.newThread())
+////                    .observeOn(AndroidSchedulers.mainThread())
+////                    .doOnComplete(this::finish)
+////                    .doOnError(this::showErrorMessage)
+////                    .subscribe()
+////            )
+//            .subscribe();
     }
 
     private void requestTranslations(String text) {
@@ -179,7 +210,8 @@ public class CardAddActivity extends AppCompatActivity
 
     private void checkExistence() {
         Card card = getCurrentStateAsCard();
-        repositoryModule.getCardRepository().find(card.getDeckName(), card.getWord(), card.getComment())
+        repositoryModule.getCardRxRepository()
+            .query(CardSpecificationsFactory.byDeckNameAndWordAndComment(card.getDeckName(), card.getWord(), card.getComment()))
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess(unused -> commentEditWrapper.setError("Already exists"))
