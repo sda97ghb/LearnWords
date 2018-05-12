@@ -33,8 +33,4 @@ public class DeckSpecificationsFactory {
     public static SQLiteQuerySpecification byName(String name) {
         return new SQLiteQuerySpecification("SELECT * FROM Deck WHERE name = ?", name);
     }
-
-//    public static SQLiteQuerySpecification deleteByName(String name) {
-//        return new SQLiteQuerySpecification("DELETE FROM Deck WHERE name = ?", name);
-//    }
 }

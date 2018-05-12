@@ -121,9 +121,6 @@ public class DeckEditActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         updateUi();
-    }
-
-    private void requestDeckqweqweqweqweqweqweqweqwe() {
         repositoryModule.getDeckRxRepository()
             .query(DeckSpecificationsFactory.byName(deck.getName()))
             .subscribeOn(Schedulers.newThread())
@@ -135,6 +132,7 @@ public class DeckEditActivity extends AppCompatActivity implements
 
     private void setDeckAndUpdateUi(List<Deck> decks) {
         this.deck = decks.get(0);
+        getIntent().putExtra(getDeckExtraName(), this.deck);
         updateUi();
     }
 

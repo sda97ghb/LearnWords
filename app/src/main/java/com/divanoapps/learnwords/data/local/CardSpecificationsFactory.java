@@ -1,8 +1,5 @@
 package com.divanoapps.learnwords.data.local;
 
-import android.arch.persistence.db.SimpleSQLiteQuery;
-import android.arch.persistence.db.SupportSQLiteQuery;
-
 /**
  * Created by dmitry on 12.05.18.
  */
