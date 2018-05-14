@@ -13,8 +13,8 @@ import java.util.List;
  * Created by dmitry on 29.04.18.
  */
 
-@Entity()
-public class Deck implements Parcelable {
+@Entity
+public class Deck implements Parcelable, Syncable {
     private Integer sync;
 
     private Long timestamp;

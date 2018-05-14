@@ -16,7 +16,7 @@ import android.support.annotation.NonNull;
                                   parentColumns = "name",
                                   childColumns = "deckName",
                                   onDelete = ForeignKey.CASCADE))
-public class Card implements Parcelable {
+public class Card implements Parcelable, Syncable {
 
     public static Integer getMaxDifficulty() {
         return 30;
