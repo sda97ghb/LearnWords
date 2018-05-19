@@ -3,6 +3,7 @@ package com.divanoapps.learnwords.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.constraint.Group;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -18,8 +19,12 @@ import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.divanoapps.learnwords.Application;
+import com.divanoapps.learnwords.data.dogfish.ServiceExecutor;
 import com.divanoapps.learnwords.data.local.DeckSpecificationsFactory;
 import com.divanoapps.learnwords.R;
 import com.divanoapps.learnwords.adapters.DeckListAdapter;
@@ -27,24 +32,35 @@ import com.divanoapps.learnwords.data.api2.ApiError;
 import com.divanoapps.learnwords.data.local.Deck;
 import com.divanoapps.learnwords.data.local.RepositoryModule;
 import com.divanoapps.learnwords.data.local.TimestampFactory;
+import com.divanoapps.learnwords.data.remote.Api;
+import com.divanoapps.learnwords.data.remote.RetrofitRequestExecutor;
+import com.divanoapps.learnwords.data.sync.Sync;
 import com.divanoapps.learnwords.dialogs.AddDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 import com.divanoapps.learnwords.exercise.CardDispenserFactory;
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.Task;
+import com.google.gson.Gson;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class DeckListActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         RenameDeckDialogFragment.RenameDeckDialogListener {
+
+    private static final int RC_SIGN_IN = 9001;
 
     RepositoryModule repositoryModule;
 
@@ -58,6 +74,11 @@ public class DeckListActivity extends AppCompatActivity implements
 
     @BindView(R.id.app_bar_layout)
     AppBarLayout appBarLayout;
+
+    Group signInGroup;
+    Group userGroup;
+
+    TextView userNameView;
 
     DeckListAdapter deckListAdapter;
 
@@ -73,18 +94,27 @@ public class DeckListActivity extends AppCompatActivity implements
         ButterKnife.bind(this);
 
         // Action bar setup
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Setup navigation drawer
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        View headerView = navigationView.getHeaderView(0);
+        signInGroup = headerView.findViewById(R.id.sign_in_group);
+        userGroup = headerView.findViewById(R.id.user_group);
+        userNameView = headerView.findViewById(R.id.user_name_view);
+
+        headerView.findViewById(R.id.sign_in_view).setOnClickListener(v -> signIn());
+        headerView.findViewById(R.id.sign_in_icon).setOnClickListener(v -> signIn());
+        headerView.findViewById(R.id.sign_out_button).setOnClickListener(v -> signOut());
 
         // Expand activity to make transparent notification bar
 //        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
@@ -115,16 +145,20 @@ public class DeckListActivity extends AppCompatActivity implements
         googleSignInApiClient = Application.getGoogleSignInApiClient(this,
             connectionResult -> showErrorMessage(connectionResult.getErrorMessage()));
 
+        GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(this);
+        if (lastSignedInAccount != null)
+            setAccount(lastSignedInAccount);
+
         repositoryModule = new RepositoryModule(getApplicationContext());
     }
 
-    private void deleteDecks(List<Deck> decks) {
-        repositoryModule.getDeckRxRepository().delete(decks.toArray(new Deck[decks.size()]))
-            .subscribeOn(Schedulers.newThread())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnComplete(this::requestDeckList)
-            .doOnError(this::showErrorMessage)
-            .subscribe();
+    private void setAccount(GoogleSignInAccount account) {
+        userGroup.setVisibility(View.VISIBLE);
+        signInGroup.setVisibility(View.GONE);
+
+        userNameView.setText(getString(R.string.hello_message_prefix, account.getDisplayName()));
+
+        Application.setGoogleSignInAccount(account);
     }
 
     @Override
@@ -139,7 +173,7 @@ public class DeckListActivity extends AppCompatActivity implements
 
     public void requestDeckList() {
         repositoryModule.getDeckRxRepository()
-            .query(DeckSpecificationsFactory.allDecks())
+            .query(DeckSpecificationsFactory.notDeletedDecks())
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess(this::showDecks)
@@ -165,9 +199,24 @@ public class DeckListActivity extends AppCompatActivity implements
             .subscribe();
     }
 
+    private void deleteDecks(List<Deck> decks) {
+        Completable.fromAction(() -> {
+            for (Deck deck : decks) {
+                deck.setSync(com.divanoapps.learnwords.data.local.Sync.DELETE);
+                repositoryModule.getDeckRepository().update(deck);
+            }
+        })
+//        repositoryModule.getDeckRxRepository().delete(decks.toArray(new Deck[decks.size()]))
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnComplete(this::requestDeckList)
+            .doOnError(this::showErrorMessage)
+            .subscribe();
+    }
+
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START))
             drawer.closeDrawer(GravityCompat.START);
         else
@@ -207,8 +256,42 @@ public class DeckListActivity extends AppCompatActivity implements
         if (id == R.id.action_search) {
             return true;
         }
+        else if (id == R.id.action_sync) {
+            sync();
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void sync() {
+        GoogleSignInAccount googleSignInAccount = Application.getGoogleSignInAccount();
+        if (googleSignInAccount == null) {
+            signIn();
+//            showErrorMessage("Unable to sync: there is no account");
+            Toast.makeText(this, "Please select an account and tap Sync again.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String apiToken = googleSignInAccount.getIdToken();
+
+        RetrofitRequestExecutor retrofitRequestExecutor = new RetrofitRequestExecutor();
+        Gson gson = new Gson();
+        Api api = new ServiceExecutor<>(retrofitRequestExecutor, gson, Api.class, apiToken).getService();
+        Sync sync = new Sync(api, repositoryModule.getDeckRepository(), repositoryModule.getCardRepository());
+
+        Completable.fromAction(() -> {
+            sync.getDeckSync().execute();
+            sync.getCardSync().execute();
+        })
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnComplete(() -> {
+                Toast.makeText(this, "Sync completed.", Toast.LENGTH_SHORT).show();
+                requestDeckList();
+            })
+            .doOnError(this::showErrorMessage)
+            .subscribe();
     }
 
     @Override
@@ -234,12 +317,36 @@ public class DeckListActivity extends AppCompatActivity implements
         return true;
     }
 
-    private void signOut() {
+    public void signIn() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleSignInApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    public void signOut() {
         Auth.GoogleSignInApi.signOut(googleSignInApiClient)
             .setResultCallback(status -> {
-                startActivity(new Intent(this, LauncherActivity.class));
-                finish();
+                Application.setGoogleSignInAccount(null);
+                userGroup.setVisibility(View.GONE);
+                signInGroup.setVisibility(View.VISIBLE);
             });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                // Google Sign In was successful
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                setAccount(account);
+            } catch (ApiException e) {
+                // Google Sign In failed, update UI appropriately
+                e.printStackTrace();
+                showErrorMessage(getString(R.string.failed_to_sign_in, e.getLocalizedMessage()));
+            }
+        }
     }
 
     public void onEditDeckClicked(Deck deck) {

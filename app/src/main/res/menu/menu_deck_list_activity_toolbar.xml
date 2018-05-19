@@ -7,4 +7,9 @@
         android:icon="@drawable/ic_actionbar_search"
         app:actionViewClass="android.support.v7.widget.SearchView"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_sync"
+        android:title="Sync"
+        android:icon="@drawable/ic_actionbar_sync"
+        app:showAsAction="always" />
 </menu>

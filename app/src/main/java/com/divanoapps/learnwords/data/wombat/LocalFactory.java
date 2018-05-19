@@ -16,7 +16,7 @@ public class LocalFactory<T extends Syncable, I extends Id> {
     public Local<I> create(T entity) {
         Local<I> local = new Local<>();
         local.setId(entityToIdConverter.getId(entity));
-        local.setSync(entity.getSync());
+        local.setSync(entity.getSync() == null ? 0 : entity.getSync());
         local.setTimestamp(entity.getTimestamp());
         return local;
     }

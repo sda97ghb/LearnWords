@@ -20,9 +20,12 @@ import com.divanoapps.learnwords.adapters.CardListAdapter;
 import com.divanoapps.learnwords.auxiliary.RussianNumberConjugation;
 import com.divanoapps.learnwords.data.api2.ApiError;
 import com.divanoapps.learnwords.data.local.Card;
+import com.divanoapps.learnwords.data.local.CardRepository;
+import com.divanoapps.learnwords.data.local.CardSpecificationsFactory;
 import com.divanoapps.learnwords.data.local.Deck;
 import com.divanoapps.learnwords.data.local.DeckSpecificationsFactory;
 import com.divanoapps.learnwords.data.local.RepositoryModule;
+import com.divanoapps.learnwords.data.local.Sync;
 import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment;
 import com.divanoapps.learnwords.dialogs.YesNoMessageDialogFragment;
@@ -35,6 +38,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
@@ -121,8 +125,18 @@ public class DeckEditActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         updateUi();
-        repositoryModule.getDeckRxRepository()
-            .query(DeckSpecificationsFactory.byName(deck.getName()))
+        reloadDeck();
+    }
+
+    private void reloadDeck() {
+        Single.fromCallable(() -> {
+            List<Deck> decks = repositoryModule.getDeckRepository().query(DeckSpecificationsFactory.byName(this.deck.getName()));
+            List<Card> cards = repositoryModule.getCardRepository().query(CardSpecificationsFactory.cardsWithDeckName(deck.getName()));
+            decks.get(0).setCards(cards);
+            return decks;
+        })
+//        repositoryModule.getDeckRxRepository()
+//            .query(DeckSpecificationsFactory.byName(deck.getName()))
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSuccess(this::setDeckAndUpdateUi)
@@ -273,11 +287,18 @@ public class DeckEditActivity extends AppCompatActivity implements
     }
 
     private void deleteCards(List<Card> cards) {
-        repositoryModule.getCardRxRepository()
-            .delete(cards.toArray(new Card[cards.size()]))
+        Completable.fromAction(() -> {
+            CardRepository cardRepository = repositoryModule.getCardRepository();
+            for (Card card : cards) {
+                card.setSync(Sync.DELETE);
+                cardRepository.update(card);
+            }
+        })
+//        repositoryModule.getCardRxRepository()
+//            .delete(cards.toArray(new Card[cards.size()]))
             .subscribeOn(Schedulers.newThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnComplete(this::updateUi)
+            .doOnComplete(this::reloadDeck)
             .doOnError(this::showErrorMessage)
             .subscribe();
     }

@@ -1,5 +1,7 @@
 package com.divanoapps.learnwords.data.sync;
 
+import android.support.annotation.NonNull;
+
 import com.divanoapps.learnwords.data.Specification;
 import com.divanoapps.learnwords.data.local.CardSpecificationsFactory;
 import com.divanoapps.learnwords.data.wombat.GetByIdSpecificationFactory;
@@ -9,8 +11,9 @@ import com.divanoapps.learnwords.data.wombat.GetByIdSpecificationFactory;
  */
 
 public class CardGetByIdSpecificationFactory implements GetByIdSpecificationFactory<CardId> {
+    @NonNull
     @Override
-    public Specification create(CardId id) {
+    public Specification create(@NonNull CardId id) {
         return CardSpecificationsFactory.byDeckNameAndWordAndComment(id.getDeckName(), id.getWord(), id.getComment());
     }
 }

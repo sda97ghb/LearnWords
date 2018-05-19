@@ -12,12 +12,13 @@ import com.divanoapps.learnwords.data.wombat.EntityToIdConverter;
 public class DeckToDeckIdConverter implements EntityToIdConverter<Deck, DeckId> {
     @NonNull
     @Override
-    public DeckId getId(Deck entity) {
+    public DeckId getId(@NonNull Deck entity) {
         DeckId deckId = new DeckId();
         deckId.setName(entity.getName());
         return deckId;
     }
 
+    @NonNull
     @Override
     public Class<Deck> getEntityClass() {
         return Deck.class;

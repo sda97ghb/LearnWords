@@ -13,9 +13,9 @@ import com.divanoapps.learnwords.data.wombat.CollectionSync;
  */
 
 public class Sync {
-    Api api;
-    Repository<Deck> deckRepository;
-    Repository<Card> cardRepository;
+    private Api api;
+    private Repository<Deck> deckRepository;
+    private Repository<Card> cardRepository;
 
     public Sync(Api api, Repository<Deck> deckRepository, Repository<Card> cardRepository) {
         this.api = api;
@@ -30,7 +30,8 @@ public class Sync {
             DeckSpecificationsFactory.allDecks(),
             new DeckGetByIdSpecificationFactory(),
             new DeckToDeckIdConverter(),
-            new DeckNetworkInteractor(api)
+            new DeckNetworkInteractor(api),
+            new DeckArrayFactory()
         );
     }
 
@@ -41,7 +42,8 @@ public class Sync {
             CardSpecificationsFactory.allCards(),
             new CardGetByIdSpecificationFactory(),
             new CardToCardIdConverter(),
-            new CardNetworkInteractor(api)
+            new CardNetworkInteractor(api),
+            new CardArrayFactory()
         );
     }
 }

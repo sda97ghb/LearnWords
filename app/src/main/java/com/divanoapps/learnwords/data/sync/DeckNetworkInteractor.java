@@ -47,6 +47,9 @@ public class DeckNetworkInteractor implements NetworkInteractor<Deck, DeckId> {
         List<SyncDeck> syncDecks = api.queryDecks(deckNames);
         SyncDeck syncDeck = syncDecks.get(0);
 
+        if (syncDeck == null)
+            return null;
+
         Deck deck = new Deck();
         deck.setTimestamp(syncDeck.getTimestamp());
         deck.setSync(null);

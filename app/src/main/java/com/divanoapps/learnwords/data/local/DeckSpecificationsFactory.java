@@ -15,16 +15,8 @@ public class DeckSpecificationsFactory {
     }
 
     public static SQLiteQuerySpecification notDeletedDecks() {
-        return new SQLiteQuerySpecification("SELECT * FROM Deck WHERE sync != ?", Sync.DELETE);
+        return new SQLiteQuerySpecification("SELECT * FROM Deck WHERE sync IS NULL OR sync != ?", Sync.DELETE);
     }
-
-//    public static SQLiteQuerySpecification namesOfNotDeletedDecks() {
-//        return new SQLiteQuerySpecification("SELECT name FROM Deck WHERE sync != ?", Sync.DELETE);
-//    }
-//
-//    public static SQLiteQuerySpecification names() {
-//        return new SQLiteQuerySpecification("SELECT name FROM Deck");
-//    }
 
     public static SQLiteQuerySpecification allDecks() {
         return new SQLiteQuerySpecification("SELECT * FROM Deck");

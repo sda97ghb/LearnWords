@@ -13,7 +13,7 @@ public class CardToCardIdConverter implements EntityToIdConverter<Card, CardId> 
 
     @NonNull
     @Override
-    public CardId getId(Card card) {
+    public CardId getId(@NonNull Card card) {
         CardId id = new CardId();
         id.setDeckName(card.getDeckName());
         id.setWord(card.getWord());
@@ -21,6 +21,7 @@ public class CardToCardIdConverter implements EntityToIdConverter<Card, CardId> 
         return id;
     }
 
+    @NonNull
     @Override
     public Class<Card> getEntityClass() {
         return Card.class;

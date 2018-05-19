@@ -54,6 +54,9 @@ public class CardNetworkInteractor implements NetworkInteractor<Card, CardId> {
         List<SyncCard> syncCards = api.queryCards(syncCardIds);
         SyncCard syncCard = syncCards.get(0);
 
+        if (syncCard == null)
+            return null;
+
         Card card = new Card();
         card.setTimestamp(syncCard.getTimestamp());
         card.setSync(null);

@@ -13,6 +13,6 @@ import retrofit2.http.POST;
  */
 
 public interface RetrofitService {
-    @POST("api/2.1")
+    @POST("syncapi/1.0")
     Call<ApiResponse> request(@Body Map<String, Object> body);
 }

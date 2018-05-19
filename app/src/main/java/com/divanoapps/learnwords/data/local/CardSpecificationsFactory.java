@@ -19,7 +19,7 @@ public class CardSpecificationsFactory {
     }
 
     public static SQLiteQuerySpecification notDeletedCards() {
-        return new SQLiteQuerySpecification("SELECT * FROM Card WHERE sync != ?", Sync.DELETE);
+        return new SQLiteQuerySpecification("SELECT * FROM Card WHERE sync IS NULL OR sync != ?", Sync.DELETE);
     }
 
     public static SQLiteQuerySpecification byDeckNameAndWordAndComment(String deckName, String word, String comment) {

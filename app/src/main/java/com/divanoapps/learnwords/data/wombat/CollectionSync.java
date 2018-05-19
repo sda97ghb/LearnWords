@@ -41,16 +41,19 @@ public class CollectionSync<E extends Syncable, I extends Id> {
     private GetByIdSpecificationFactory<I> getByIdSpecificationFactory;
     private EntityToIdConverter<E, I> entityToIdConverter;
     private NetworkInteractor<E, I> networkInteractor;
+    private ArrayFactory<E> arrayFactory;
 
     public CollectionSync(Class<E> klass, Repository<E> repository, Specification getAllSpecification,
                           GetByIdSpecificationFactory<I> getByIdSpecificationFactory,
-                          EntityToIdConverter<E, I> entityToIdConverter, NetworkInteractor<E, I> networkInteractor) {
+                          EntityToIdConverter<E, I> entityToIdConverter, NetworkInteractor<E, I> networkInteractor,
+                          ArrayFactory<E> arrayFactory) {
         this.klass = klass;
         this.repository = repository;
         this.getAllSpecification = getAllSpecification;
         this.getByIdSpecificationFactory = getByIdSpecificationFactory;
         this.entityToIdConverter = entityToIdConverter;
         this.networkInteractor = networkInteractor;
+        this.arrayFactory = arrayFactory;
     }
 
     interface Predicate<G> { boolean check(G obj); }
@@ -78,21 +81,19 @@ public class CollectionSync<E extends Syncable, I extends Id> {
     private void setSyncToNull(I id) {
         E obj = repository.query(getByIdSpecificationFactory.create(id)).get(0);
         obj.setSync(null);
-        //noinspection unchecked
-        repository.insert(obj);
+        repository.update(obj);
     }
 
     private void completelyDeleteOnClient(I id) {
         E obj = repository.query(getByIdSpecificationFactory.create(id)).get(0);
-        //noinspection unchecked
-        repository.delete(obj);
+        repository.delete(arrayFactory.singleton(obj));
     }
 
     private void deleteOnServer(I id) {
         networkInteractor.deleteOnServer(id);
     }
 
-    void execute() {
+    public void execute() {
         List<E> localEntities = repository.query(getAllSpecification);
         LocalFactory<E, I> localFactory = new LocalFactory<>(entityToIdConverter);
         List<Local<I>> locals = new LinkedList<>();
@@ -169,11 +170,13 @@ public class CollectionSync<E extends Syncable, I extends Id> {
             if (have == Have.ONLY_SERVER_HAS) {
                 // Download
                 E obj = download(id);
+                // TODO: fix this shitcode
+                if (obj == null)
+                    continue;
                 // Set sync to null
                 obj.setSync(null);
                 // Insert
-                //noinspection unchecked
-                repository.insert(obj);
+                repository.insert(arrayFactory.singleton(obj));
             }
             else if (have == Have.ONLY_CLIENT_HAS) {
                 if (syncFlag == SyncFlag.ADDED) {

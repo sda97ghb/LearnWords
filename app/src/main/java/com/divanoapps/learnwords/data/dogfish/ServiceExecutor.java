@@ -8,6 +8,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,11 +77,10 @@ public class ServiceExecutor<T> {
                 if (apiResponse.getError() != null)
                     throw new Exception(apiResponse.getError());
 
-                Class methodReturnClass = method.getReturnType();
-                if (methodReturnClass.equals(void.class))
+                if (method.getReturnType().equals(void.class))
                     return null;
                 else
-                    return gson.fromJson(gson.toJson(apiResponse.getResponse()), methodReturnClass);
+                    return gson.fromJson(gson.toJson(apiResponse.getResponse()), method.getGenericReturnType());
             }
         });
     }
