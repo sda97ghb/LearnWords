@@ -37,8 +37,15 @@ import butterknife.OnClick;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
+/**
+ * Activity for editing a card. Started from DeckEdit activity.
+ * Values of {@code getDeckNameExtraName(), getWordExtraName(), getCommentExtraName()}
+ * must be passed with the intent.
+ */
 public class CardEditActivity extends AppCompatActivity
     implements TranslationListAdapter.OnTranslationOptionSelectedListener {
+
+    // UI components
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -76,12 +83,16 @@ public class CardEditActivity extends AppCompatActivity
     @BindDrawable(R.drawable.ic_card_edit_invisible)
     Drawable invisibleIcon;
 
+    // Other fields
+
     private String deckName;
     private String oldWord;
     private String oldComment;
 
     private int mDifficulty = Card.getDefaultDifficulty();
     private boolean mVisibility = true;
+
+    // Constants
 
     public static String getDeckNameExtraName() {
         return "DECK_NAME_EXTRA";
@@ -133,6 +144,10 @@ public class CardEditActivity extends AppCompatActivity
             .subscribe();
     }
 
+    /**
+     * Request translations of {@code text} from YandexDictionary service and view them.
+     * @param text Text, translations of which will be requested.
+     */
     private void requestTranslations(String text) {
         if (text.isEmpty()) {
             viewDictionaryResult(null);
@@ -146,6 +161,11 @@ public class CardEditActivity extends AppCompatActivity
             .subscribe();
     }
 
+    /**
+     * Converts DictionaryResult from YandexDictionary service to list of TranslationOptions and
+     * set this list as translation list adapter's list.
+     * @param dictionaryResult
+     */
     private void viewDictionaryResult(DictionaryResult dictionaryResult) {
         if (translationOptionsView.getAdapter() == null)
             return;
@@ -154,6 +174,9 @@ public class CardEditActivity extends AppCompatActivity
         adapter.setTranslationOptions(translationOptions);
     }
 
+    /**
+     * Check if current deck already has card with same word and comment and visualize result.
+     */
     private void checkExistence() {
         ApiCard apiCard = getCurrentStateAsApiCard();
         Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
@@ -165,6 +188,10 @@ public class CardEditActivity extends AppCompatActivity
             .subscribe();
     }
 
+    /**
+     * Sets views and editors values from values of the card.
+     * @param card
+     */
     @SuppressLint("SetTextI18n")
     private void showCard(ApiCard card) {
         wordEdit.setText(card.getWord());
@@ -195,6 +222,10 @@ public class CardEditActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Returns new card object filled with values from this activity.
+     * @return new card object filled with values from this activity.
+     */
     private ApiCard getCurrentStateAsApiCard() {
         ApiCard apiCard = new ApiCard();
         apiCard.setDeck(deckName);
@@ -207,10 +238,18 @@ public class CardEditActivity extends AppCompatActivity
         return apiCard;
     }
 
+    /**
+     * Shows a dialog with text.
+     * @param message Text of the error.
+     */
     private void showErrorMessage(String message) {
         MessageOkDialogFragment.show(this, message);
     }
 
+    /**
+     * Calls {@code showErrorMessage(String message)} with {@code throwable.getMessage()} as message.
+     * @param throwable Any throwable
+     */
     private void showErrorMessage(Throwable throwable) {
         if (throwable instanceof ApiError)
             showErrorMessage(((ApiError) throwable).getType() + ":" + throwable.getMessage());
@@ -223,10 +262,16 @@ public class CardEditActivity extends AppCompatActivity
 //        showErrorMessage(message);
 //    }
 
+    /**
+     * Will be called when user clicked done toolbar button.
+     */
     private void onDoneClicked() {
         editCard();
     }
 
+    /**
+     * Saves edited card and finishes this activity.
+     */
     private void editCard() {
         final ApiCard card = getCurrentStateAsApiCard();
         Map<String, Object> properties = new HashMap<>();
@@ -272,6 +317,10 @@ public class CardEditActivity extends AppCompatActivity
 //        startActivity(Intent.createChooser(intent, "Select Picture"));
 //    }
 
+    /**
+     * Sets selected option as translation.
+     * @param option Will be set as translation.
+     */
     @Override
     public void onTranslationOptionSelected(TranslationOption option) {
         translationEdit.setText(option.getTranslation());

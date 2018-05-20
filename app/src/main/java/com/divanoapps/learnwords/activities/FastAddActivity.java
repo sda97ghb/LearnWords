@@ -45,7 +45,11 @@ import io.reactivex.schedulers.Schedulers;
 public class FastAddActivity extends AppCompatActivity
     implements TranslationListAdapter.OnTranslationOptionSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 
+    // Constants
+
     private static final int RC_SIGN_IN = 9001;
+
+    // UI components
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -67,6 +71,8 @@ public class FastAddActivity extends AppCompatActivity
 
     @BindView(R.id.translation_options_view)
     RecyclerView translationOptionsView;
+
+    // Other fields
 
     private String deckName;
 
@@ -121,6 +127,12 @@ public class FastAddActivity extends AppCompatActivity
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
+    /**
+     * Will be called when user selected sign in account.
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -140,6 +152,10 @@ public class FastAddActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Sets the account as application account and register user on the server.
+     * @param account
+     */
     private void setAccount(GoogleSignInAccount account) {
         Application.setGoogleSignInAccount(account);
         Application.initializeApiFromGoogleSignInAccount(account);
@@ -165,6 +181,10 @@ public class FastAddActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Returns new card object filled with values from this activity.
+     * @return new card object filled with values from this activity.
+     */
     private ApiCard getCurrentStateAsApiCard() {
         ApiCard apiCard = new ApiCard();
         apiCard.setOwner(Application.getGoogleSignInAccount().getEmail());
@@ -177,6 +197,9 @@ public class FastAddActivity extends AppCompatActivity
         return apiCard;
     }
 
+    /**
+     * Saves new card and finishes the activity.
+     */
     private void onDoneClicked() {
         ApiCard apiCard = getCurrentStateAsApiCard();
         Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
@@ -205,6 +228,10 @@ public class FastAddActivity extends AppCompatActivity
             .subscribe();
     }
 
+    /**
+     * Request translations of {@code text} from YandexDictionary service and view them.
+     * @param text Text, translations of which will be requested.
+     */
     private void requestTranslations(String text) {
         if (text.isEmpty()) {
             viewDictionaryResult(null);
@@ -218,6 +245,11 @@ public class FastAddActivity extends AppCompatActivity
             .subscribe();
     }
 
+    /**
+     * Converts DictionaryResult from YandexDictionary service to list of TranslationOptions and
+     * set this list as translation list adapter's list.
+     * @param dictionaryResult
+     */
     private void viewDictionaryResult(DictionaryResult dictionaryResult) {
         if (translationOptionsView.getAdapter() == null)
             return;
@@ -226,10 +258,18 @@ public class FastAddActivity extends AppCompatActivity
         adapter.setTranslationOptions(translationOptions);
     }
 
+    /**
+     * Shows a dialog with text.
+     * @param message Text of the error.
+     */
     private void showErrorMessage(String message) {
         MessageOkDialogFragment.show(this, message);
     }
 
+    /**
+     * Calls {@code showErrorMessage(String message)} with {@code throwable.getMessage()} as message.
+     * @param throwable Any throwable
+     */
     private void showErrorMessage(Throwable throwable) {
         if (throwable instanceof ApiError)
             showErrorMessage(((ApiError) throwable).getType() + ":" + throwable.getMessage());
@@ -237,6 +277,9 @@ public class FastAddActivity extends AppCompatActivity
             showErrorMessage(throwable.getMessage());
     }
 
+    /**
+     * Check if current deck already has card with same word and comment and visualize result.
+     */
     private void checkExistence() {
         ApiCard apiCard = getCurrentStateAsApiCard();
         Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
@@ -248,6 +291,10 @@ public class FastAddActivity extends AppCompatActivity
             .subscribe();
     }
 
+    /**
+     * Sets selected option as translation.
+     * @param option Will be set as translation.
+     */
     @Override
     public void onTranslationOptionSelected(TranslationOption option) {
         translationEdit.setText(option.getTranslation());
@@ -255,6 +302,9 @@ public class FastAddActivity extends AppCompatActivity
         translationEdit.setSelection(translationEdit.length());
     }
 
+    /**
+     * Shows the dialog of selection deck to which new card will be added.
+     */
     @OnClick(R.id.select_deck_button)
     public void onSelectDeckButtonClicked() {
         Application.getApi().getUser()
@@ -273,12 +323,21 @@ public class FastAddActivity extends AppCompatActivity
             .subscribe();
     }
 
+    /**
+     * Will be called if connection to the Internet is lost.
+     * Shows an error message and finishes the activity.
+     * @param connectionResult
+     */
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         showErrorMessageToast(connectionResult.getErrorMessage());
         finish();
     }
 
+    /**
+     * Show error message as toast.
+     * @param message
+     */
     private void showErrorMessageToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }

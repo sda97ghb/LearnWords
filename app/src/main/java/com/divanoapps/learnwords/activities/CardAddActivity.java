@@ -30,8 +30,15 @@ import butterknife.ButterKnife;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
+/**
+ * Activity for adding new card. Started from DeckEdit activity.
+ * The name of the deck in which new card should be added must be passed as
+ * an extra {@code getDeckNameExtraName()} of the intent.
+ */
 public class CardAddActivity extends AppCompatActivity
     implements TranslationListAdapter.OnTranslationOptionSelectedListener {
+
+    // UI components
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -54,9 +61,13 @@ public class CardAddActivity extends AppCompatActivity
     @BindView(R.id.translation_options_view)
     RecyclerView translationOptionsView;
 
+    // Constants
+
     public static String getDeckNameExtraName() {
         return "DECK_NAME";
     }
+
+    // Other private fields
 
     private String deckName;
 
@@ -108,6 +119,10 @@ public class CardAddActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Returns new card object filled with values from this activity.
+     * @return new card object filled with values from this activity.
+     */
     private ApiCard getCurrentStateAsApiCard() {
         ApiCard apiCard = new ApiCard();
         apiCard.setOwner(Application.getGoogleSignInAccount().getEmail());
@@ -120,6 +135,9 @@ public class CardAddActivity extends AppCompatActivity
         return apiCard;
     }
 
+    /**
+     * Will be called when user clicked done toolbar button.
+     */
     private void onDoneClicked() {
         ApiCard apiCard = getCurrentStateAsApiCard();
         Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
@@ -131,6 +149,10 @@ public class CardAddActivity extends AppCompatActivity
             .subscribe();
     }
 
+    /**
+     * Request translations of {@code text} from YandexDictionary service and view them.
+     * @param text Text, translations of which will be requested.
+     */
     private void requestTranslations(String text) {
         if (text.isEmpty()) {
             viewDictionaryResult(null);
@@ -144,6 +166,11 @@ public class CardAddActivity extends AppCompatActivity
             .subscribe();
     }
 
+    /**
+     * Converts DictionaryResult from YandexDictionary service to list of TranslationOptions and
+     * set this list as translation list adapter's list.
+     * @param dictionaryResult
+     */
     private void viewDictionaryResult(DictionaryResult dictionaryResult) {
         if (translationOptionsView.getAdapter() == null)
             return;
@@ -152,10 +179,18 @@ public class CardAddActivity extends AppCompatActivity
         adapter.setTranslationOptions(translationOptions);
     }
 
+    /**
+     * Shows a dialog with text.
+     * @param message Text of the error.
+     */
     private void showErrorMessage(String message) {
         MessageOkDialogFragment.show(this, message);
     }
 
+    /**
+     * Calls {@code showErrorMessage(String message)} with {@code throwable.getMessage()} as message.
+     * @param throwable Any throwable
+     */
     private void showErrorMessage(Throwable throwable) {
         if (throwable instanceof ApiError)
             showErrorMessage(((ApiError) throwable).getType() + ":" + throwable.getMessage());
@@ -163,6 +198,9 @@ public class CardAddActivity extends AppCompatActivity
             showErrorMessage(throwable.getMessage());
     }
 
+    /**
+     * Check if current deck already has card with same word and comment and visualize result.
+     */
     private void checkExistence() {
         ApiCard apiCard = getCurrentStateAsApiCard();
         Application.getApi().getCard(apiCard.getDeck(), apiCard.getWord(), apiCard.getComment())
@@ -174,6 +212,10 @@ public class CardAddActivity extends AppCompatActivity
             .subscribe();
     }
 
+    /**
+     * Sets selected option as translation.
+     * @param option Will be set as translation.
+     */
     @Override
     public void onTranslationOptionSelected(TranslationOption option) {
         translationEdit.setText(option.getTranslation());

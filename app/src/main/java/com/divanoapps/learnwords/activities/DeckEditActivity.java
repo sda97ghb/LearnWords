@@ -40,14 +40,23 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * An activity that provides card management in the context of some deck.
+ * Deck name must be passed as {@code getDeckIdExtraName()} parameter.
+ */
 public class DeckEditActivity extends AppCompatActivity implements
         RenameDeckDialogFragment.RenameDeckDialogListener {
+
+    // Constants
 
     public static String getDeckIdExtraName() {
         return "DECK_NAME";
     }
 
+    // Other fields
     private ApiExpandedDeck mDeck = null;
+
+    // UI components
 
     @BindView(R.id.fab)
     FloatingActionButton fab;
@@ -119,6 +128,9 @@ public class DeckEditActivity extends AppCompatActivity implements
         requestDeck();
     }
 
+    /**
+     * Request deck with name from the intent and show it.
+     */
     private void requestDeck() {
         DeckId deckId = (DeckId) getIntent().getExtras().getSerializable(getDeckIdExtraName());
         Application.getApi().getExpandedDeck(deckId.getName())
@@ -127,11 +139,18 @@ public class DeckEditActivity extends AppCompatActivity implements
             .subscribe();
     }
 
+    /**
+     * Set this.deck as deck and update UI.
+     * @param deck
+     */
     private void showDeck(ApiExpandedDeck deck) {
         mDeck = deck;
         updateUi();
     }
 
+    /**
+     * Set parameters of views in the activity from current deck parameters.
+     */
     @SuppressLint("SetTextI18n")
     private void updateUi() {
         toolbar.setTitle(mDeck.getName());
@@ -222,12 +241,18 @@ public class DeckEditActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Shows rename deck dialog for this deck.
+     */
     private void renameCurrentDeck() {
         String uniqueDialogTag = "com.divanoapps.learnwords.dialogs.RenameDeckDialogFragment." + mDeck.getName();
         RenameDeckDialogFragment.newInstance(mDeck.getName())
                 .show(getSupportFragmentManager(), uniqueDialogTag);
     }
 
+    /**
+     * Delete current deck and navigate up.
+     */
     private void deleteCurrentDeck() {
         YesNoMessageDialogFragment.show(this, getString(R.string.are_you_shure_delete_deck_question), () ->
             Application.getApi().deleteDeck(mDeck.getName())
@@ -237,6 +262,10 @@ public class DeckEditActivity extends AppCompatActivity implements
         );
     }
 
+    /**
+     * Will be called to handle rename request from rename deck dialog.
+     * @param dialog
+     */
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         if (dialog instanceof RenameDeckDialogFragment) {
@@ -253,6 +282,9 @@ public class DeckEditActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Starts new activity for adding new card.
+     */
     public void onAddCardClicked() {
 //        Toast.makeText(this, "Clicked Fab", Toast.LENGTH_SHORT).show();
 //        Application.getApi().testRotate()
@@ -271,6 +303,10 @@ public class DeckEditActivity extends AppCompatActivity implements
         startActivity(intent);
     }
 
+    /**
+     * Starts new activity for editing of selected card.
+     * @param id
+     */
     public void onEditCardClicked(CardId id) {
         Intent intent = new Intent(DeckEditActivity.this, CardEditActivity.class);
         intent.putExtra(CardEditActivity.getDeckNameExtraName(), id.getDeckName());
@@ -279,6 +315,10 @@ public class DeckEditActivity extends AppCompatActivity implements
         startActivity(intent);
     }
 
+    /**
+     * Toggles visibility of selected card.
+     * @param id Id of selected card.
+     */
     public void onToggleCardEnabledClicked(final CardId id) {
         // Get the card to know its visibility
         Application.getApi().getCard(id.getDeckName(), id.getWord(), id.getWordComment())
@@ -294,6 +334,10 @@ public class DeckEditActivity extends AppCompatActivity implements
             .subscribe();
     }
 
+    /**
+     * Deletes card with {@code id}.
+     * @param id
+     */
     public void onDeleteCardClicked(CardId id) {
         Application.getApi().deleteCard(id.getDeckName(), id.getWord(), id.getWordComment())
             .doOnComplete(this::requestDeck)
@@ -301,10 +345,18 @@ public class DeckEditActivity extends AppCompatActivity implements
             .subscribe();
     }
 
+    /**
+     * Shows a dialog with text.
+     * @param message Text of the error.
+     */
     private void showErrorMessage(String message) {
         MessageOkDialogFragment.show(this, message);
     }
 
+    /**
+     * Calls {@code showErrorMessage(String message)} with {@code throwable.getMessage()} as message.
+     * @param throwable Any throwable
+     */
     private void showErrorMessage(Throwable throwable) {
         if (throwable instanceof ApiError)
             showErrorMessage(((ApiError) throwable).getType() + ":" + throwable.getMessage());

@@ -39,6 +39,9 @@ import java.util.List;
 
 import butterknife.ButterKnife;
 
+/**
+ * Provides functions for management of decks.
+ */
 public class DeckListActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         RenameDeckDialogFragment.RenameDeckDialogListener {
@@ -102,16 +105,6 @@ public class DeckListActivity extends AppCompatActivity implements
 
         googleSignInApiClient = Application.getGoogleSignInApiClient(this,
             connectionResult -> showErrorMessage(connectionResult.getErrorMessage()));
-
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-//        if (prefs.getBoolean("preference_use_remote_db", false)) {
-//            String serverAddress = prefs.getString("preference_server_address", RemoteDB.getDefaultServerAddress());
-//            String username = prefs.getString("preference_username", RemoteDB.getDefaultServerAddress());
-//            String password = prefs.getString("preference_password", RemoteDB.getDefaultServerAddress());
-//            DB.setDb(new RemoteDB(serverAddress, username, password));
-//        }
-//        else
-//            DB.setDb(new LocalDB());
     }
 
     @Override
@@ -123,6 +116,9 @@ public class DeckListActivity extends AppCompatActivity implements
             .subscribe();
     }
 
+    /**
+     * Request deck list from the server and show.
+     */
     public void requestDeckList() {
         Application.getApi().getExpandedUser()
             .doOnSuccess(this::showUser)
@@ -130,6 +126,10 @@ public class DeckListActivity extends AppCompatActivity implements
             .subscribe();
     }
 
+    /**
+     * Sets deck list from decks of {@code apiExpandedUser}.
+     * @param apiExpandedUser
+     */
     private void showUser(ApiExpandedUser apiExpandedUser) {
         List<DeckShort> decks = new LinkedList<>();
         for (ApiDeckInfo info : apiExpandedUser.getPersonalDecks())
@@ -140,12 +140,21 @@ public class DeckListActivity extends AppCompatActivity implements
         deckListAdapter.setDecks(decks);
     }
 
+    /**
+     * Will be called when user clicked add deck button.
+     */
     private void onFabClicked() {
         AddDeckDialogFragment dialog = new AddDeckDialogFragment();
         dialog.setOnOkClickedListener(this::addDeck);
         dialog.show(getFragmentManager(), AddDeckDialogFragment.getUniqueTag());
     }
 
+    /**
+     * Creates new deck and saves it to the server.
+     * @param name
+     * @param languageFrom
+     * @param languageTo
+     */
     private void addDeck(String name, String languageFrom, String languageTo) {
         ApiDeck deck = new ApiDeck();
         deck.setName(name);
@@ -236,6 +245,9 @@ public class DeckListActivity extends AppCompatActivity implements
         return true;
     }
 
+    /**
+     * Sign outs from the application.
+     */
     private void signOut() {
         Auth.GoogleSignInApi.signOut(googleSignInApiClient)
             .setResultCallback(status -> {
@@ -244,12 +256,21 @@ public class DeckListActivity extends AppCompatActivity implements
             });
     }
 
+    /**
+     * Starts DeckEdit activity for specified deck.
+     * @param id id of deck.
+     */
     public void onEditDeckClicked(DeckId id) {
         Intent intent = new Intent(this, DeckEditActivity.class);
         intent.putExtra(DeckEditActivity.getDeckIdExtraName(), id);
         startActivity(intent);
     }
 
+    /**
+     * Starts exercise for the deck.
+     * @param id
+     * @param order
+     */
     public void onStartExerciseClicked(DeckId id, CardRetriever.Order order) {
         Intent intent = new Intent(this, ExerciseActivity.class);
         intent.putExtra(ExerciseActivity.getDeckIdExtraName(), id);
@@ -257,6 +278,10 @@ public class DeckListActivity extends AppCompatActivity implements
         startActivity(intent);
     }
 
+    /**
+     * Deletes the deck.
+     * @param id
+     */
     public void onDeleteDeckClicked(DeckId id) {
         Application.getApi().deleteDeck(id.getName())
             .doOnComplete(this::requestDeckList)

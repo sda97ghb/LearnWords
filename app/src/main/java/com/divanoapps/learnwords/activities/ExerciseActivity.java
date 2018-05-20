@@ -13,6 +13,9 @@ import com.divanoapps.learnwords.dialogs.MessageOkDialogFragment;
 import com.divanoapps.learnwords.entities.Card;
 import com.divanoapps.learnwords.entities.Deck;
 
+/**
+ * Not implemented yet.
+ */
 public class ExerciseActivity extends AppCompatActivity {
 
     private enum Side {

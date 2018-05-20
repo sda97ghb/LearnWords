@@ -22,12 +22,21 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+/**
+ * LauncherActivity. First screen with sign in button.
+ */
 public class LauncherActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
+
+    // Constants
 
     private static final int RC_SIGN_IN = 9001;
 
+    // UI
+
     @BindView(R.id.status_view)
     TextView statusView;
+
+    // Other fields.
 
     private GoogleApiClient googleApiClient;
 
